@@ -46,9 +46,7 @@ export default function BikeSelector() {
           <h2 className="font-display font-black text-5xl sm:text-7xl text-white tracking-tighter leading-[0.9] uppercase mb-6">
             Shop By <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#E8161B] to-[#ff4b4f]">Machine</span>
           </h2>
-          <p className="font-body text-[#888] text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-            Select your exact make and model to instantly filter our inventory for precision-cut wraps, decals, and verified accessories built for your motorcycle.
-          </p>
+
         </ScrollReveal>
 
         <ScrollReveal direction="up" delay={0.2}>
