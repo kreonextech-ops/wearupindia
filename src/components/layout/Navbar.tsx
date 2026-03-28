@@ -1,10 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { ShoppingCart, Heart, Search, Menu, X, User } from 'lucide-react';
+import { ShoppingCart, Heart, Search, Menu, X, User, ArrowRight } from 'lucide-react';
 import { useStore } from '@/lib/store-context';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+import { products } from '@/data';
 
 const navLinks = [
   { label: 'Shop', href: '/shop' },
@@ -17,7 +20,9 @@ export default function Navbar() {
   const { cartCount, wishlist } = useStore();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  
+  const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+
   // Smart sticky navbar logic
   const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
@@ -32,6 +37,22 @@ export default function Navbar() {
     }
     setIsTop(latest < 50);
   });
+
+  // Search Logic
+  const searchResults = searchQuery.trim() === '' 
+    ? [] 
+    : products.filter(p => 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        p.category.toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 4);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setSearchOpen(false);
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
+  };
 
   return (
     <>
@@ -126,18 +147,63 @@ export default function Navbar() {
         <div className="fixed top-20 sm:top-24 left-0 right-0 z-40 flex justify-center px-4 pointer-events-none">
           <motion.div 
             initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-            className="w-full max-w-2xl bg-[#111]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex items-center gap-3 pointer-events-auto"
+            className="w-full max-w-2xl pointer-events-auto"
           >
-            <Search size={20} className="text-[#666] ml-3 shrink-0" />
-            <input
-              type="text"
-              placeholder="Search protective gear, exhausts..."
-              autoFocus
-              className="w-full bg-transparent text-white placeholder-[#555] px-2 py-3 font-body text-sm sm:text-base focus:outline-none"
-            />
-            <button onClick={() => setSearchOpen(false)} className="w-10 h-10 shrink-0 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center transition-colors">
-              <X size={16} />
-            </button>
+            <form onSubmit={handleSearchSubmit} className="bg-[#111]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex items-center gap-3">
+              <Search size={20} className="text-[#666] ml-3 shrink-0" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search protective gear, exhausts..."
+                autoFocus
+                className="w-full bg-transparent text-white placeholder-[#555] px-2 py-3 font-body text-sm sm:text-base focus:outline-none"
+              />
+              <button type="button" onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="w-10 h-10 shrink-0 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center transition-colors">
+                <X size={16} />
+              </button>
+            </form>
+
+            {/* LIVE RESULTS DROPDOWN */}
+            {searchQuery.trim() !== '' && (
+              <div className="mt-2 bg-[#111]/95 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+                {searchResults.length > 0 ? (
+                  <>
+                    <div className="flex flex-col">
+                      {searchResults.map(p => (
+                        <Link 
+                          key={p.id} 
+                          href={`/shop/${p.category}/${p.id}`}
+                          onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+                          className="flex items-center gap-4 p-4 border-b border-white/5 hover:bg-white/5 transition-colors group"
+                        >
+                          <div className="relative w-12 h-12 rounded bg-white/5 overflow-hidden shrink-0">
+                            <Image src={p.images[0]} alt={p.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-white font-display font-bold text-sm truncate">{p.name}</h4>
+                            <p className="text-[#888] font-mono text-[10px] uppercase tracking-wider">{p.category.replace('-', ' ')}</p>
+                          </div>
+                          <div className="text-white font-mono text-sm">
+                            ₹{p.price.toLocaleString('en-IN')}
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                    <button 
+                      onClick={handleSearchSubmit}
+                      className="w-full p-4 text-center text-[#E8161B] border-t border-white/5 font-display font-bold text-xs tracking-widest uppercase hover:bg-white/5 transition-colors"
+                    >
+                      See all results for "{searchQuery}" <ArrowRight size={14} className="inline ml-1 mb-0.5" />
+                    </button>
+                  </>
+                ) : (
+                  <div className="p-8 text-center text-[#888] font-body text-sm">
+                    No gear found for "{searchQuery}".
+                  </div>
+                )}
+              </div>
+            )}
           </motion.div>
         </div>
       )}
