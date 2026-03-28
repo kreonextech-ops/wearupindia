@@ -1,0 +1,353 @@
+'use client';
+import { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Check, ArrowLeft, ArrowRight, Lock } from 'lucide-react';
+import { useStore } from '@/lib/store-context';
+import { formatPrice } from '@/data';
+
+type Step = 'address' | 'payment' | 'confirm';
+
+const STATES = ['Andhra Pradesh','Assam','Bihar','Delhi','Goa','Gujarat','Haryana','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Odisha','Punjab','Rajasthan','Tamil Nadu','Telangana','Uttar Pradesh','West Bengal'];
+
+export default function CheckoutPage() {
+  const { cart, cartTotal, clearCart } = useStore();
+  const [step, setStep] = useState<Step>('address');
+  const [orderPlaced, setOrderPlaced] = useState(false);
+  const [orderId] = useState(`WU-${Date.now().toString().slice(-6)}`);
+
+  const [form, setForm] = useState({
+    firstName: '', lastName: '', email: '', phone: '',
+    address: '', city: '', state: '', pincode: '',
+    paymentMethod: 'upi',
+    upiId: '', cardNumber: '', cardExpiry: '', cardCvv: '', cardName: '',
+  });
+
+  const update = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
+
+  const shipping = cartTotal >= 499 ? 0 : 99;
+  const gst = Math.round(cartTotal * 0.18);
+  const total = cartTotal + shipping + gst;
+
+  const handlePlaceOrder = () => {
+    setOrderPlaced(true);
+    clearCart();
+  };
+
+  if (orderPlaced) {
+    return (
+      <div className="min-h-screen pt-16 flex flex-col items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 bg-green-500/10 border-2 border-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Check size={36} className="text-green-500" />
+          </div>
+          <p className="font-mono text-[11px] text-[#E8161B] tracking-[0.3em] uppercase mb-3">// Order Confirmed</p>
+          <h1 className="font-display font-black text-4xl text-white mb-4">YOU&apos;RE ALL SET!</h1>
+          <p className="font-body text-[#666] mb-2 text-sm">Order <span className="text-[#E8161B] font-mono font-bold">{orderId}</span> has been placed.</p>
+          <p className="font-body text-[#555] mb-8 text-sm">You&apos;ll receive a confirmation on your email & WhatsApp shortly.</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/shop" className="flex items-center justify-center gap-3 bg-[#E8161B] text-white font-display font-bold text-sm tracking-widest uppercase px-8 py-4 hover:bg-[#B81015] transition-colors">
+              Continue Shopping
+            </Link>
+            <Link href="/" className="flex items-center justify-center gap-3 border border-[#2a2a2a] text-[#888] font-display font-bold text-sm tracking-widest uppercase px-8 py-4 hover:text-white hover:border-[#444] transition-colors">
+              Back to Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (cart.length === 0 && !orderPlaced) {
+    return (
+      <div className="min-h-screen pt-16 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="font-display font-black text-4xl text-white mb-4">NOTHING TO CHECKOUT</h1>
+          <Link href="/shop" className="inline-flex items-center gap-3 bg-[#E8161B] text-white font-display font-bold text-sm tracking-widest uppercase px-8 py-4 hover:bg-[#B81015] transition-colors">
+            Shop Now <ArrowRight size={14} />
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const steps: { key: Step; label: string }[] = [
+    { key: 'address', label: 'Delivery' },
+    { key: 'payment', label: 'Payment' },
+    { key: 'confirm', label: 'Confirm' },
+  ];
+
+  const stepIndex = steps.findIndex(s => s.key === step);
+
+  const inputClass = "w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white placeholder-[#444] px-4 py-3 font-body text-sm focus:outline-none focus:border-[#E8161B] transition-colors";
+  const labelClass = "font-mono text-[10px] text-[#555] tracking-widest uppercase mb-1 block";
+
+  return (
+    <div className="min-h-screen pt-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Back */}
+        <Link href="/cart" className="flex items-center gap-2 text-[#666] hover:text-white text-xs font-mono tracking-widest uppercase mb-8 transition-colors w-fit">
+          <ArrowLeft size={12} /> Back to Cart
+        </Link>
+
+        {/* Step indicator */}
+        <div className="flex items-center gap-0 mb-12">
+          {steps.map((s, i) => (
+            <div key={s.key} className="flex items-center">
+              <div className={`flex items-center gap-2 px-4 py-2 ${
+                i <= stepIndex ? 'bg-[#E8161B]' : 'bg-[#111] border border-[#2a2a2a]'
+              }`}>
+                <span className={`font-mono text-xs font-bold ${i <= stepIndex ? 'text-white' : 'text-[#444]'}`}>
+                  {i < stepIndex ? <Check size={12} /> : i + 1}
+                </span>
+                <span className={`font-display font-bold text-xs tracking-widest uppercase ${i <= stepIndex ? 'text-white' : 'text-[#444]'}`}>
+                  {s.label}
+                </span>
+              </div>
+              {i < steps.length - 1 && (
+                <div className={`w-8 h-px ${i < stepIndex ? 'bg-[#E8161B]' : 'bg-[#2a2a2a]'}`} />
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* Form */}
+          <div className="lg:col-span-2">
+            {/* ADDRESS STEP */}
+            {step === 'address' && (
+              <div className="space-y-6">
+                <h2 className="font-display font-black text-2xl text-white">DELIVERY ADDRESS</h2>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>First Name</label>
+                    <input className={inputClass} placeholder="Rahul" value={form.firstName} onChange={e => update('firstName', e.target.value)} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Last Name</label>
+                    <input className={inputClass} placeholder="Sharma" value={form.lastName} onChange={e => update('lastName', e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Email</label>
+                    <input type="email" className={inputClass} placeholder="rahul@example.com" value={form.email} onChange={e => update('email', e.target.value)} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Phone</label>
+                    <input type="tel" className={inputClass} placeholder="+91 98765 43210" value={form.phone} onChange={e => update('phone', e.target.value)} />
+                  </div>
+                </div>
+
+                <div>
+                  <label className={labelClass}>Full Address</label>
+                  <textarea className={`${inputClass} resize-none`} rows={3} placeholder="Street, Area, Landmark" value={form.address} onChange={e => update('address', e.target.value)} />
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className={labelClass}>City</label>
+                    <input className={inputClass} placeholder="Bengaluru" value={form.city} onChange={e => update('city', e.target.value)} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>State</label>
+                    <select className={inputClass} value={form.state} onChange={e => update('state', e.target.value)}>
+                      <option value="">Select</option>
+                      {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Pincode</label>
+                    <input className={inputClass} placeholder="560001" value={form.pincode} onChange={e => update('pincode', e.target.value)} />
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setStep('payment')}
+                  className="flex items-center gap-3 bg-[#E8161B] text-white font-display font-bold text-sm tracking-widest uppercase px-8 py-4 hover:bg-[#B81015] transition-colors"
+                >
+                  Continue to Payment <ArrowRight size={14} />
+                </button>
+              </div>
+            )}
+
+            {/* PAYMENT STEP */}
+            {step === 'payment' && (
+              <div className="space-y-6">
+                <h2 className="font-display font-black text-2xl text-white">PAYMENT METHOD</h2>
+
+                {/* Options */}
+                <div className="space-y-3">
+                  {[
+                    { key: 'upi', label: 'UPI', sub: 'GPay, PhonePe, Paytm' },
+                    { key: 'card', label: 'Credit / Debit Card', sub: 'Visa, Mastercard, RuPay' },
+                    { key: 'cod', label: 'Cash on Delivery', sub: 'Extra ₹50 COD charge' },
+                  ].map(opt => (
+                    <button
+                      key={opt.key}
+                      onClick={() => update('paymentMethod', opt.key)}
+                      className={`w-full flex items-center gap-4 p-4 border text-left transition-all ${
+                        form.paymentMethod === opt.key
+                          ? 'border-[#E8161B] bg-[#E8161B]/5'
+                          : 'border-[#2a2a2a] bg-[#111] hover:border-[#444]'
+                      }`}
+                    >
+                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                        form.paymentMethod === opt.key ? 'border-[#E8161B]' : 'border-[#444]'
+                      }`}>
+                        {form.paymentMethod === opt.key && <div className="w-2 h-2 rounded-full bg-[#E8161B]" />}
+                      </div>
+                      <div>
+                        <p className="font-display font-bold text-sm text-white">{opt.label}</p>
+                        <p className="font-mono text-[10px] text-[#555]">{opt.sub}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* UPI input */}
+                {form.paymentMethod === 'upi' && (
+                  <div>
+                    <label className={labelClass}>UPI ID</label>
+                    <input className={inputClass} placeholder="name@upi" value={form.upiId} onChange={e => update('upiId', e.target.value)} />
+                  </div>
+                )}
+
+                {/* Card inputs */}
+                {form.paymentMethod === 'card' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className={labelClass}>Cardholder Name</label>
+                      <input className={inputClass} placeholder="Name as on card" value={form.cardName} onChange={e => update('cardName', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Card Number</label>
+                      <input className={inputClass} placeholder="1234 5678 9012 3456" maxLength={19} value={form.cardNumber} onChange={e => update('cardNumber', e.target.value)} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelClass}>Expiry</label>
+                        <input className={inputClass} placeholder="MM/YY" maxLength={5} value={form.cardExpiry} onChange={e => update('cardExpiry', e.target.value)} />
+                      </div>
+                      <div>
+                        <label className={labelClass}>CVV</label>
+                        <input className={inputClass} placeholder="•••" maxLength={3} type="password" value={form.cardCvv} onChange={e => update('cardCvv', e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <button onClick={() => setStep('address')} className="flex items-center gap-2 border border-[#2a2a2a] text-[#888] font-display font-bold text-sm tracking-widest uppercase px-6 py-4 hover:text-white hover:border-[#444] transition-colors">
+                    <ArrowLeft size={14} /> Back
+                  </button>
+                  <button
+                    onClick={() => setStep('confirm')}
+                    className="flex items-center gap-3 bg-[#E8161B] text-white font-display font-bold text-sm tracking-widest uppercase px-8 py-4 hover:bg-[#B81015] transition-colors"
+                  >
+                    Review Order <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* CONFIRM STEP */}
+            {step === 'confirm' && (
+              <div className="space-y-6">
+                <h2 className="font-display font-black text-2xl text-white">REVIEW & CONFIRM</h2>
+
+                {/* Address summary */}
+                <div className="p-5 bg-[#111] border border-[#1a1a1a]">
+                  <h3 className="font-mono text-[10px] text-[#555] tracking-widest uppercase mb-3">Delivery To</h3>
+                  <p className="font-display font-bold text-white">{form.firstName} {form.lastName}</p>
+                  <p className="font-body text-[#666] text-sm">{form.address}</p>
+                  <p className="font-body text-[#666] text-sm">{form.city}, {form.state} – {form.pincode}</p>
+                  <p className="font-mono text-[11px] text-[#555] mt-1">{form.phone}</p>
+                </div>
+
+                {/* Payment summary */}
+                <div className="p-5 bg-[#111] border border-[#1a1a1a]">
+                  <h3 className="font-mono text-[10px] text-[#555] tracking-widest uppercase mb-3">Payment</h3>
+                  <p className="font-display font-bold text-white capitalize">{form.paymentMethod === 'cod' ? 'Cash on Delivery' : form.paymentMethod.toUpperCase()}</p>
+                </div>
+
+                {/* Items */}
+                <div className="space-y-3">
+                  {cart.map(item => (
+                    <div key={item.id} className="flex gap-3 items-center p-3 bg-[#111] border border-[#1a1a1a]">
+                      <div className="relative w-12 h-12 flex-shrink-0 overflow-hidden bg-[#181818]">
+                        <Image src={item.images[0]} alt={item.name} fill className="object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-display font-bold text-sm text-white truncate">{item.name}</p>
+                        <p className="font-mono text-[10px] text-[#555]">Qty: {item.quantity}</p>
+                      </div>
+                      <span className="font-display font-bold text-sm text-white flex-shrink-0">
+                        {formatPrice(item.price * item.quantity)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-3">
+                  <button onClick={() => setStep('payment')} className="flex items-center gap-2 border border-[#2a2a2a] text-[#888] font-display font-bold text-sm tracking-widest uppercase px-6 py-4 hover:text-white hover:border-[#444] transition-colors">
+                    <ArrowLeft size={14} /> Back
+                  </button>
+                  <button
+                    onClick={handlePlaceOrder}
+                    className="flex-1 flex items-center justify-center gap-3 bg-[#E8161B] text-white font-display font-bold text-sm tracking-widest uppercase py-4 hover:bg-[#B81015] transition-colors"
+                  >
+                    <Lock size={14} /> Place Order · {formatPrice(total)}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Order Summary Sidebar */}
+          <div>
+            <div className="bg-[#111] border border-[#1a1a1a] p-6 sticky top-24">
+              <h2 className="font-display font-black text-lg text-white mb-4 pb-4 border-b border-[#1a1a1a]">
+                ORDER SUMMARY
+              </h2>
+              <div className="space-y-3 mb-4">
+                {cart.map(item => (
+                  <div key={item.id} className="flex justify-between text-sm">
+                    <span className="font-body text-[#666] truncate max-w-[140px]">{item.name} ×{item.quantity}</span>
+                    <span className="font-display font-bold text-white flex-shrink-0 ml-2">{formatPrice(item.price * item.quantity)}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-[#1a1a1a] pt-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="font-body text-[#666]">Subtotal</span>
+                  <span className="font-display font-bold text-white">{formatPrice(cartTotal)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="font-body text-[#666]">GST (18%)</span>
+                  <span className="font-display font-bold text-white">{formatPrice(gst)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="font-body text-[#666]">Shipping</span>
+                  <span className={`font-display font-bold ${shipping === 0 ? 'text-green-500' : 'text-white'}`}>
+                    {shipping === 0 ? 'FREE' : formatPrice(shipping)}
+                  </span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center border-t border-[#1a1a1a] pt-4 mt-4">
+                <span className="font-display font-black text-base text-white">TOTAL</span>
+                <span className="font-display font-black text-xl text-[#E8161B]">{formatPrice(total)}</span>
+              </div>
+              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[#1a1a1a]">
+                <Lock size={12} className="text-[#555]" />
+                <span className="font-mono text-[10px] text-[#555]">256-bit SSL secured checkout</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
