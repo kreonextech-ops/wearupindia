@@ -123,23 +123,23 @@ export default function Navbar() {
 
       {/* Search Overlay */}
       {searchOpen && (
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-          className="fixed top-24 left-1/2 -translate-x-1/2 z-40 w-full max-w-2xl px-4"
-        >
-          <div className="bg-[#111]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl flex items-center gap-3">
-            <Search size={20} className="text-[#666] ml-3" />
+        <div className="fixed top-20 sm:top-24 left-0 right-0 z-40 flex justify-center px-4 pointer-events-none">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+            className="w-full max-w-2xl bg-[#111]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex items-center gap-3 pointer-events-auto"
+          >
+            <Search size={20} className="text-[#666] ml-3 shrink-0" />
             <input
               type="text"
-              placeholder="Search protective gear, performance exhausts..."
+              placeholder="Search protective gear, exhausts..."
               autoFocus
-              className="w-full bg-transparent text-white placeholder-[#555] px-2 py-3 font-body text-sm focus:outline-none"
+              className="w-full bg-transparent text-white placeholder-[#555] px-2 py-3 font-body text-sm sm:text-base focus:outline-none"
             />
-            <button onClick={() => setSearchOpen(false)} className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center transition-colors">
+            <button onClick={() => setSearchOpen(false)} className="w-10 h-10 shrink-0 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center transition-colors">
               <X size={16} />
             </button>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       )}
 
       {/* Full Screen Mobile Menu */}
