@@ -9,7 +9,6 @@ import StatsBar from '@/components/home/StatsBar';
 import TestimonialsSection from '@/components/home/Testimonials';
 import InstagramReels from '@/components/home/InstagramReels';
 import NewsletterCTA from '@/components/home/NewsletterCTA';
-import BikeSelector from '@/components/home/BikeSelector';
 
 export default function Home() {
   const newArrivals = products.filter(p => p.isNew).reverse().slice(0, 5);
@@ -89,9 +88,6 @@ export default function Home() {
 
       {/* ─── BRAND MARQUEE ─── */}
       <BrandMarquee />
-
-      {/* ─── BIKE SELECTOR (Find Products For Your Bike) ─── */}
-      <BikeSelector />
 
       {/* ─── SHOP BY CATEGORY (BENTO) ─── */}
       <section className="pt-20 pb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-border">
