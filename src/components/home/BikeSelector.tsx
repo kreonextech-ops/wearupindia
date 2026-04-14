@@ -14,8 +14,7 @@ export default function BikeSelector() {
 
   const handleSearch = () => {
     if (selectedBrand && selectedModel) {
-      // Ensure model string is URL friendly (basic substitution)
-      const modelSlug = selectedModel.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const modelSlug = selectedModel.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
       router.push(`/shop/graphic-kits/${selectedBrand.slug}/${modelSlug}`);
     } else if (selectedBrand) {
       router.push(`/shop/graphic-kits/${selectedBrand.slug}`);

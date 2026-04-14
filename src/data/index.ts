@@ -55,17 +55,16 @@ export type Brand = {
 
 export const GRAPHIC_KITS_STRUCTURE = [
   { brand: 'Ather', slug: 'ather', models: ['Ather 450X'] },
-  { brand: 'Bajaj', slug: 'bajaj', models: ['Dominar 250/400', 'Pulsar 220', 'Pulsar NS-125/160/200', 'Pulsar NS 400', 'Pulsar N160/250', 'Pulsar RS'] },
-  { brand: 'KTM', slug: 'ktm', models: ['Duke-125/200/390 Gen1', 'Duke-125/200/250/390 Gen2', 'Duke-250/390 Gen3', 'Adventure-250/390 Gen1', 'Adventure-250/390 Gen2', 'RC-125/200/390 Gen1', 'RC-125/200/390 Gen2'] },
+  { brand: 'Bajaj', slug: 'bajaj', models: ['Dominar-250/400', 'Pulsar 220', 'Pulsar NS-125/160/200', 'Pulsar NS 400', 'Pulsar N160/250', 'Pulsar RS'] },
+  { brand: 'KTM', slug: 'ktm', models: ['Duke-125/200/390 Gen1', 'Duke-125/200/250/390 Gen2', 'Duke-250/390 Gen 3', 'Adventure-250/390 Gen 1', 'Adventure-250/390 Gen 2', 'RC-125/200/390 Gen 1', 'RC-125/200/390 Gen 2'] },
   { brand: 'Royal Enfield', slug: 'royal-enfield', models: ['Himalayan'] },
   { brand: 'TVS', slug: 'tvs', models: ['Ntorq', 'RTR-160/200 4V', 'RR310', 'RTX-300'] },
   { brand: 'Yamaha', slug: 'yamaha', models: ['Aerox-155', 'MT-15', 'R3', 'V2', 'V3', 'V4', 'FZ-25'] },
-  { brand: 'BMW', slug: 'bmw', models: ['G310GS', 'S1000RR (2019-2022)'] },
+  { brand: 'BMW', slug: 'bmw', models: ['G310GS', 'S1000RR-(2019-2022)'] },
   { brand: 'Hero', slug: 'hero', models: ['Xpulse 200'] },
-  { brand: 'Kawasaki', slug: 'kawasaki', models: ['Ninja 300', 'Ninja 650', 'Z800', 'Z900', 'ZX10R (2016-2020)', 'ZX6R (2019-2023)', 'ZX6R (2024-2026)'] },
-  { brand: 'Honda', slug: 'honda', models: ['CBR-150/250', 'CBR650R (2019-2022)', 'NX500'] },
+  { brand: 'Kawasaki', slug: 'kawasaki', models: ['Ninja 300', 'Ninja 650', 'Z800', 'Z900', 'ZX10R-2016/2020', 'ZX6R-2019/2023', 'ZX6R-2024/2026'] },
+  { brand: 'Honda', slug: 'honda', models: ['CBR-150/250', 'CBR650R-2019/2022', 'NX500'] },
   { brand: 'Suzuki', slug: 'suzuki', models: ['Hayabusa', 'Gixxer SF-155/250'] },
-  { brand: 'Universal', slug: 'universal', models: ['Universal Fit'] },
 ];
 
 export const categories: Category[] = [
