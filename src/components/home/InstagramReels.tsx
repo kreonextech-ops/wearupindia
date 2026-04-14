@@ -72,9 +72,8 @@ export default function InstagramReels() {
                     left: '50%',
                     transform: 'translateX(-50%)',
                     width: '100%',
-                    /* Push the embed up so the video fills our container, hiding the likes/comments below */
-                    marginTop: '-54px', // hides the top header bar of the embed
-                    pointerEvents: 'none', // prevent interaction with clipped areas
+                    height: '200%', // give it plenty of height so it loads fully
+                    marginTop: '-54px', // hide the top header bar
                   }}
                 >
                   <blockquote
@@ -92,8 +91,6 @@ export default function InstagramReels() {
                     }}
                   />
                 </div>
-                {/* Re-enable pointer events only on the video area */}
-                <div className="absolute inset-0" style={{ pointerEvents: 'auto' }} />
               </div>
             </ScrollReveal>
           ))}
