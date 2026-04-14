@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { products, formatPrice } from '@/data';
 import { 
   Package, Search, Filter, Plus, ChevronRight, 
@@ -7,8 +8,12 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import Sheet from '@/components/ui/Sheet';
+import NewProductForm from '@/components/admin/NewProductForm';
 
 export default function AdminProductsPage() {
+  const [isSheetOpen, setIsSheetOpen] = React.useState(false);
+
   return (
     <div className="space-y-10">
       {/* ─── HEADER ─── */}
@@ -29,11 +34,24 @@ export default function AdminProductsPage() {
            <button className="p-2.5 bg-white/5 border border-white/10 rounded-lg text-white/40 hover:text-white transition-colors">
               <Filter size={18} />
            </button>
-           <button className="flex items-center gap-3 px-6 py-2.5 bg-[#E8161B] rounded-lg font-display font-bold text-xs tracking-widest uppercase hover:bg-[#B81015] transition-all shadow-[0_5px_15px_rgba(232,22,27,0.3)]">
+           <button 
+            onClick={() => setIsSheetOpen(true)}
+            className="flex items-center gap-3 px-6 py-2.5 bg-[#E8161B] rounded-lg font-display font-bold text-xs tracking-widest uppercase hover:bg-[#B81015] transition-all shadow-[0_5px_15px_rgba(232,22,27,0.3)]"
+           >
               <Plus size={16} /> Deploy New Product
            </button>
         </div>
       </div>
+
+      {/* ─── NEW PRODUCT SHEET ─── */}
+      <Sheet 
+        isOpen={isSheetOpen} 
+        onClose={() => setIsSheetOpen(false)}
+        title="Deploy New Asset"
+        description="Add a new high-performance product to the WearUp inventory. All assets are synced to Supabase."
+      >
+        <NewProductForm onSuccess={() => setIsSheetOpen(false)} />
+      </Sheet>
 
       {/* ─── PRODUCT LIST ─── */}
       <div className="bg-[#0A0A0A] border border-white/5 rounded-3xl overflow-hidden shadow-2xl">

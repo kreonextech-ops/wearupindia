@@ -6,14 +6,46 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const stats = [
-  { label: 'Total Sales', value: '₹12,48,290', icon: TrendingUp, change: '+12.5%', isUp: true },
-  { label: 'Active Recruits', value: '1,248', icon: Users, change: '+5.2%', isUp: true },
-  { label: 'The Arsenal', value: '142 Items', icon: Package, change: '-2 Items', isUp: false },
-  { label: 'Pending Logistics', value: '24 Orders', icon: ShoppingCart, change: '8 New', isUp: true },
-];
+import { createClient } from '@/lib/supabase/client';
+import { useEffect, useState } from 'react';
 
 export default function AdminPage() {
+  const [stats, setStats] = useState([
+    { label: 'Total Sales', value: '₹12,48,290', icon: TrendingUp, change: '+12.5%', isUp: true },
+    { label: 'Active Recruits', value: '0', icon: Users, change: '+0%', isUp: true },
+    { label: 'The Arsenal', value: '0 Items', icon: Package, change: '0 New', isUp: true },
+    { label: 'Pending Logistics', value: '0 Orders', icon: ShoppingCart, change: '0 New', isUp: true },
+  ]);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      // Fetch Customer Count
+      const { count: customerCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      // Fetch Product Count
+      const { count: productCount } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true });
+
+      // Fetch Order Count (Pending/Processing)
+      const { count: orderCount } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['pending', 'processing']);
+
+      setStats(prev => [
+        prev[0],
+        { ...prev[1], value: `${customerCount || 0}` },
+        { ...prev[2], value: `${productCount || 0} Items` },
+        { ...prev[3], value: `${orderCount || 0} Orders` },
+      ]);
+    };
+
+    fetchStats();
+  }, [supabase]);
   return (
     <div className="space-y-10">
       {/* ─── HEADER ─── */}

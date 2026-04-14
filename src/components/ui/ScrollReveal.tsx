@@ -1,7 +1,7 @@
 'use client';
 
-import { motion, useAnimation, useInView } from 'framer-motion';
-import { useEffect, useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+import { useRef } from 'react';
 
 type ScrollRevealProps = {
   children: React.ReactNode;
@@ -22,13 +22,6 @@ export default function ScrollReveal({
 }: ScrollRevealProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-10% 0px' });
-  const controls = useAnimation();
-
-  useEffect(() => {
-    if (isInView) {
-      controls.start('visible');
-    }
-  }, [isInView, controls]);
 
   const getVariants = () => {
     let y = 0;
@@ -58,7 +51,7 @@ export default function ScrollReveal({
       ref={ref}
       variants={getVariants()}
       initial="hidden"
-      animate={controls}
+      animate={isInView ? 'visible' : 'hidden'}
       className={className}
       style={style}
     >

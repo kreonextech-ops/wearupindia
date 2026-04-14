@@ -5,9 +5,9 @@ import ScrollReveal from '@/components/ui/ScrollReveal';
 
 const stats = [
   { value: 1200, suffix: '+', label: 'Wraps Completed', prefix: '' },
-  { value: 9800, suffix: '+', label: 'Riders Protected', prefix: '' },
-  { value: 4.9, suffix: '★', label: 'Average Rating', prefix: '', decimal: true },
-  { value: 50, suffix: '+', label: 'Cities · PAN India', prefix: '' },
+  { value: 9800, suffix: '+', label: 'Happy Customers', prefix: '' },
+  { value: 4.9, suffix: '★', label: 'Reviews', prefix: '', decimal: true },
+  { value: 50, suffix: '+', label: 'Cities Across India', prefix: '' },
 ];
 
 function AnimatedNumber({ target, suffix, prefix, decimal }: { target: number; suffix: string; prefix: string; decimal?: boolean }) {
@@ -47,7 +47,7 @@ function AnimatedNumber({ target, suffix, prefix, decimal }: { target: number; s
     : Math.floor(count).toLocaleString('en-IN');
 
   return (
-    <div ref={ref} className="font-display font-black text-5xl sm:text-6xl text-white leading-none tracking-tight">
+    <div ref={ref} className="font-display font-black text-5xl sm:text-6xl text-foreground leading-none tracking-tight">
       {prefix}{display}{suffix}
     </div>
   );
@@ -55,22 +55,22 @@ function AnimatedNumber({ target, suffix, prefix, decimal }: { target: number; s
 
 export default function StatsBar() {
   return (
-    <section className="border-y border-white/5 bg-gradient-to-r from-[#0D0D0D] via-[#111] to-[#0D0D0D] py-16">
+    <section className="border-y border-border bg-muted py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4">
           {stats.map((stat, i) => (
             <ScrollReveal key={i} direction="up" delay={i * 0.1}>
-              <div className={`flex flex-col items-center text-center group py-4 ${i < stats.length - 1 ? 'md:border-r border-white/5' : ''}`}>
+              <div className={`flex flex-col items-center text-center group py-4 ${i < stats.length - 1 ? 'md:border-r border-border' : ''}`}>
                 <AnimatedNumber
                   target={stat.value}
                   suffix={stat.suffix}
                   prefix={stat.prefix}
                   decimal={stat.decimal}
                 />
-                <p className="font-mono text-[9px] tracking-[0.25em] text-white/25 uppercase mt-3">
+                <p className="font-mono text-[9px] tracking-[0.25em] text-muted-foreground uppercase mt-3">
                   {stat.label}
                 </p>
-                <div className="mt-3 w-6 h-px bg-[#E8161B]/40 group-hover:w-14 transition-all duration-700" />
+                <div className="mt-3 w-6 h-px bg-wu-red/40 group-hover:w-14 transition-all duration-700" />
               </div>
             </ScrollReveal>
           ))}

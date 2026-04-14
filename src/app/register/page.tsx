@@ -3,20 +3,44 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Lock, User, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, ShieldCheck, Chrome, Github } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { signUpAction, signInWithGoogle } from '@/app/auth/actions';
 
 export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate registration for now
-    setTimeout(() => {
-      router.push('/login');
-    }, 1500);
+    setError(null);
+    
+    const formData = new FormData(e.currentTarget);
+    const password = formData.get('password') as string;
+    const confirmPassword = formData.get('confirm_password') as string;
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Encryption key too short (min 6 chars)');
+      setLoading(false);
+      return;
+    }
+
+    const result = await signUpAction(formData);
+
+    if (result.success) {
+      router.push('/login?message=Registration successful. Please log in.');
+    } else {
+      setError(result.error || 'Registration Failed');
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,12 +66,18 @@ export default function RegisterPage() {
         </div>
 
         <div className="glass rounded-3xl p-8 border border-white/10 shadow-2xl">
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-center">
+              <p className="text-red-500 text-xs font-mono uppercase tracking-widest">{error}</p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label className="font-mono text-[10px] text-white/40 tracking-widest uppercase ml-1">Full Identity</label>
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
                 <input 
+                  name="full_name"
                   type="text" 
                   required
                   placeholder="Rider Name"
@@ -61,6 +91,7 @@ export default function RegisterPage() {
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
                 <input 
+                  name="email"
                   type="email" 
                   required
                   placeholder="name@nexus.com"
@@ -74,9 +105,24 @@ export default function RegisterPage() {
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
                 <input 
+                  name="password"
                   type="password" 
                   required
                   placeholder="Set Password"
+                  className="w-full bg-black/40 border border-white/5 rounded-xl py-4 pl-12 pr-4 text-white placeholder-white/10 focus:outline-none focus:border-[#E8161B]/50 focus:bg-black/60 transition-all font-body text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="font-mono text-[10px] text-white/40 tracking-widest uppercase ml-1">Confirm Key</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                <input 
+                  name="confirm_password"
+                  type="password" 
+                  required
+                  placeholder="Verify Password"
                   className="w-full bg-black/40 border border-white/5 rounded-xl py-4 pl-12 pr-4 text-white placeholder-white/10 focus:outline-none focus:border-[#E8161B]/50 focus:bg-black/60 transition-all font-body text-sm"
                 />
               </div>
@@ -94,6 +140,26 @@ export default function RegisterPage() {
               )}
             </button>
           </form>
+
+          <div className="mt-10">
+            <div className="relative flex items-center justify-center mb-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/5"></div>
+              </div>
+              <span className="relative px-4 bg-transparent text-white/20 font-mono text-[9px] tracking-widest uppercase">External Sync</span>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <button 
+                type="button"
+                onClick={() => signInWithGoogle()}
+                className="flex items-center justify-center gap-3 w-full bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl py-4 transition-colors"
+              >
+                <Chrome size={18} className="text-white" />
+                <span className="font-body font-bold text-xs text-white">Continue with Google</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <p className="mt-8 text-center font-body text-sm text-[#555]">

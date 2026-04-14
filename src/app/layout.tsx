@@ -9,15 +9,19 @@ export const metadata: Metadata = {
   keywords: 'motorcycle wrap india, bike stickers, helmet, bike accessories, riding gear',
 };
 
+import { ThemeProvider } from '@/components/providers/ThemeProvider';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="antialiased">
-        <StoreProvider>
-          <LayoutWrapper>
-            {children}
-          </LayoutWrapper>
-        </StoreProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className="antialiased font-body">
+        <ThemeProvider>
+          <StoreProvider>
+            <LayoutWrapper>
+              {children}
+            </LayoutWrapper>
+          </StoreProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

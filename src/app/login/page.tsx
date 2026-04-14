@@ -5,18 +5,28 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight, Github, Chrome, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { loginAction, signInWithGoogle } from '@/app/auth/actions';
 
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate login for now
-    setTimeout(() => {
+    setError(null);
+    
+    const formData = new FormData(e.currentTarget);
+    const result = await loginAction(formData);
+
+    if (result.success) {
       router.push('/');
-    }, 1500);
+      router.refresh(); // Update the navbar etc
+    } else {
+      setError(result.error || 'Authentication Failed');
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,12 +52,18 @@ export default function LoginPage() {
         </div>
 
         <div className="glass rounded-3xl p-8 border border-white/10 shadow-2xl">
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-center">
+              <p className="text-red-500 text-xs font-mono uppercase tracking-widest">{error}</p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label className="font-mono text-[10px] text-white/40 tracking-widest uppercase ml-1">Email Verification</label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
                 <input 
+                  name="email"
                   type="email" 
                   required
                   placeholder="name@nexus.com"
@@ -64,6 +80,7 @@ export default function LoginPage() {
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
                 <input 
+                  name="password"
                   type="password" 
                   required
                   placeholder="••••••••"
@@ -93,21 +110,21 @@ export default function LoginPage() {
               <span className="relative px-4 bg-transparent text-white/20 font-mono text-[9px] tracking-widest uppercase">External Sync</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <button className="flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl py-4 transition-colors">
+            <div className="flex flex-col gap-4">
+              <button 
+                type="button"
+                onClick={() => signInWithGoogle()}
+                className="flex items-center justify-center gap-3 w-full bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl py-4 transition-colors"
+              >
                 <Chrome size={18} className="text-white" />
-                <span className="font-body font-bold text-xs text-white">Google</span>
-              </button>
-              <button className="flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl py-4 transition-colors">
-                <Github size={18} className="text-white" />
-                <span className="font-body font-bold text-xs text-white">Github</span>
+                <span className="font-body font-bold text-xs text-white">Continue with Google</span>
               </button>
             </div>
           </div>
         </div>
 
         <p className="mt-8 text-center font-body text-sm text-[#555]">
-          New to the hub? <Link href="/register" className="text-white hover:text-[#E8161B] underline-offset-4 hover:underline transition-colors">Recruit Membership</Link>
+          New Rider? <Link href="/register" className="text-white hover:text-[#E8161B] font-bold underline-offset-4 hover:underline transition-colors">Create New Profile (Sign Up)</Link>
         </p>
 
         <div className="mt-12 flex items-center justify-center gap-2 text-[#222]">

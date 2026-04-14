@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import { Product, Category } from '@/data';
 import ProductCard from './ProductCard';
@@ -12,43 +13,73 @@ type ShopCategorySectionProps = {
 };
 
 export default function ShopCategorySection({ category, products }: ShopCategorySectionProps) {
-  // Show only first 4 products in this row
-  const featured = products.slice(0, 4);
+  // Show up to 5 products to accommodate the 5-column desktop layout
+  const featured = products.slice(0, 5);
 
   if (featured.length === 0) return null;
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-white/5">
-      <ScrollReveal direction="up">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-          <div className="flex-1">
-            <p className="font-mono text-[11px] text-[#E8161B] tracking-[0.3em] uppercase mb-4 flex items-center gap-2">
-              <span className="w-6 h-px bg-[#E8161B]" /> {category.tagline}
-            </p>
-            <h2 className="font-display font-black text-4xl sm:text-6xl text-white tracking-tight leading-none uppercase">
-              {category.name}
-            </h2>
-            <p className="font-body text-[#666] mt-4 text-sm max-w-2xl leading-relaxed">
-              {category.description}
-            </p>
-          </div>
-          
-          <Link 
-            href={`/shop/${category.slug}`} 
-            className="group flex items-center gap-3 text-white font-display font-bold text-xs tracking-[0.2em] uppercase bg-white/5 border border-white/10 px-8 py-4 hover:bg-[#E8161B] hover:border-[#E8161B] transition-all duration-300"
-            style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))' }}
-          >
-            Explore All <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform duration-300" />
-          </Link>
-        </div>
-      </ScrollReveal>
+    <section className="py-24 relative overflow-hidden border-t border-border group">
+      {/* ─── CINEMATIC BACKGROUND ─── */}
+      <div className="absolute inset-0 z-0">
+        <Image 
+          src={category.image} 
+          alt="" 
+          fill 
+          className="object-cover opacity-[0.08] grayscale group-hover:scale-110 group-hover:opacity-[0.12] transition-all duration-[5000ms] ease-out pointer-events-none" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+        {/* Localized Glow */}
+        <div className="absolute top-0 left-0 w-[500px] h-[300px] bg-wu-red/5 blur-[120px] rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+      </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        {featured.map((product, i) => (
-          <ScrollReveal key={product.id} direction="up" delay={i * 0.1}>
-            <ProductCard product={product} />
-          </ScrollReveal>
-        ))}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* ─── HEADER ─── */}
+        <ScrollReveal direction="up">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-16 gap-8">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="w-10 h-px bg-wu-red" />
+                <p className="font-mono text-[11px] text-wu-red tracking-[0.4em] uppercase font-bold">
+                  {category.tagline}
+                </p>
+              </div>
+              
+              <h2 className="font-display font-black text-6xl sm:text-7xl lg:text-8xl text-foreground tracking-tighter leading-[0.85] uppercase mb-6 italic">
+                {category.name}
+              </h2>
+              
+              <p className="font-body text-muted-foreground text-sm sm:text-lg max-w-2xl leading-relaxed opacity-80">
+                {category.description}
+              </p>
+            </div>
+            
+            <Link 
+              href={`/shop/${category.slug}`} 
+              className="group relative flex items-center gap-4 text-foreground font-display font-bold text-xs tracking-[0.2em] uppercase bg-background/50 backdrop-blur-md border border-border px-10 py-5 hover:bg-wu-red hover:border-wu-red hover:text-white transition-all duration-500 overflow-hidden shadow-xl"
+              style={{ clipPath: 'polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))' }}
+            >
+              <span className="relative z-10 flex items-center gap-3">
+                Explore Collection <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform duration-500" />
+              </span>
+              <div className="absolute inset-0 bg-wu-red scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+            </Link>
+          </div>
+        </ScrollReveal>
+
+        {/* ─── PRODUCT GRID ─── */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8">
+          {featured.map((product, i) => (
+            <ScrollReveal 
+              key={product.id} 
+              direction="up" 
+              delay={i * 0.1}
+              className={i === 4 ? 'hidden lg:block' : ''}
+            >
+              <ProductCard product={product} />
+            </ScrollReveal>
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -1,6 +1,8 @@
 'use client';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product } from '@/data';
+import { createClient } from './supabase/client';
+import { User } from '@supabase/supabase-js';
 
 type CartItem = Product & { quantity: number; selectedSize?: string };
 
@@ -16,6 +18,7 @@ type StoreContextType = {
   cartCount: number;
   cartTotal: number;
   clearCart: () => void;
+  user: User | null;
 };
 
 const StoreContext = createContext<StoreContextType | null>(null);
@@ -23,7 +26,19 @@ const StoreContext = createContext<StoreContextType | null>(null);
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<Product[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const supabase = createClient();
 
+  // Auth Listener
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, [supabase]);
+
+  // Load from LocalStorage
   useEffect(() => {
     try {
       const saved = localStorage.getItem('wu-cart');
@@ -32,6 +47,27 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       if (savedWish) setWishlist(JSON.parse(savedWish));
     } catch {}
   }, []);
+
+  // Sync to database if logged in
+  useEffect(() => {
+    if (!user) return;
+    
+    const syncData = async () => {
+      // Sync Cart
+      if (cart.length > 0) {
+        const cartItems = cart.map(i => ({ id: i.id, quantity: i.quantity, size: i.selectedSize }));
+        await supabase.from('carts').upsert({ user_id: user.id, items: cartItems }, { onConflict: 'user_id' });
+      }
+      
+      // Sync Wishlist
+      if (wishlist.length > 0) {
+        const wishItems = wishlist.map(p => p.id);
+        await supabase.from('wishlists').upsert({ user_id: user.id, items: wishItems }, { onConflict: 'user_id' });
+      }
+    };
+    
+    syncData();
+  }, [cart, wishlist, user, supabase]);
 
   useEffect(() => {
     localStorage.setItem('wu-cart', JSON.stringify(cart));
@@ -74,7 +110,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     <StoreContext.Provider value={{
       cart, wishlist, addToCart, removeFromCart, updateQuantity,
       addToWishlist, removeFromWishlist, isInWishlist,
-      cartCount, cartTotal, clearCart,
+      cartCount, cartTotal, clearCart, user,
     }}>
       {children}
     </StoreContext.Provider>

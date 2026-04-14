@@ -99,9 +99,10 @@ export default function ServiceDetailPage({ params }: Props) {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Booking Card */}
-            <div className="bg-[#111] border border-[#1a1a1a] p-6 sticky top-24">
+          <div className="relative">
+            <div className="sticky top-28 space-y-6">
+              {/* Booking Card */}
+              <div className="bg-[#111] border border-[#1a1a1a] p-6 shadow-2xl">
               <h3 className="font-display font-black text-xl text-white mb-2">READY TO BOOK?</h3>
               <p className="font-body text-[#666] text-sm mb-6">Get in touch and we&apos;ll sort the rest. Response within 2 hours.</p>
 
@@ -152,6 +153,7 @@ export default function ServiceDetailPage({ params }: Props) {
                   </Link>
                 ))}
               </div>
+            </div>
             </div>
           </div>
         </div>
