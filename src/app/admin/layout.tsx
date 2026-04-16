@@ -6,7 +6,9 @@ import {
   LayoutDashboard, Package, ShoppingBag, Users, 
   Settings, Bell, Search, LogOut, ChevronRight, Menu 
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 
 const adminLinks = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -18,7 +20,43 @@ const adminLinks = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setIsAuthorized(false);
+        router.push('/login');
+        return;
+      }
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+        
+      if (profile?.role !== 'admin') {
+        setIsAuthorized(false);
+        router.push('/profile');
+      } else {
+        setIsAuthorized(true);
+      }
+    };
+    checkAuth();
+  }, [router, supabase]);
+
+  if (isAuthorized === null) {
+    return (
+      <div className="min-h-screen bg-[#070707] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#E8161B] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#070707] flex text-white font-body selection:bg-[#E8161B] selection:text-white">
