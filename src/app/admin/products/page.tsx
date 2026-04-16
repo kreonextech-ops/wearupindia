@@ -19,15 +19,15 @@ export default function AdminProductsPage() {
       {/* ─── HEADER ─── */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/5">
         <div>
-          <p className="font-mono text-[10px] text-[#E8161B] tracking-[0.4em] uppercase mb-4 opacity-50">// Inventory System</p>
-          <h1 className="font-display font-black text-4xl sm:text-5xl text-white tracking-tight uppercase leading-none">The Arsenal</h1>
+          <p className="font-mono text-[10px] text-[#E8161B] tracking-[0.4em] uppercase mb-2 opacity-50">// Inventory System</p>
+          <h1 className="font-display font-black text-4xl sm:text-5xl text-white tracking-tight uppercase leading-none">Products</h1>
         </div>
         <div className="flex gap-3">
            <div className="relative group hidden sm:block">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
               <input 
                 type="text" 
-                placeholder="Find Gear..." 
+                placeholder="Search Products..." 
                 className="bg-white/5 border border-white/5 rounded-full py-2.5 pl-12 pr-6 text-sm text-white focus:outline-none focus:border-[#E8161B]/50 focus:bg-white/10 w-64 transition-all"
               />
            </div>
@@ -38,7 +38,7 @@ export default function AdminProductsPage() {
             onClick={() => setIsSheetOpen(true)}
             className="flex items-center gap-3 px-6 py-2.5 bg-[#E8161B] rounded-lg font-display font-bold text-xs tracking-widest uppercase hover:bg-[#B81015] transition-all shadow-[0_5px_15px_rgba(232,22,27,0.3)]"
            >
-              <Plus size={16} /> Deploy New Product
+              <Plus size={16} /> Add Product
            </button>
         </div>
       </div>
@@ -47,8 +47,8 @@ export default function AdminProductsPage() {
       <Sheet 
         isOpen={isSheetOpen} 
         onClose={() => setIsSheetOpen(false)}
-        title="Deploy New Asset"
-        description="Add a new high-performance product to the WearUp inventory. All assets are synced to Supabase."
+        title="Add New Product"
+        description="Fill in the details to add a new product to the catalog."
       >
         <NewProductForm onSuccess={() => setIsSheetOpen(false)} />
       </Sheet>
@@ -58,10 +58,10 @@ export default function AdminProductsPage() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-white/5 bg-white/[0.02]">
-              <th className="px-6 py-5 font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Item Details</th>
+              <th className="px-6 py-5 font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Product</th>
               <th className="px-6 py-5 font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Status</th>
-              <th className="px-6 py-5 font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Inventory</th>
-              <th className="px-6 py-5 font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Valuation</th>
+              <th className="px-6 py-5 font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Stock</th>
+              <th className="px-6 py-5 font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Price</th>
               <th className="px-6 py-5 font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase text-right">Actions</th>
             </tr>
           </thead>
@@ -86,11 +86,11 @@ export default function AdminProductsPage() {
                         : 'bg-red-500/10 text-red-500 border border-red-500/20'
                    }`}>
                       {product.inStock ? <ShieldCheck size={10} /> : <Box size={10} />}
-                      {product.inStock ? 'Tactical Hold' : 'Depleted'}
+                      {product.inStock ? 'In Stock' : 'Out of Stock'}
                    </span>
                 </td>
                 <td className="px-6 py-5">
-                   <p className="font-display font-bold text-white/60">42 Units</p>
+                   <p className="font-display font-bold text-white/60">{product.stock || 0} Units</p>
                 </td>
                 <td className="px-6 py-5 font-display font-bold text-white">
                    {formatPrice(product.price)}

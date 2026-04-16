@@ -10,9 +10,9 @@ import { useState } from 'react';
 
 const adminLinks = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { label: 'The Arsenal', href: '/admin/products', icon: Package },
-  { label: 'Logistics', href: '/admin/orders', icon: ShoppingBag },
-  { label: 'Recruits', href: '/admin/customers', icon: Users },
+  { label: 'Inventory', href: '/admin/products', icon: Package },
+  { label: 'Orders', href: '/admin/orders', icon: ShoppingBag },
+  { label: 'Customers', href: '/admin/customers', icon: Users },
   { label: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
@@ -29,7 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="w-8 h-8 rounded-full bg-[#E8161B] flex items-center justify-center transform group-hover:rotate-90 transition-transform duration-500 shadow-[0_0_15px_rgba(232,22,27,0.4)]">
               <span className="text-white font-display font-black text-xs">W</span>
             </div>
-            {sidebarOpen && <span className="font-display font-black text-lg tracking-[0.2em] uppercase">Admin Hub</span>}
+            {sidebarOpen && <span className="font-display font-black text-lg tracking-[0.2em] uppercase">WearUp Admin</span>}
           </Link>
         </div>
 
@@ -58,7 +58,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="p-8 border-t border-white/5">
            <button className="flex items-center gap-4 text-white/40 hover:text-[#E8161B] transition-colors w-full group">
              <LogOut size={20} />
-             {sidebarOpen && <span className="font-display font-bold text-sm tracking-widest uppercase">Logout Terminate</span>}
+             {sidebarOpen && <span className="font-display font-bold text-sm tracking-widest uppercase">Logout</span>}
            </button>
         </div>
       </aside>

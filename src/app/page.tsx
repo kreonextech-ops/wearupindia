@@ -21,66 +21,70 @@ export default function Home() {
     <main className="bg-background text-foreground transition-colors duration-500">
 
       {/* ─── HERO ─── */}
-      <section className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0">
-          <SafeImage
-            src="https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=1600&q=80"
-            alt="WearUp Hero – Superbike"
-            fill
-            className="object-cover opacity-[0.35] scale-105 pointer-events-none"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
-          {/* Red glow orb */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-[#E8161B]/8 blur-[150px] rounded-full pointer-events-none" />
-        </div>
-
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center mt-20">
-          <ScrollReveal direction="down" duration={0.8}>
-            <div className="inline-flex items-center gap-3 px-4 py-2 border border-border bg-background/40 backdrop-blur-md rounded-full mb-8">
-              <span className="w-2 h-2 rounded-full bg-wu-red animate-pulse" />
-              <span className="font-mono text-[10px] text-foreground tracking-[0.25em] uppercase">Premium Motorcycle Customization</span>
-            </div>
-          </ScrollReveal>
-
-          <ScrollReveal direction="up" delay={0.1}>
-            <h1 className="font-display font-black text-6xl sm:text-8xl md:text-9xl leading-[0.8] tracking-tighter uppercase mb-6 drop-shadow-2xl">
-              Ride <span className="text-wu-red">Bold.</span><br />
-              <span className="text-foreground">Wrap</span> Louder.
-            </h1>
-          </ScrollReveal>
-
-          <ScrollReveal direction="up" delay={0.2} className="max-w-xl mx-auto">
-            <p className="font-body text-base sm:text-lg text-muted-foreground mb-10 leading-relaxed font-medium">
-              India&apos;s most aggressive motorcycle aesthetics haven. Custom wraps, precision detailing, and performance gear.
-            </p>
-          </ScrollReveal>
-
-          <ScrollReveal direction="up" delay={0.3} className="flex flex-col sm:flex-row items-center justify-center gap-5">
-            <Link 
-              href="/shop" 
-              className="group relative px-10 py-5 bg-wu-red text-white font-display font-bold text-xs tracking-[0.2em] uppercase transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(232,22,27,0.3)]"
-              style={{ clipPath: 'polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))' }}
+      <section className="relative pt-16 md:pt-20 min-h-[100dvh] flex flex-col md:flex-row overflow-hidden bg-black">
+        {[
+          {
+            id: 'dirt',
+            src: '/videos/hero-dirt.mp4',
+            title: 'Extreme Action'
+          },
+          {
+            id: 'adventure',
+            src: '/videos/hero-adventure.mp4',
+            title: 'Deep Adventure'
+          },
+          {
+            id: 'stunt',
+            src: '/videos/hero-street.mp4',
+            title: 'Urban Street'
+          }
+        ].map((panel, idx) => (
+          <div 
+            key={panel.id}
+            className={`group relative flex-1 border-b md:border-b-0 md:border-r border-white/5 overflow-hidden transition-all duration-700 ${idx === 0 ? 'min-h-[calc(100vh-64px)] md:min-h-screen' : 'hidden md:block md:min-h-screen hover:flex-[1.8]'}`}
+          >
+            {/* Video Background */}
+            <video 
+              autoPlay 
+              muted 
+              loop 
+              playsInline 
+              className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-[2000ms] opacity-60"
             >
-              Explore Shop <ArrowRight size={14} className="inline ml-2" />
-            </Link>
-            <Link 
-              href="/services" 
-              className="px-10 py-5 border border-border bg-background/5 text-foreground font-display font-bold text-xs tracking-[0.2em] uppercase transition-all duration-300 hover:bg-foreground/10"
-              style={{ clipPath: 'polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))' }}
-            >
-              Our Services
-            </Link>
-          </ScrollReveal>
+              <source src={panel.src} type="video/mp4" />
+            </video>
 
-          {/* Scroll indicator */}
-          <ScrollReveal direction="up" delay={1.0}>
-            <div className="mt-20 flex flex-col items-center gap-2 text-muted-foreground/20">
-              <div className="w-px h-12 bg-gradient-to-b from-transparent via-muted-foreground/20 to-muted-foreground/40 animate-pulse" />
-              <span className="font-mono text-[8px] tracking-[0.4em] uppercase">Scroll</span>
+            {/* Premium Overlays */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
+            <div className="absolute inset-0 bg-wu-red/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            
+            {/* Minimal Brand Overlay - Only on first panel */}
+            {idx === 0 && (
+              <div className="absolute bottom-24 left-8 sm:left-12 z-20">
+                 <ScrollReveal direction="up" delay={0.2}>
+                   <h1 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl leading-[0.85] tracking-tighter uppercase text-white mb-6 drop-shadow-2xl">
+                      Ride <span className="text-wu-red">Bold.</span><br />
+                      <span className="text-white">Wrap</span> Louder.
+                    </h1>
+                    <div className="flex gap-4">
+                       <Link href="/shop" className="px-6 py-3 bg-wu-red text-white font-display font-bold text-[10px] tracking-widest uppercase hover:scale-105 transition-all shadow-lg">Explore</Link>
+                       <Link href="/services" className="px-6 py-3 bg-white/10 backdrop-blur-md text-white border border-white/20 font-display font-bold text-[10px] tracking-widest uppercase hover:bg-white/20 transition-all">Services</Link>
+                    </div>
+                 </ScrollReveal>
+              </div>
+            )}
+
+            {/* Corner Decorative Accent */}
+            <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-all duration-700 -translate-y-4 group-hover:translate-y-0">
+               <div className="w-8 h-8 border-t border-r border-wu-red" />
             </div>
-          </ScrollReveal>
-        </div>
+            
+            {/* Bottom Progress Bar Indicator for Panel Index */}
+            <div className="absolute bottom-0 left-0 h-1 bg-wu-red/30 w-full opacity-30">
+               <div className={`h-full bg-wu-red transition-all duration-1000 ${idx === 0 ? 'w-full' : 'w-0'}`} />
+            </div>
+          </div>
+        ))}
       </section>
 
       {/* ─── STATS BAR ─── */}

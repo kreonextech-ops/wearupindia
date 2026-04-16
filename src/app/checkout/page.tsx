@@ -2,9 +2,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Check, ArrowLeft, ArrowRight, Lock } from 'lucide-react';
+import { Check, ArrowLeft, ArrowRight, Lock, AlertCircle } from 'lucide-react';
 import { useStore } from '@/lib/store-context';
 import { formatPrice } from '@/data';
+import { createClient } from '@/lib/supabase/client';
 
 type Step = 'address' | 'payment' | 'confirm';
 
@@ -14,7 +15,9 @@ export default function CheckoutPage() {
   const { cart, cartTotal, clearCart } = useStore();
   const [step, setStep] = useState<Step>('address');
   const [orderPlaced, setOrderPlaced] = useState(false);
-  const [orderId] = useState(`WU-${Date.now().toString().slice(-6)}`);
+  const [orderId, setOrderId] = useState('');
+  const [placing, setPlacing] = useState(false);
+  const [placeError, setPlaceError] = useState('');
 
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', phone: '',
@@ -29,9 +32,152 @@ export default function CheckoutPage() {
   const gst = Math.round(cartTotal * 0.18);
   const total = cartTotal + shipping + gst;
 
-  const handlePlaceOrder = () => {
-    setOrderPlaced(true);
-    clearCart();
+  const handlePlaceOrder = async () => {
+    setPlacing(true);
+    setPlaceError('');
+    const supabase = createClient();
+
+    try {
+      // 1. Get current user (may be null for guest — still save)
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // 2. If user is logged in, upsert their profile with checkout info
+      if (user) {
+        // Fetch current profile to avoid overwriting existing data
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('full_name, phone_number, shipping_address')
+          .eq('id', user.id)
+          .single();
+
+        // Build update: only overwrite fields that are blank in the profile
+        const profileUpdate: Record<string, any> = {
+          updated_at: new Date().toISOString(),
+        };
+
+        // Phone: update if checkout has it AND profile doesn't yet
+        if (form.phone) {
+          if (!existingProfile?.phone_number) {
+            profileUpdate.phone_number = form.phone;
+          }
+        }
+
+        // Full name: update if checkout has it AND profile doesn't yet
+        const checkoutName = `${form.firstName} ${form.lastName}`.trim();
+        if (checkoutName && !existingProfile?.full_name) {
+          profileUpdate.full_name = checkoutName;
+        }
+
+        // Shipping address: always update with latest checkout address
+        if (form.address && form.city && form.state) {
+          profileUpdate.shipping_address = {
+            street: form.address,
+            city: form.city,
+            state: form.state,
+            zip: form.pincode,
+          };
+        }
+
+        const { error: profileUpdateErr } = await supabase
+          .from('profiles')
+          .update(profileUpdate)
+          .eq('id', user.id);
+
+        if (profileUpdateErr) {
+          console.error('Profile sync error:', profileUpdateErr.message);
+          // Not a blocker — order still proceeds
+        }
+      }
+
+      // 3. Build shipping address snapshot
+      const shippingAddress = {
+        full_name: `${form.firstName} ${form.lastName}`.trim(),
+        email: form.email,
+        phone: form.phone,
+        street: form.address,
+        city: form.city,
+        state: form.state,
+        zip: form.pincode,
+      };
+
+      // 4. Create the Order record
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert([{
+          user_id: user?.id ?? null,
+          total_amount: total,
+          status: 'pending',
+          payment_status: form.paymentMethod === 'whatsapp' ? 'unpaid' : 'paid',
+          shipping_address: shippingAddress,
+          payment_intent_id: form.paymentMethod === 'upi'
+            ? form.upiId
+            : form.paymentMethod === 'card'
+              ? `card-${form.cardNumber.slice(-4)}`
+              : 'whatsapp',
+        }])
+        .select()
+        .single();
+
+      if (orderError || !order) {
+        console.error('Order creation error:', orderError);
+        throw new Error(orderError?.message ?? 'Failed to create order');
+      }
+
+      // 5. Resolve product IDs from slugs and create order_items
+      for (const item of cart) {
+        const { data: product } = await supabase
+          .from('products')
+          .select('id')
+          .eq('slug', item.slug)
+          .single();
+
+        if (product) {
+          await supabase.from('order_items').insert([{
+            order_id: order.id,
+            product_id: product.id,
+            quantity: item.quantity,
+            price_at_purchase: item.price,
+          }]);
+        }
+      }
+
+      // 6. Clear cart and mark placed
+      const finalOrderId = `WU-${order.id.slice(0, 8).toUpperCase()}`;
+      setOrderId(finalOrderId);
+      clearCart();
+      
+      // 7. If WhatsApp, redirect to WhatsApp with order details
+      if (form.paymentMethod === 'whatsapp') {
+        const adminPhone = "916296103605"; // Replaced with user's actual number
+        
+        let message = `*New Order: ${finalOrderId}*%0A%0A`;
+        message += `*Customer Details:*%0A`;
+        message += `Name: ${form.firstName} ${form.lastName}%0A`;
+        message += `Phone: ${form.phone}%0A`;
+        message += `Email: ${form.email}%0A%0A`;
+        
+        message += `*Shipping Address:*%0A`;
+        message += `${form.address}, ${form.city}, ${form.state} - ${form.pincode}%0A%0A`;
+        
+        message += `*Order Items:*%0A`;
+        cart.forEach((item, index) => {
+           let productUrl = `${window.location.origin}/shop/${item.categorySlug}/${item.slug}`;
+           message += `${index + 1}. ${item.name} (Qty: ${item.quantity}) - ₹${item.price}%0A`;
+           message += `Link: ${productUrl}%0A`;
+        });
+        
+        message += `%0A*Total Amount:* ₹${total}%0A`;
+        
+        const whatsappUrl = `https://wa.me/${adminPhone}?text=${message}`;
+        window.open(whatsappUrl, '_blank');
+      }
+
+      setOrderPlaced(true);
+    } catch (err: any) {
+      setPlaceError(err.message ?? 'Something went wrong. Please try again.');
+    } finally {
+      setPlacing(false);
+    }
   };
 
   if (orderPlaced) {
@@ -44,7 +190,7 @@ export default function CheckoutPage() {
           <p className="font-mono text-[11px] text-[#E8161B] tracking-[0.3em] uppercase mb-3">// Order Confirmed</p>
           <h1 className="font-display font-black text-4xl text-white mb-4">YOU&apos;RE ALL SET!</h1>
           <p className="font-body text-[#666] mb-2 text-sm">Order <span className="text-[#E8161B] font-mono font-bold">{orderId}</span> has been placed.</p>
-          <p className="font-body text-[#555] mb-8 text-sm">You&apos;ll receive a confirmation on your email & WhatsApp shortly.</p>
+          <p className="font-body text-[#555] mb-8 text-sm">You&apos;ll receive a confirmation on your email &amp; WhatsApp shortly.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/shop" className="flex items-center justify-center gap-3 bg-[#E8161B] text-white font-display font-bold text-sm tracking-widest uppercase px-8 py-4 hover:bg-[#B81015] transition-colors">
               Continue Shopping
@@ -85,7 +231,6 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen pt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Back */}
         <Link href="/cart" className="flex items-center gap-2 text-[#666] hover:text-white text-xs font-mono tracking-widest uppercase mb-8 transition-colors w-fit">
           <ArrowLeft size={12} /> Back to Cart
         </Link>
@@ -94,9 +239,7 @@ export default function CheckoutPage() {
         <div className="flex items-center gap-0 mb-12">
           {steps.map((s, i) => (
             <div key={s.key} className="flex items-center">
-              <div className={`flex items-center gap-2 px-4 py-2 ${
-                i <= stepIndex ? 'bg-[#E8161B]' : 'bg-[#111] border border-[#2a2a2a]'
-              }`}>
+              <div className={`flex items-center gap-2 px-4 py-2 ${i <= stepIndex ? 'bg-[#E8161B]' : 'bg-[#111] border border-[#2a2a2a]'}`}>
                 <span className={`font-mono text-xs font-bold ${i <= stepIndex ? 'text-white' : 'text-[#444]'}`}>
                   {i < stepIndex ? <Check size={12} /> : i + 1}
                 </span>
@@ -118,7 +261,6 @@ export default function CheckoutPage() {
             {step === 'address' && (
               <div className="space-y-6">
                 <h2 className="font-display font-black text-2xl text-white">DELIVERY ADDRESS</h2>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className={labelClass}>First Name</label>
@@ -129,7 +271,6 @@ export default function CheckoutPage() {
                     <input className={inputClass} placeholder="Sharma" value={form.lastName} onChange={e => update('lastName', e.target.value)} />
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className={labelClass}>Email</label>
@@ -140,12 +281,10 @@ export default function CheckoutPage() {
                     <input type="tel" className={inputClass} placeholder="+91 98765 43210" value={form.phone} onChange={e => update('phone', e.target.value)} />
                   </div>
                 </div>
-
                 <div>
                   <label className={labelClass}>Full Address</label>
                   <textarea className={`${inputClass} resize-none`} rows={3} placeholder="Street, Area, Landmark" value={form.address} onChange={e => update('address', e.target.value)} />
                 </div>
-
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className={labelClass}>City</label>
@@ -163,7 +302,6 @@ export default function CheckoutPage() {
                     <input className={inputClass} placeholder="560001" value={form.pincode} onChange={e => update('pincode', e.target.value)} />
                   </div>
                 </div>
-
                 <button
                   onClick={() => setStep('payment')}
                   className="flex items-center gap-3 bg-[#E8161B] text-white font-display font-bold text-sm tracking-widest uppercase px-8 py-4 hover:bg-[#B81015] transition-colors"
@@ -177,13 +315,11 @@ export default function CheckoutPage() {
             {step === 'payment' && (
               <div className="space-y-6">
                 <h2 className="font-display font-black text-2xl text-white">PAYMENT METHOD</h2>
-
-                {/* Options */}
                 <div className="space-y-3">
                   {[
                     { key: 'upi', label: 'UPI', sub: 'GPay, PhonePe, Paytm' },
                     { key: 'card', label: 'Credit / Debit Card', sub: 'Visa, Mastercard, RuPay' },
-                    { key: 'cod', label: 'Cash on Delivery', sub: 'Extra ₹50 COD charge' },
+                    { key: 'whatsapp', label: 'Order via WhatsApp', sub: 'Place order directly with admin' },
                   ].map(opt => (
                     <button
                       key={opt.key}
@@ -194,9 +330,7 @@ export default function CheckoutPage() {
                           : 'border-[#2a2a2a] bg-[#111] hover:border-[#444]'
                       }`}
                     >
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                        form.paymentMethod === opt.key ? 'border-[#E8161B]' : 'border-[#444]'
-                      }`}>
+                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${form.paymentMethod === opt.key ? 'border-[#E8161B]' : 'border-[#444]'}`}>
                         {form.paymentMethod === opt.key && <div className="w-2 h-2 rounded-full bg-[#E8161B]" />}
                       </div>
                       <div>
@@ -206,16 +340,12 @@ export default function CheckoutPage() {
                     </button>
                   ))}
                 </div>
-
-                {/* UPI input */}
                 {form.paymentMethod === 'upi' && (
                   <div>
                     <label className={labelClass}>UPI ID</label>
                     <input className={inputClass} placeholder="name@upi" value={form.upiId} onChange={e => update('upiId', e.target.value)} />
                   </div>
                 )}
-
-                {/* Card inputs */}
                 {form.paymentMethod === 'card' && (
                   <div className="space-y-4">
                     <div>
@@ -238,15 +368,11 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 )}
-
                 <div className="flex gap-3">
                   <button onClick={() => setStep('address')} className="flex items-center gap-2 border border-[#2a2a2a] text-[#888] font-display font-bold text-sm tracking-widest uppercase px-6 py-4 hover:text-white hover:border-[#444] transition-colors">
                     <ArrowLeft size={14} /> Back
                   </button>
-                  <button
-                    onClick={() => setStep('confirm')}
-                    className="flex items-center gap-3 bg-[#E8161B] text-white font-display font-bold text-sm tracking-widest uppercase px-8 py-4 hover:bg-[#B81015] transition-colors"
-                  >
+                  <button onClick={() => setStep('confirm')} className="flex items-center gap-3 bg-[#E8161B] text-white font-display font-bold text-sm tracking-widest uppercase px-8 py-4 hover:bg-[#B81015] transition-colors">
                     Review Order <ArrowRight size={14} />
                   </button>
                 </div>
@@ -256,9 +382,7 @@ export default function CheckoutPage() {
             {/* CONFIRM STEP */}
             {step === 'confirm' && (
               <div className="space-y-6">
-                <h2 className="font-display font-black text-2xl text-white">REVIEW & CONFIRM</h2>
-
-                {/* Address summary */}
+                <h2 className="font-display font-black text-2xl text-white">REVIEW &amp; CONFIRM</h2>
                 <div className="p-5 bg-[#111] border border-[#1a1a1a]">
                   <h3 className="font-mono text-[10px] text-[#555] tracking-widest uppercase mb-3">Delivery To</h3>
                   <p className="font-display font-bold text-white">{form.firstName} {form.lastName}</p>
@@ -266,14 +390,10 @@ export default function CheckoutPage() {
                   <p className="font-body text-[#666] text-sm">{form.city}, {form.state} – {form.pincode}</p>
                   <p className="font-mono text-[11px] text-[#555] mt-1">{form.phone}</p>
                 </div>
-
-                {/* Payment summary */}
                 <div className="p-5 bg-[#111] border border-[#1a1a1a]">
                   <h3 className="font-mono text-[10px] text-[#555] tracking-widest uppercase mb-3">Payment</h3>
                   <p className="font-display font-bold text-white capitalize">{form.paymentMethod === 'cod' ? 'Cash on Delivery' : form.paymentMethod.toUpperCase()}</p>
                 </div>
-
-                {/* Items */}
                 <div className="space-y-3">
                   {cart.map(item => (
                     <div key={item.id} className="flex gap-3 items-center p-3 bg-[#111] border border-[#1a1a1a]">
@@ -284,12 +404,17 @@ export default function CheckoutPage() {
                         <p className="font-display font-bold text-sm text-white truncate">{item.name}</p>
                         <p className="font-mono text-[10px] text-[#555]">Qty: {item.quantity}</p>
                       </div>
-                      <span className="font-display font-bold text-sm text-white flex-shrink-0">
-                        {formatPrice(item.price * item.quantity)}
-                      </span>
+                      <span className="font-display font-bold text-sm text-white flex-shrink-0">{formatPrice(item.price * item.quantity)}</span>
                     </div>
                   ))}
                 </div>
+
+                {placeError && (
+                  <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                    <AlertCircle size={16} className="text-red-400 flex-shrink-0" />
+                    <p className="font-mono text-xs text-red-400">{placeError}</p>
+                  </div>
+                )}
 
                 <div className="flex gap-3">
                   <button onClick={() => setStep('payment')} className="flex items-center gap-2 border border-[#2a2a2a] text-[#888] font-display font-bold text-sm tracking-widest uppercase px-6 py-4 hover:text-white hover:border-[#444] transition-colors">
@@ -297,9 +422,14 @@ export default function CheckoutPage() {
                   </button>
                   <button
                     onClick={handlePlaceOrder}
-                    className="flex-1 flex items-center justify-center gap-3 bg-[#E8161B] text-white font-display font-bold text-sm tracking-widest uppercase py-4 hover:bg-[#B81015] transition-colors"
+                    disabled={placing}
+                    className="flex-1 flex items-center justify-center gap-3 bg-[#E8161B] text-white font-display font-bold text-sm tracking-widest uppercase py-4 hover:bg-[#B81015] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    <Lock size={14} /> Place Order · {formatPrice(total)}
+                    {placing ? (
+                      <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Placing Order...</>
+                    ) : (
+                      <><Lock size={14} /> Place Order · {formatPrice(total)}</>
+                    )}
                   </button>
                 </div>
               </div>
@@ -309,9 +439,7 @@ export default function CheckoutPage() {
           {/* Order Summary Sidebar */}
           <div>
             <div className="bg-[#111] border border-[#1a1a1a] p-6 sticky top-24">
-              <h2 className="font-display font-black text-lg text-white mb-4 pb-4 border-b border-[#1a1a1a]">
-                ORDER SUMMARY
-              </h2>
+              <h2 className="font-display font-black text-lg text-white mb-4 pb-4 border-b border-[#1a1a1a]">ORDER SUMMARY</h2>
               <div className="space-y-3 mb-4">
                 {cart.map(item => (
                   <div key={item.id} className="flex justify-between text-sm">

@@ -3,7 +3,9 @@
 import * as React from 'react';
 import { useFormStatus } from 'react-dom';
 import { Upload, X, Package, Tag, IndianRupee, Database, AlignLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { createProductAction } from '@/app/admin/products/actions';
+import { GRAPHIC_KITS_STRUCTURE } from '@/data';
 import Image from 'next/image';
 
 interface NewProductFormProps {
@@ -13,6 +15,8 @@ interface NewProductFormProps {
 export default function NewProductForm({ onSuccess }: NewProductFormProps) {
   const [preview, setPreview] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = React.useState<string>('');
+  const [selectedBrand, setSelectedBrand] = React.useState<string>('');
   const formRef = React.useRef<HTMLFormElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,6 +26,8 @@ export default function NewProductForm({ onSuccess }: NewProductFormProps) {
     }
   };
 
+  const currentBrandData = GRAPHIC_KITS_STRUCTURE.find(b => b.slug === selectedBrand);
+
   const clientAction = async (formData: FormData) => {
     setError(null);
     const result = await createProductAction(formData);
@@ -29,14 +35,16 @@ export default function NewProductForm({ onSuccess }: NewProductFormProps) {
     if (result.success) {
       formRef.current?.reset();
       setPreview(null);
+      setSelectedCategory('');
+      setSelectedBrand('');
       onSuccess();
     } else {
-      setError(result.error || 'Failed to deploy product.');
+      setError(result.error || 'Failed to add product.');
     }
   };
 
   return (
-    <form ref={formRef} action={clientAction} className="space-y-6">
+    <form ref={formRef} action={clientAction} className="space-y-6 max-h-[70vh] overflow-y-auto pr-4 custom-scrollbar">
       {/* Error Message */}
       {error && (
         <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
@@ -46,7 +54,7 @@ export default function NewProductForm({ onSuccess }: NewProductFormProps) {
 
       {/* Image Upload Dropzone */}
       <div className="space-y-3">
-        <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Visual Asset</label>
+        <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Product Image</label>
         <div className="relative group">
           {preview ? (
             <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10">
@@ -64,7 +72,7 @@ export default function NewProductForm({ onSuccess }: NewProductFormProps) {
               <div className="p-4 bg-white/5 rounded-full mb-4 group-hover:scale-110 transition-transform">
                 <Upload className="text-white/40 group-hover:text-[#E8161B]" size={24} />
               </div>
-              <p className="text-white/60 font-display font-bold text-sm">Drop product render here</p>
+              <p className="text-white/60 font-display font-bold text-sm">Upload product image</p>
               <p className="text-white/20 font-mono text-[10px] mt-2 uppercase tracking-widest">PNG, JPG up to 5MB</p>
               <input 
                 type="file" 
@@ -82,13 +90,13 @@ export default function NewProductForm({ onSuccess }: NewProductFormProps) {
       {/* Grid Inputs */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2 col-span-2">
-          <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Core Designation (Name)</label>
+          <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Product Name</label>
           <div className="relative whitespace-nowrap">
              <Package className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
              <input 
               name="name"
               type="text" 
-              placeholder="e.g. Stealth Exhaust Wrap"
+              placeholder="e.g. Yamaha FZ 25 – Venom Design"
               className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#E8161B]/50 focus:bg-white/10 transition-all font-body text-sm"
               required
             />
@@ -96,13 +104,13 @@ export default function NewProductForm({ onSuccess }: NewProductFormProps) {
         </div>
 
         <div className="space-y-2">
-          <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Valuation (Price)</label>
+          <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Price (₹)</label>
           <div className="relative whitespace-nowrap">
              <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
              <input 
               name="price"
               type="number" 
-              placeholder="0.00"
+              placeholder="0"
               className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#E8161B]/50 focus:bg-white/10 transition-all font-body text-sm"
               required
             />
@@ -110,13 +118,13 @@ export default function NewProductForm({ onSuccess }: NewProductFormProps) {
         </div>
 
         <div className="space-y-2">
-          <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Stockpile (Units)</label>
+          <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Stock (Units)</label>
           <div className="relative whitespace-nowrap">
              <Database className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
              <input 
               name="stock"
               type="number" 
-              placeholder="42"
+              placeholder="0"
               className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#E8161B]/50 focus:bg-white/10 transition-all font-body text-sm"
               required
             />
@@ -124,30 +132,72 @@ export default function NewProductForm({ onSuccess }: NewProductFormProps) {
         </div>
 
         <div className="space-y-2 col-span-2">
-          <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Sector (Category)</label>
+          <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Category</label>
           <div className="relative whitespace-nowrap">
              <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
              <select 
               name="category_slug"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
               className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#E8161B]/50 focus:bg-white/10 transition-all font-body text-sm appearance-none cursor-pointer"
               required
             >
-              <option value="" className="bg-[#0A0A0A]">Select Sector...</option>
-              <option value="stickers-wraps" className="bg-[#0A0A0A]">Stickers & Wraps</option>
-              <option value="accessories" className="bg-[#0A0A0A]">Accessories</option>
+              <option value="" className="bg-[#0A0A0A]">Select Category...</option>
+              <option value="graphic-kits" className="bg-[#0A0A0A]">Graphic Kits</option>
+              <option value="bike-accessories" className="bg-[#0A0A0A]">Bike Accessories</option>
               <option value="merchandise" className="bg-[#0A0A0A]">Merchandise</option>
             </select>
           </div>
         </div>
 
+        {/* ─── CONDITIONAL HIERARCHY FOR GRAPHIC KITS ─── */}
+        {selectedCategory === 'graphic-kits' && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="col-span-2 grid grid-cols-2 gap-4 pt-2"
+          >
+            <div className="space-y-2">
+              <label className="font-mono text-[10px] text-[#E8161B] tracking-[0.2em] uppercase font-bold">Bike Brand</label>
+              <select 
+                name="brand"
+                value={selectedBrand}
+                onChange={(e) => setSelectedBrand(e.target.value)}
+                className="w-full bg-[#E8161B]/5 border border-[#E8161B]/20 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-[#E8161B] transition-all font-body text-sm appearance-none cursor-pointer"
+                required
+              >
+                <option value="" className="bg-[#0A0A0A]">Select Brand...</option>
+                {GRAPHIC_KITS_STRUCTURE.map(b => (
+                  <option key={b.slug} value={b.slug} className="bg-[#0A0A0A]">{b.brand}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="font-mono text-[10px] text-[#E8161B] tracking-[0.2em] uppercase font-bold">Bike Model</label>
+              <select 
+                name="model"
+                className="w-full bg-[#E8161B]/5 border border-[#E8161B]/20 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-[#E8161B] transition-all font-body text-sm appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                required
+                disabled={!selectedBrand}
+              >
+                <option value="" className="bg-[#0A0A0A]">Select Model...</option>
+                {currentBrandData?.models.map(m => (
+                  <option key={m} value={m} className="bg-[#0A0A0A]">{m}</option>
+                ))}
+              </select>
+            </div>
+          </motion.div>
+        )}
+
         <div className="space-y-2 col-span-2">
-          <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Mission Brief (Description)</label>
+          <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Description</label>
           <div className="relative">
              <AlignLeft className="absolute left-4 top-4 text-white/20" size={16} />
              <textarea 
               name="description"
               rows={4}
-              placeholder="Tactical specifications..."
+              placeholder="Enter product details..."
               className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#E8161B]/50 focus:bg-white/10 transition-all font-body text-sm"
               required
             />
@@ -177,10 +227,10 @@ function SubmitButton() {
       {pending ? (
         <>
           <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-          Deploying to Grid...
+          Adding Product...
         </>
       ) : (
-        'Deploy Tactical Asset'
+        'Save Product'
       )}
     </button>
   );

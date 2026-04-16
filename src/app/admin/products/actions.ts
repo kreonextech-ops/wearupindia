@@ -18,6 +18,8 @@ export async function createProductAction(formData: FormData) {
     const price = parseFloat(formData.get('price') as string);
     const description = formData.get('description') as string;
     const stock = parseInt(formData.get('stock') as string);
+    const brand = formData.get('brand') as string;
+    const model = formData.get('model') as string;
     const imageFile = formData.get('image') as File;
 
     if (!imageFile || imageFile.size === 0) {
@@ -44,7 +46,6 @@ export async function createProductAction(formData: FormData) {
     const filePath = `products/${fileName}`;
 
     // 2. Upload to Supabase Storage
-    // NOTE: You must create a PUBLIC bucket named "products" in your Supabase Dashboard first.
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('products')
       .upload(filePath, imageFile, {
@@ -71,6 +72,11 @@ export async function createProductAction(formData: FormData) {
           description,
           stock,
           images: [publicUrl], // Array of URLs
+          meta_data: {
+            brand,
+            model,
+            is_graphic_kit: categorySlug === 'graphic-kits'
+          }
         },
       ])
       .select();

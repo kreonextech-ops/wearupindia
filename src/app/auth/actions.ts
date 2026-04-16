@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
@@ -66,11 +66,27 @@ export async function signInWithGoogle() {
   const supabase = createClient(cookieStore);
 
   const getBaseURL = () => {
-    if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
-    if (process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`;
-    if (process.env.NEXT_PUBLIC_VERCEL_URL) return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
-    if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-    return 'http://localhost:3000';
+    // Use dynamic request headers to determine the exact origin of the user
+    // This fixes the issue where local testing gets hijacked by .env prod variables
+    try {
+      const headersList = headers();
+      const host = headersList.get('host');
+      const protocol = headersList.get('x-forwarded-proto') ?? (host?.includes('localhost') ? 'http' : 'https');
+      if (host) return `${protocol}://${host}`;
+    } catch (e) {
+      // Ignore if headers() is unavailable
+    }
+
+    // Fallback logic
+    let url = process.env.NEXT_PUBLIC_SITE_URL 
+      ?? process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL 
+      ?? process.env.NEXT_PUBLIC_VERCEL_URL 
+      ?? process.env.VERCEL_URL 
+      ?? 'http://localhost:3000';
+      
+    url = url.startsWith('http') ? url : `https://${url}`;
+    url = url.endsWith('/') ? url.slice(0, -1) : url;
+    return url;
   };
 
   const { data, error } = await supabase.auth.signInWithOAuth({

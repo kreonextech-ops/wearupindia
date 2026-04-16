@@ -91,7 +91,7 @@ export default function Navbar() {
         transition={{ duration: 0.35, ease: "easeInOut" }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isTop 
-            ? 'bg-gradient-to-b from-background/60 to-transparent' 
+            ? 'bg-background/40 backdrop-blur-xl border-b border-white/5' 
             : 'bg-background/95 backdrop-blur-xl border-b border-border shadow-[0_10px_40px_rgba(0,0,0,0.3)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.8)]'
         }`}
       >
@@ -119,7 +119,7 @@ export default function Navbar() {
                   <div key={link.href} className="group/dropdown relative px-1 py-6 -my-6">
                     <Link
                       href={link.href}
-                      className="relative px-4 py-2 text-sm font-display font-bold tracking-[0.1em] text-muted-foreground hover:text-foreground dark:hover:text-white transition-colors duration-300 uppercase flex items-center gap-1.5 group/link"
+                      className="relative px-4 py-2 text-sm font-display font-bold tracking-[0.1em] text-foreground/80 hover:text-foreground dark:text-white/80 dark:hover:text-white transition-colors duration-300 uppercase flex items-center gap-1.5 group/link"
                     >
                       <span className="relative z-10">{link.label}</span>
                       {hasDropdown && (
@@ -155,12 +155,12 @@ export default function Navbar() {
               
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground dark:hover:text-white hover:bg-foreground/5 transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-foreground/80 hover:text-foreground dark:text-white/80 dark:hover:text-white hover:bg-foreground/5 transition-colors"
               >
                 <Search size={16} />
               </button>
 
-              <Link href="/wishlist" className="relative w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground dark:hover:text-white hover:bg-foreground/5 transition-colors hidden sm:flex">
+              <Link href="/wishlist" className="relative w-10 h-10 rounded-full flex items-center justify-center text-foreground/80 hover:text-foreground dark:text-white/80 dark:hover:text-white hover:bg-foreground/5 transition-colors hidden sm:flex">
                 <Heart size={16} />
                 {wishlist.length > 0 && (
                   <motion.span 
@@ -172,7 +172,7 @@ export default function Navbar() {
                 )}
               </Link>
 
-              <Link href="/cart" className="relative w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground dark:hover:text-white hover:bg-foreground/5 transition-colors">
+              <Link href="/cart" className="relative w-10 h-10 rounded-full flex items-center justify-center text-foreground/80 hover:text-foreground dark:text-white/80 dark:hover:text-white hover:bg-foreground/5 transition-colors">
                 <ShoppingCart size={16} />
                 {cartCount > 0 && (
                   <motion.span 
