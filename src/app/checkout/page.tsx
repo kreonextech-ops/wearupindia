@@ -42,35 +42,38 @@ export default function CheckoutPage() {
       const { data: { user } } = await supabase.auth.getUser();
 
       // 2. If user is logged in, upsert their profile with checkout info
+      // Uses UPSERT so a profile row is created even if the signup trigger never fired
       if (user) {
-        // Fetch current profile to avoid overwriting existing data
+        // Fetch current profile to preserve any existing data
         const { data: existingProfile } = await supabase
           .from('profiles')
           .select('full_name, phone_number, shipping_address')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
-        // Build update: only overwrite fields that are blank in the profile
-        const profileUpdate: Record<string, any> = {
+        const checkoutName = `${form.firstName} ${form.lastName}`.trim();
+
+        // Build upsert payload — keyed by id (auth UUID) + email
+        const profileUpsert: Record<string, any> = {
+          id: user.id,
+          email: user.email,
+          role: existingProfile ? undefined : 'customer', // don't overwrite role if profile exists
           updated_at: new Date().toISOString(),
         };
 
-        // Phone: update if checkout has it AND profile doesn't yet
-        if (form.phone) {
-          if (!existingProfile?.phone_number) {
-            profileUpdate.phone_number = form.phone;
-          }
-        }
-
-        // Full name: update if checkout has it AND profile doesn't yet
-        const checkoutName = `${form.firstName} ${form.lastName}`.trim();
+        // Only update name if profile doesn't have one yet
         if (checkoutName && !existingProfile?.full_name) {
-          profileUpdate.full_name = checkoutName;
+          profileUpsert.full_name = checkoutName;
         }
 
-        // Shipping address: always update with latest checkout address
+        // Only update phone if profile doesn't have one yet
+        if (form.phone && !existingProfile?.phone_number) {
+          profileUpsert.phone_number = form.phone;
+        }
+
+        // Always update shipping address with the latest checkout address
         if (form.address && form.city && form.state) {
-          profileUpdate.shipping_address = {
+          profileUpsert.shipping_address = {
             street: form.address,
             city: form.city,
             state: form.state,
@@ -78,13 +81,15 @@ export default function CheckoutPage() {
           };
         }
 
-        const { error: profileUpdateErr } = await supabase
-          .from('profiles')
-          .update(profileUpdate)
-          .eq('id', user.id);
+        // Remove undefined fields before upserting
+        Object.keys(profileUpsert).forEach(k => profileUpsert[k] === undefined && delete profileUpsert[k]);
 
-        if (profileUpdateErr) {
-          console.error('Profile sync error:', profileUpdateErr.message);
+        const { error: profileUpsertErr } = await supabase
+          .from('profiles')
+          .upsert(profileUpsert, { onConflict: 'id' });
+
+        if (profileUpsertErr) {
+          console.error('Profile sync error:', profileUpsertErr.message);
           // Not a blocker — order still proceeds
         }
       }

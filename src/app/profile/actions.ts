@@ -14,14 +14,16 @@ export async function updateProfileAction(formData: FormData) {
   const full_name = formData.get('full_name') as string;
   const phone_number = formData.get('phone_number') as string;
 
+  // Use UPSERT so this works even if no profile row exists yet for this user
   const { error } = await supabase
     .from('profiles')
-    .update({ 
-      full_name, 
+    .upsert({
+      id: user.id,           // ensures this is THEIR profile, no mixing
+      email: user.email,
+      full_name,
       phone_number,
-      updated_at: new Date().toISOString() 
-    })
-    .eq('id', user.id);
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'id' });
 
   if (error) {
     console.error('Update profile error:', error);
@@ -39,13 +41,15 @@ export async function updateAddressAction(addressData: any) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: 'Unauthorized' };
 
+  // Use UPSERT so this works even if no profile row exists yet for this user
   const { error } = await supabase
     .from('profiles')
-    .update({ 
+    .upsert({
+      id: user.id,           // ensures this is THEIR profile, no mixing
+      email: user.email,
       shipping_address: addressData,
-      updated_at: new Date().toISOString() 
-    })
-    .eq('id', user.id);
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'id' });
 
   if (error) {
     console.error('Update address error:', error);
