@@ -161,7 +161,7 @@ export default function CheckoutPage() {
         
         message += `*Order Items:*%0A`;
         cart.forEach((item, index) => {
-           let productUrl = `${window.location.origin}/shop/${item.categorySlug}/${item.slug}`;
+           let productUrl = `${window.location.origin}/shop/${item.category}/${item.slug}`;
            message += `${index + 1}. ${item.name} (Qty: ${item.quantity}) - ₹${item.price}%0A`;
            message += `Link: ${productUrl}%0A`;
         });
