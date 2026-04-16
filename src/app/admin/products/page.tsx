@@ -90,7 +90,7 @@ export default function AdminProductsPage() {
                    </span>
                 </td>
                 <td className="px-6 py-5">
-                   <p className="font-display font-bold text-white/60">{product.stock || 0} Units</p>
+                   <p className="font-display font-bold text-white/60">{product.inStock ? 'Available' : 'Out of Stock'}</p>
                 </td>
                 <td className="px-6 py-5 font-display font-bold text-white">
                    {formatPrice(product.price)}
