@@ -5,6 +5,7 @@ import { categories, products, brands, services, testimonials, formatPrice } fro
 import ProductCard from '@/components/shop/ProductCard';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import BrandMarquee from '@/components/home/BrandMarquee';
+import BikeSelector from '@/components/home/BikeSelector';
 import StatsBar from '@/components/home/StatsBar';
 import TestimonialsSection from '@/components/home/Testimonials';
 import InstagramReels from '@/components/home/InstagramReels';
@@ -24,19 +25,19 @@ export default function Home() {
       <section className="relative pt-16 md:pt-20 min-h-[100dvh] flex flex-col md:flex-row overflow-hidden bg-black">
         {[
           {
-            id: 'dirt',
-            src: '/videos/hero-dirt.mp4',
-            title: 'Extreme Action'
+            id: 'wrap-1',
+            src: '/videos/hero-video-1.mp4',
+            title: 'Precision Wraps'
           },
           {
-            id: 'adventure',
-            src: '/videos/hero-adventure.mp4',
-            title: 'Deep Adventure'
+            id: 'wrap-2',
+            src: '/videos/hero-video-2.mp4',
+            title: 'Rider Style'
           },
           {
-            id: 'stunt',
-            src: '/videos/hero-street.mp4',
-            title: 'Urban Street'
+            id: 'wrap-3',
+            src: '/videos/hero-video-3.mp4',
+            title: 'Premium Finish'
           }
         ].map((panel, idx) => (
           <div 
@@ -87,11 +88,14 @@ export default function Home() {
         ))}
       </section>
 
+      {/* ─── BRAND MARQUEE (New Thin Strip) ─── */}
+      <BrandMarquee />
+
       {/* ─── STATS BAR ─── */}
       <StatsBar />
 
-      {/* ─── BRAND MARQUEE ─── */}
-      <BrandMarquee />
+      {/* ─── BIKE SELECTOR (Find Your Fit) ─── */}
+      <BikeSelector />
 
       {/* ─── SHOP BY CATEGORY (BENTO) ─── */}
       <section className="pt-20 pb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-border">
@@ -174,12 +178,29 @@ export default function Home() {
                     </div>
                   ) : (
                     <Link href={`/shop/${cat.slug}`} className="block w-full h-full">
-                      <SafeImage
-                        src={cat.image}
-                        alt={cat.name}
-                        fill
-                        className="object-cover transition-transform duration-1000 group-hover:scale-110"
-                      />
+                      {cat.slug === 'graphic-kits' ? (
+                        <div className="absolute inset-0 flex overflow-hidden">
+                          <video 
+                            autoPlay muted loop playsInline 
+                            className="w-1/2 h-full object-cover opacity-70 transition-transform duration-[2000ms] group-hover:scale-110"
+                          >
+                            <source src="/videos/categories/graphic-kits-1.mp4" type="video/mp4" />
+                          </video>
+                          <video 
+                            autoPlay muted loop playsInline 
+                            className="w-1/2 h-full object-cover border-l border-white/5 opacity-70 transition-transform duration-[2000ms] group-hover:scale-110"
+                          >
+                            <source src="/videos/categories/graphic-kits-2.mp4" type="video/mp4" />
+                          </video>
+                        </div>
+                      ) : (
+                        <SafeImage
+                          src={cat.image}
+                          alt={cat.name}
+                          fill
+                          className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                        />
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/40 to-transparent" />
                       <div className="absolute inset-x-0 bottom-0 p-8 sm:p-10 z-20">
                         <p className="font-mono text-[10px] text-wu-red tracking-widest uppercase mb-2 bg-wu-red/10 w-max px-3 py-1 rounded-full border border-wu-red/20">{cat.tagline}</p>

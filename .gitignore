@@ -31,3 +31,8 @@ yarn-error.log*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# User Data & Raw Assets
+video and photo/
+test-*.mjs
+scripts/make-me-admin.sql
