@@ -13,6 +13,15 @@ const nextConfig = {
     deviceSizes: [640, 768, 1024, 1280, 1920],
     imageSizes: [16, 32, 64, 128, 256],
   },
+  // Prevent large gallery/video files from being bundled into serverless functions.
+  // These files are served as static CDN assets by Vercel separately.
+  outputFileTracingExcludes: {
+    '*': [
+      './public/gallery/**',
+      './public/videos/**',
+      './public/images/**',
+    ],
+  },
 };
 
 export default nextConfig;
