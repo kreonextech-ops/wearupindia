@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Instagram, Youtube, Twitter } from 'lucide-react';
 
 const footerLinks = {
@@ -31,8 +32,8 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-wu-red flex items-center justify-center">
-                <span className="text-white font-display font-black text-sm">W</span>
+              <div className="relative w-8 h-8 flex items-center justify-center">
+                <Image src="/logo.png" alt="WearUp" fill className="object-contain" />
               </div>
               <span className="font-display font-black text-xl tracking-wider text-foreground">WEARUP</span>
             </div>

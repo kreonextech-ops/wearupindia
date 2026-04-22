@@ -91,8 +91,8 @@ export default function Navbar() {
         transition={{ duration: 0.35, ease: "easeInOut" }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isTop 
-            ? 'bg-background/40 backdrop-blur-xl border-b border-white/5' 
-            : 'bg-background/95 backdrop-blur-xl border-b border-border shadow-[0_10px_40px_rgba(0,0,0,0.3)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.8)]'
+            ? 'bg-black/40 backdrop-blur-xl border-b border-white/5' 
+            : 'bg-[#050505]/95 backdrop-blur-xl border-b border-border/20 shadow-[0_10px_40px_rgba(0,0,0,0.3)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.8)]'
         }`}
       >
         {/* Announcement Bar */}
@@ -101,7 +101,7 @@ export default function Navbar() {
             <div className="hidden md:block w-24" /> {/* Spacer */}
             
             <p className="font-display font-black text-[10px] sm:text-xs tracking-[0.2em] uppercase text-center flex-1">
-              WEARUP INDIA | We Wrap Your Ride & Unwrap The True You
+              WEARUP INDIA
             </p>
 
             <div className="flex items-center gap-4 w-24 justify-end">
@@ -129,10 +129,10 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-8 h-8 rounded-full bg-wu-red flex items-center justify-center transform group-hover:rotate-90 transition-transform duration-500 shadow-[0_0_15px_rgba(232,22,27,0.4)]">
-                <span className="text-white font-display font-black text-sm leading-none">W</span>
+              <div className="relative w-10 h-10 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500">
+                <Image src="/logo.png" alt="WearUp" fill className="object-contain" priority />
               </div>
-              <span className="font-display font-black text-lg tracking-[0.2em] text-foreground dark:text-white">WEARUP</span>
+              <span className="font-display font-black text-lg tracking-[0.2em] text-white">WEARUP</span>
             </Link>
 
             {/* Desktop Nav - ENLARGED FONT */}
@@ -149,7 +149,7 @@ export default function Navbar() {
                   <div key={link.href} className="group/dropdown relative px-1 py-6 -my-6">
                     <Link
                       href={link.href}
-                      className="relative px-4 py-2 text-sm font-display font-bold tracking-[0.1em] text-foreground/80 hover:text-foreground dark:text-white/80 dark:hover:text-white transition-colors duration-300 uppercase flex items-center gap-1.5 group/link"
+                      className="relative px-4 py-2 text-sm font-display font-bold tracking-[0.1em] text-white/80 hover:text-white transition-colors duration-300 uppercase flex items-center gap-1.5 group/link"
                     >
                       <span className="relative z-10">{link.label}</span>
                       {hasDropdown && (
@@ -185,12 +185,12 @@ export default function Navbar() {
               
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-foreground/80 hover:text-foreground dark:text-white/80 dark:hover:text-white hover:bg-foreground/5 transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/5 transition-colors"
               >
                 <Search size={16} />
               </button>
 
-              <Link href="/wishlist" className="relative w-10 h-10 rounded-full flex items-center justify-center text-foreground/80 hover:text-foreground dark:text-white/80 dark:hover:text-white hover:bg-foreground/5 transition-colors hidden sm:flex">
+              <Link href="/wishlist" className="relative w-10 h-10 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/5 transition-colors hidden sm:flex">
                 <Heart size={16} />
                 {wishlist.length > 0 && (
                   <motion.span 
@@ -202,7 +202,7 @@ export default function Navbar() {
                 )}
               </Link>
 
-              <Link href="/cart" className="relative w-10 h-10 rounded-full flex items-center justify-center text-foreground/80 hover:text-foreground dark:text-white/80 dark:hover:text-white hover:bg-foreground/5 transition-colors">
+              <Link href="/cart" className="relative w-10 h-10 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/5 transition-colors">
                 <ShoppingCart size={16} />
                 {cartCount > 0 && (
                   <motion.span 
@@ -221,7 +221,7 @@ export default function Navbar() {
                   className={`w-10 h-10 rounded-full flex items-center justify-center transition-all border shadow-sm ${
                     user 
                       ? 'text-wu-red bg-wu-red/10 border-wu-red/20 shadow-wu-red/10' 
-                      : 'text-muted-foreground bg-foreground/5 hover:bg-foreground/10 border-transparent hover:text-foreground dark:hover:text-white'
+                      : 'text-white/80 bg-white/5 hover:bg-white/10 border-transparent hover:text-white'
                   } hidden sm:flex`}
                 >
                   <User size={16} />
@@ -271,7 +271,7 @@ export default function Navbar() {
 
               {/* Mobile menu toggle */}
               <button
-                className="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground dark:hover:text-white hover:bg-foreground/5 transition-colors ml-1"
+                className="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/5 transition-colors ml-1"
                 onClick={() => setMobileOpen(true)}
               >
                 <Menu size={18} />

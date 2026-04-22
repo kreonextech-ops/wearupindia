@@ -9,7 +9,7 @@
 -- CHANGE THE EMAIL BELOW TO YOUR ACTUAL ADMIN EMAIL:
 UPDATE public.profiles
 SET role = 'admin'
-WHERE email = 'YOUR_EMAIL@HERE.COM';
+WHERE email = 'amitsz3675@gmail.com';
 
 -- Verify it worked
 SELECT id, email, role FROM public.profiles WHERE role = 'admin';

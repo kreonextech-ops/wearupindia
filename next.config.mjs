@@ -7,6 +7,11 @@ const nextConfig = {
       { protocol: 'https', hostname: 'www.transparenttextures.com' },
       { protocol: 'https', hostname: '*.supabase.co' },
     ],
+    // Cache optimized images for 30 days to prevent re-processing on every request
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+    // Only generate the sizes we actually use
+    deviceSizes: [640, 768, 1024, 1280, 1920],
+    imageSizes: [16, 32, 64, 128, 256],
   },
 };
 

@@ -4,6 +4,7 @@ import { ArrowRight, ArrowUpRight, Shield, Truck, RotateCcw, Phone, Sparkles, Pa
 import { categories, products, brands, services, testimonials, formatPrice } from '@/data';
 import ProductCard from '@/components/shop/ProductCard';
 import ScrollReveal from '@/components/ui/ScrollReveal';
+import SequentialVideoPlayer from '@/components/ui/SequentialVideoPlayer';
 import BrandMarquee from '@/components/home/BrandMarquee';
 import BikeSelector from '@/components/home/BikeSelector';
 import StatsBar from '@/components/home/StatsBar';
@@ -57,7 +58,6 @@ export default function Home() {
 
             {/* Premium Overlays */}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
-            <div className="absolute inset-0 bg-wu-red/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
             
             {/* Minimal Brand Overlay - Only on first panel */}
             {idx === 0 && (
@@ -178,20 +178,24 @@ export default function Home() {
                     </div>
                   ) : (
                     <Link href={`/shop/${cat.slug}`} className="block w-full h-full">
-                      {cat.slug === 'graphic-kits' ? (
-                        <div className="absolute inset-0 flex overflow-hidden">
-                          <video 
-                            autoPlay muted loop playsInline 
-                            className="w-1/2 h-full object-cover opacity-70 transition-transform duration-[2000ms] group-hover:scale-110"
-                          >
-                            <source src="/videos/categories/graphic-kits-1.mp4" type="video/mp4" />
-                          </video>
-                          <video 
-                            autoPlay muted loop playsInline 
-                            className="w-1/2 h-full object-cover border-l border-white/5 opacity-70 transition-transform duration-[2000ms] group-hover:scale-110"
-                          >
-                            <source src="/videos/categories/graphic-kits-2.mp4" type="video/mp4" />
-                          </video>
+                      {cat.slug === 'graphic-kits' || cat.slug === 'bike-accessories' ? (
+                        <div className="absolute inset-0 overflow-hidden">
+                          {cat.slug === 'graphic-kits' ? (
+                            <SequentialVideoPlayer 
+                              sources={[
+                                "/videos/categories/graphic-kits-1.mp4",
+                                "/videos/categories/graphic-kits-2.mp4"
+                              ]}
+                              className="w-full h-full object-cover opacity-70 transition-transform duration-[2000ms] group-hover:scale-110"
+                            />
+                          ) : (
+                            <video 
+                              autoPlay muted loop playsInline 
+                              className="w-full h-full object-cover opacity-70 transition-transform duration-[2000ms] group-hover:scale-110"
+                            >
+                              <source src="/videos/categories/bike-accessories.mp4" type="video/mp4" />
+                            </video>
+                          )}
                         </div>
                       ) : (
                         <SafeImage
@@ -201,13 +205,13 @@ export default function Home() {
                           className="object-cover transition-transform duration-1000 group-hover:scale-110"
                         />
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/40 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-90" />
                       <div className="absolute inset-x-0 bottom-0 p-8 sm:p-10 z-20">
-                        <p className="font-mono text-[10px] text-wu-red tracking-widest uppercase mb-2 bg-wu-red/10 w-max px-3 py-1 rounded-full border border-wu-red/20">{cat.tagline}</p>
-                        <h3 className="font-display font-black text-4xl sm:text-5xl text-foreground mb-1 uppercase tracking-tighter">{cat.name}</h3>
-                        <p className="font-body text-muted-foreground text-sm max-w-xs">{cat.description}</p>
+                        <p className="font-mono text-[10px] text-wu-red tracking-widest uppercase mb-2 bg-wu-red/10 backdrop-blur-sm w-max px-3 py-1 rounded-full border border-wu-red/20">{cat.tagline}</p>
+                        <h3 className="font-display font-black text-4xl sm:text-5xl text-white mb-2 uppercase tracking-tighter drop-shadow-lg">{cat.name}</h3>
+                        <p className="font-body text-white/80 text-sm max-w-xs drop-shadow-md">{cat.description}</p>
                       </div>
-                      <div className="absolute top-6 right-6 w-12 h-12 rounded-full bg-background/20 backdrop-blur-xl border border-white/10 flex items-center justify-center text-foreground opacity-0 group-hover:opacity-100 rotate-45 group-hover:rotate-0 transition-all duration-500 shadow-2xl">
+                      <div className="absolute top-6 right-6 w-12 h-12 rounded-full bg-black/40 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 rotate-45 group-hover:rotate-0 transition-all duration-500 shadow-2xl">
                         <ArrowUpRight size={22} />
                       </div>
                     </Link>
@@ -295,16 +299,16 @@ export default function Home() {
         </ScrollReveal>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {/* Wrapping - Full Width */}
-          <ScrollReveal direction="up" className="lg:col-span-2 relative h-[220px] sm:h-[260px] rounded-[2rem] overflow-hidden group">
-            <SafeImage
-              src={wrappingService?.image || ''}
-              alt="Wrapping"
-              fill
-              className="object-cover transition-transform duration-1000 group-hover:scale-110 opacity-50"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
-            <div className="absolute inset-0 p-8 sm:p-12 flex flex-col justify-center">
+          {/* Wrapping - Half Width */}
+          <ScrollReveal direction="up" className="relative h-[450px] lg:h-[600px] rounded-[2.5rem] overflow-hidden group">
+            <video 
+              autoPlay muted loop playsInline 
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-105 opacity-60"
+            >
+              <source src="/videos/services/bike-wrapping.mp4" type="video/mp4" />
+            </video>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+            <div className="absolute inset-0 p-8 sm:p-12 flex flex-col justify-end items-start">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-wu-red/20 border border-wu-red/30 flex items-center justify-center shrink-0">
                   <Paintbrush className="text-wu-red" size={18} />
@@ -314,7 +318,7 @@ export default function Home() {
                   <p className="font-mono text-[9px] text-wu-red tracking-widest uppercase truncate">{wrappingService?.tagline}</p>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-6 mt-2">
+              <div className="flex flex-wrap items-center gap-6 w-full">
                 <Link
                   href={`/services/${wrappingService?.slug}`}
                   className="group/btn inline-flex items-center gap-2 px-7 py-3 bg-white text-black font-display font-bold text-xs tracking-widest uppercase rounded-full hover:bg-wu-red hover:text-white transition-all duration-500"
@@ -326,57 +330,29 @@ export default function Home() {
             </div>
           </ScrollReveal>
 
-          {/* Wash - Half Width */}
-          <ScrollReveal direction="up" delay={0.1} className="relative h-[220px] sm:h-[260px] rounded-[2rem] overflow-hidden group">
-            <SafeImage
-              src={washService?.image || ''}
-              alt="Detail Wash"
-              fill
-              className="object-cover transition-transform duration-1000 group-hover:scale-110 opacity-50"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-            <div className="absolute inset-0 p-8 sm:p-10 flex flex-col justify-end items-start">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-wu-red/20 border border-wu-red/30 flex items-center justify-center shrink-0">
-                  <Sparkles className="text-wu-red" size={18} />
-                </div>
-                <div>
-                  <h3 className="font-display font-black text-2xl sm:text-3xl text-white uppercase">{washService?.name}</h3>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-4 w-full">
-                <Link
-                  href={`/services/${washService?.slug}`}
-                  className="group/btn inline-flex items-center gap-2 px-5 py-3 border border-white/20 bg-black/50 backdrop-blur-md text-white font-display font-bold text-[10px] tracking-widest uppercase rounded-full hover:bg-white hover:text-black transition-all duration-500"
-                >
-                  Book <ArrowRight size={13} className="group-hover/btn:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-            </div>
-          </ScrollReveal>
-
           {/* PPF - Half Width */}
-          <ScrollReveal direction="up" delay={0.15} className="relative h-[220px] sm:h-[260px] rounded-[2rem] overflow-hidden group">
-            <SafeImage
-              src={ppfService?.image || ''}
-              alt="PPF Protection"
-              fill
-              className="object-cover transition-transform duration-1000 group-hover:scale-110 opacity-50"
+          <ScrollReveal direction="up" delay={0.15} className="relative h-[450px] lg:h-[600px] rounded-[2.5rem] overflow-hidden group">
+            <SequentialVideoPlayer 
+              sources={[
+                "/videos/services/ppf-1.mp4", 
+                "/videos/services/ppf-2.mp4"
+              ]}
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-105 opacity-60"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-            <div className="absolute inset-0 p-8 sm:p-10 flex flex-col justify-end items-start">
+            <div className="absolute inset-0 p-8 sm:p-12 flex flex-col justify-end items-start">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-wu-red/20 border border-wu-red/30 flex items-center justify-center shrink-0">
                   <Shield className="text-wu-red" size={18} />
                 </div>
                 <div>
-                  <h3 className="font-display font-black text-2xl sm:text-3xl text-white uppercase">{ppfService?.name}</h3>
+                  <h3 className="font-display font-black text-3xl sm:text-4xl text-white uppercase">{ppfService?.name}</h3>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-4 w-full">
                 <Link
                   href={`/services/${ppfService?.slug}`}
-                  className="group/btn inline-flex items-center gap-2 px-5 py-3 border border-white/20 bg-black/50 backdrop-blur-md text-white font-display font-bold text-[10px] tracking-widest uppercase rounded-full hover:bg-white hover:text-black transition-all duration-500"
+                  className="group/btn inline-flex items-center gap-2 px-7 py-3 border border-white/20 bg-black/50 backdrop-blur-md text-white font-display font-bold text-xs tracking-widest uppercase rounded-full hover:bg-white hover:text-black transition-all duration-500"
                 >
                   Enquire <ArrowRight size={13} className="group-hover/btn:translate-x-1 transition-transform" />
                 </Link>

@@ -1,31 +1,18 @@
 'use client';
 
-import { useEffect } from 'react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import { Instagram, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
-// Your Instagram Reel links
+// Reel IDs extracted from the Instagram URLs
 const reels = [
-  { href: 'https://www.instagram.com/reel/DN0VVGFUpuq/' },
-  { href: 'https://www.instagram.com/reel/DF0Jky2ywRg/' },
-  { href: 'https://www.instagram.com/reel/DIk1MSAxUSQ/' },
-  { href: 'https://www.instagram.com/reel/DW6Z7piDjFi/' },
+  { id: 'DN0VVGFUpuq', href: 'https://www.instagram.com/reel/DN0VVGFUpuq/' },
+  { id: 'DF0Jky2ywRg', href: 'https://www.instagram.com/reel/DF0Jky2ywRg/' },
+  { id: 'DIk1MSAxUSQ', href: 'https://www.instagram.com/reel/DIk1MSAxUSQ/' },
+  { id: 'DW6Z7piDjFi', href: 'https://www.instagram.com/reel/DW6Z7piDjFi/' },
 ];
 
 export default function InstagramReels() {
-  useEffect(() => {
-    const existing = document.querySelector('script[src="https://www.instagram.com/embed.js"]');
-    if (!existing) {
-      const script = document.createElement('script');
-      script.src = 'https://www.instagram.com/embed.js';
-      script.async = true;
-      document.body.appendChild(script);
-    } else if ((window as any).instgrm) {
-      (window as any).instgrm.Embeds.process();
-    }
-  }, []);
-
   return (
     <section className="py-24 border-t border-border bg-background overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -40,7 +27,6 @@ export default function InstagramReels() {
               Watch Us<br />Work
             </h2>
           </div>
-
           <Link
             href="https://www.instagram.com/wearup_ind"
             target="_blank"
@@ -51,47 +37,36 @@ export default function InstagramReels() {
           </Link>
         </ScrollReveal>
 
-        {/* Reels — clipped to just the video area, hides header/comments/likes */}
+        {/* Reel Embeds via direct iframe — full fit, clipped cleanly */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {reels.map((reel, i) => (
-            <ScrollReveal key={i} direction="up" delay={i * 0.1} className="w-full">
-              {/* 
-                Outer container clips to show only the video portion of the embed.
-                The Instagram iframe is ~503px tall total. 
-                The video occupies the top portion (approx first 550px of the iframe height).
-                We offset upward and clip the bottom (likes, comments, add comment bar).
-              */}
-              <div
-                className="relative w-full overflow-hidden rounded-2xl border border-border/50 bg-muted/10"
-                style={{ aspectRatio: '9/16' }}
-              >
+            <ScrollReveal key={reel.id} direction="up" delay={i * 0.1} className="w-full">
+              <Link href={reel.href} target="_blank" rel="noopener noreferrer" className="block group relative">
+                {/* Outer clipping container — 9:16 fills the portrait video width */}
                 <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: '100%',
-                    height: '200%', // give it plenty of height so it loads fully
-                    marginTop: '-54px', // hide the top header bar
-                  }}
+                  className="relative w-full overflow-hidden rounded-2xl border border-border/50 hover:border-wu-red/30 transition-colors duration-500"
+                  style={{ aspectRatio: '9 / 16' }}
                 >
-                  <blockquote
-                    className="instagram-media"
-                    data-instgrm-permalink={`${reel.href}?utm_source=ig_embed`}
-                    data-instgrm-version="14"
+                  <iframe
+                    src={`https://www.instagram.com/reel/${reel.id}/embed/`}
                     style={{
-                      background: '#000',
-                      border: 0,
-                      margin: 0,
-                      maxWidth: '100%',
-                      minWidth: 0,
-                      padding: 0,
+                      position: 'absolute',
+                      top: '-140px',               // aggressively hide header + profile row
+                      left: 0,
                       width: '100%',
+                      height: 'calc(100% + 140px + 300px)', // aggressively push chrome deep below clip
+                      border: 'none',
+                      display: 'block',
                     }}
+                    scrolling="no"
+                    allowFullScreen
+                    loading="lazy"
                   />
+
+                  {/* Transparent overlay to capture link clicks */}
+                  <div className="absolute inset-0 z-10" />
                 </div>
-              </div>
+              </Link>
             </ScrollReveal>
           ))}
         </div>

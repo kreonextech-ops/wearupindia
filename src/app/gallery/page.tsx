@@ -1,84 +1,101 @@
-import Image from 'next/image';
+import fs from 'fs';
+import path from 'path';
+import GalleryGrid from '@/components/gallery/GalleryGrid';
 
-const galleryItems = [
-  { src: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80', tag: 'Bike Wrap', span: 'col-span-2 row-span-2' },
-  { src: 'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=600&q=80', tag: 'Custom Decals', span: '' },
-  { src: 'https://images.unsplash.com/photo-1591370874773-6702e8f12fd8?w=600&q=80', tag: 'Accessories', span: '' },
-  { src: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&q=80', tag: 'Merchandise', span: '' },
-  { src: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80', tag: 'Detail Wash', span: '' },
-  { src: 'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=800&q=80', tag: 'Stickers', span: 'col-span-2' },
-  { src: 'https://images.unsplash.com/photo-1591370874773-6702e8f12fd8?w=600&q=80', tag: 'Helmets', span: '' },
-  { src: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&q=80', tag: 'Apparel', span: '' },
-  { src: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80', tag: 'Wrap', span: '' },
-  { src: 'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=600&q=80', tag: 'Decals', span: '' },
-  { src: 'https://images.unsplash.com/photo-1591370874773-6702e8f12fd8?w=600&q=80', tag: 'Gear', span: '' },
-  { src: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&q=80', tag: 'Merch', span: '' },
-];
-
-const filters = ['All', 'Wraps', 'Decals', 'Accessories', 'Merch', 'Services'];
+export const dynamic = 'force-dynamic';
 
 export default function GalleryPage() {
+  let files: string[] = [];
+  let heroPhotos: string[] = [];
+
+  try {
+    const galleryDir = path.join(process.cwd(), 'public', 'gallery');
+    const rawFiles = fs.readdirSync(galleryDir).filter(f => /\.(jpg|jpeg|png|mp4)$/i.test(f));
+
+    const videos = rawFiles.filter(f => f.toLowerCase().endsWith('.mp4'));
+    const photos = rawFiles.filter(f => !f.toLowerCase().endsWith('.mp4'));
+
+    const shuffle = (arr: string[]) => {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    };
+
+    const shuffledVideos = shuffle(videos);
+    const shuffledPhotos = shuffle(photos);
+
+    // First 3 photos go to the hero collage
+    heroPhotos = shuffledPhotos.slice(0, 3);
+    const remainingPhotos = shuffledPhotos.slice(3);
+
+    // Bento pattern: video always on right edge of 4-col grid
+    const pattern = ['img', 'img', 'vid', 'img', 'vid', 'img', 'img', 'vid', 'img', 'vid'];
+    let pIdx = 0, vIdx = 0, step = 0;
+
+    while (pIdx < remainingPhotos.length) {
+      if (pattern[step % 10] === 'vid') {
+        files.push(shuffledVideos[vIdx % shuffledVideos.length]);
+        vIdx++;
+      } else {
+        files.push(remainingPhotos[pIdx]);
+        pIdx++;
+      }
+      step++;
+    }
+  } catch (err) {
+    console.error('Gallery folder not found', err);
+  }
+
   return (
     <div className="min-h-screen pt-16">
-      {/* Header */}
-      <div className="bg-[#111] border-b border-[#1a1a1a] py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="font-mono text-[11px] text-[#E8161B] tracking-[0.3em] uppercase mb-3">// Our Portfolio</p>
-          <h1 className="font-display font-black text-5xl sm:text-7xl text-white leading-none">
-            THE KINETIC<br /><span className="text-[#E8161B]">GALLERY</span>
-          </h1>
-          <p className="font-body text-[#666] mt-4 text-sm max-w-xl">
-            1,500+ wraps completed. Every machine we touch leaves sharper than it arrived.
-          </p>
-        </div>
-      </div>
+      {/* Hero Header – Cinematic Full-Bleed */}
+      <div className="relative h-[45vh] min-h-[380px] overflow-hidden">
 
-      {/* Filters (static, JS filter can be added) */}
-      <div className="border-b border-[#1a1a1a] bg-[#0d0d0d]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex gap-0 overflow-x-auto">
-            {filters.map((f, i) => (
-              <button
-                key={f}
-                className={`font-display font-bold text-xs tracking-widest uppercase px-6 py-4 border-b-2 transition-all whitespace-nowrap ${
-                  i === 0
-                    ? 'border-[#E8161B] text-white'
-                    : 'border-transparent text-[#555] hover:text-white hover:border-[#333]'
-                }`}
-              >
-                {f}
-              </button>
-            ))}
+        {/* Background Image */}
+        {heroPhotos[0] && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`/gallery/${encodeURIComponent(heroPhotos[0])}`}
+            alt="Gallery Hero"
+            loading="eager"
+            className="absolute inset-0 w-full h-full object-cover scale-105"
+            style={{ filter: 'brightness(0.45)' }}
+          />
+        )}
+
+        {/* Dark Gradient Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
+
+        {/* Decorative scan line */}
+        <div className="absolute top-0 left-0 w-full h-px bg-[#E8161B]/40" />
+        <div className="absolute bottom-0 left-0 w-full h-px bg-white/10" />
+
+        {/* Content */}
+        <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-16">
+          <div>
+              <p className="font-mono text-[10px] text-[#E8161B] tracking-[0.4em] uppercase mb-4 flex items-center gap-3">
+                <span className="w-8 h-px bg-[#E8161B]" />
+                Our Portfolio
+              </p>
+              <h1 className="font-display font-black leading-[0.85] uppercase text-white">
+                <span className="block text-6xl sm:text-8xl">THE KINETIC</span>
+                <span className="block text-6xl sm:text-8xl text-[#E8161B]">GALLERY</span>
+              </h1>
+              <p className="font-mono text-[10px] text-white/40 tracking-widest mt-4 uppercase">
+                {files.length + 3}+ shots &nbsp;·&nbsp; Real Builds &nbsp;·&nbsp; Zero CGI
+              </p>
           </div>
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 auto-rows-[200px] gap-3">
-          {galleryItems.map((item, i) => (
-            <div
-              key={i}
-              className={`relative group overflow-hidden img-zoom ${item.span}`}
-            >
-              <Image
-                src={item.src}
-                alt={item.tag}
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-[#0A0A0A]/0 group-hover:bg-[#0A0A0A]/50 transition-colors duration-300" />
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <span className="font-mono text-[11px] font-bold text-white tracking-[0.3em] uppercase bg-[#E8161B] px-3 py-1">
-                  {item.tag}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Gallery Grid + Lightbox */}
+      <GalleryGrid files={files} />
 
-      {/* Stats bar */}
+      {/* Stats Bar */}
       <div className="border-t border-[#1a1a1a] bg-[#0d0d0d] py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -86,9 +103,9 @@ export default function GalleryPage() {
               { num: '1,500+', label: 'Wraps Completed' },
               { num: '800+', label: 'Happy Riders' },
               { num: '4.9★', label: 'Average Rating' },
-              { num: '5+', label: 'Years Experience' },
+              { num: `${files.length || 150}+`, label: 'Gallery Shots' },
             ].map(stat => (
-              <div key={stat.num}>
+              <div key={stat.label}>
                 <div className="font-display font-black text-4xl text-[#E8161B] mb-1">{stat.num}</div>
                 <div className="font-mono text-[10px] text-[#555] tracking-widest uppercase">{stat.label}</div>
               </div>
@@ -96,6 +113,7 @@ export default function GalleryPage() {
           </div>
         </div>
       </div>
+
     </div>
   );
 }
