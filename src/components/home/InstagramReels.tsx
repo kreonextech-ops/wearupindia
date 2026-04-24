@@ -79,7 +79,7 @@ export default function InstagramReels() {
             Follow Our Work <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
           </Link>
           <span className="font-mono text-[10px] text-muted-foreground tracking-[0.3em] uppercase">
-            New content every week
+            New content every day
           </span>
         </ScrollReveal>
 
