@@ -130,9 +130,11 @@ export default function Navbar() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group">
               <div className="relative w-10 h-10 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500">
-                <Image src="/logo.png" alt="WearUp" fill className="object-contain" priority />
+                <Image src="/logo.png" alt="WearUp Logo" fill className="object-contain" priority />
               </div>
-              <span className="font-display font-black text-lg tracking-[0.2em] text-white">WEARUP</span>
+              <div className="relative h-7 w-36 sm:h-8 sm:w-48 flex items-center">
+                <Image src="/navbar.png" alt="WearUp Text" fill className="object-contain object-left" priority />
+              </div>
             </Link>
 
             {/* Desktop Nav - ENLARGED FONT */}
