@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import SafeImage from '@/components/ui/SafeImage';
-import { ArrowRight, ArrowUpRight, Shield, Truck, RotateCcw, Phone, Sparkles, Paintbrush } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Shield, Truck, Lock, Phone, Sparkles, Paintbrush } from 'lucide-react';
 import { categories, products, brands, services, testimonials, formatPrice } from '@/data';
 import ProductCard from '@/components/shop/ProductCard';
 import ScrollReveal from '@/components/ui/ScrollReveal';
@@ -10,7 +10,7 @@ import BikeSelector from '@/components/home/BikeSelector';
 import StatsBar from '@/components/home/StatsBar';
 import TestimonialsSection from '@/components/home/Testimonials';
 import InstagramReels from '@/components/home/InstagramReels';
-import NewsletterCTA from '@/components/home/NewsletterCTA';
+import CombinedContactCTA from '@/components/home/CombinedContactCTA';
 
 export default function Home() {
   const newArrivals = products.filter(p => p.isNew).reverse().slice(0, 5);
@@ -90,9 +90,6 @@ export default function Home() {
 
       {/* ─── BRAND MARQUEE (New Thin Strip) ─── */}
       <BrandMarquee />
-
-      {/* ─── STATS BAR ─── */}
-      <StatsBar />
 
       {/* ─── BIKE SELECTOR (Find Your Fit) ─── */}
       <BikeSelector />
@@ -376,28 +373,33 @@ export default function Home() {
       {/* ─── INSTAGRAM REELS ─── */}
       <InstagramReels />
 
+      {/* ─── STATS BAR ─── */}
+      <StatsBar />
+
       {/* ─── TESTIMONIALS ─── */}
       <TestimonialsSection />
 
-      {/* ─── NEWSLETTER + WHATSAPP ─── */}
-      <NewsletterCTA />
+      {/* ─── CONTACT + NEWSLETTER ─── */}
+      <CombinedContactCTA />
 
       {/* ─── TRUST BADGES ─── */}
-      <section className="py-16 border-t border-border bg-muted">
+      <section className="py-8 border-t border-border bg-muted">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { icon: Truck, label: 'Pan-India', sub: 'Express Shipping' },
               { icon: Shield, label: 'Certified', sub: '3M & Avery Dennison' },
-              { icon: RotateCcw, label: 'Returns', sub: 'Hassle-free 7 days' },
+              { icon: Lock, label: 'Secure Checkout', sub: '100% Safe Payments' },
               { icon: Phone, label: 'Customer Care', sub: 'Always here to help' },
             ].map(({ icon: Icon, label, sub }, i) => (
-              <ScrollReveal direction="up" delay={i * 0.1} key={label} className="flex flex-col items-center text-center group cursor-default">
-                <div className="w-12 h-12 bg-background border border-border rounded-2xl flex items-center justify-center mb-4 group-hover:border-wu-red/40 transition-colors">
-                  <Icon size={20} className="text-muted-foreground group-hover:text-wu-red transition-colors" />
+              <ScrollReveal direction="up" delay={i * 0.1} key={label} className="flex items-center gap-3 group cursor-default">
+                <div className="w-9 h-9 bg-background border border-border rounded-xl flex items-center justify-center shrink-0 group-hover:border-wu-red/40 transition-colors">
+                  <Icon size={16} className="text-muted-foreground group-hover:text-wu-red transition-colors" />
                 </div>
-                <h4 className="font-display font-bold text-base text-foreground mb-1">{label}</h4>
-                <p className="font-body text-xs text-muted-foreground">{sub}</p>
+                <div>
+                  <h4 className="font-display font-bold text-sm text-foreground leading-tight">{label}</h4>
+                  <p className="font-body text-[11px] text-muted-foreground">{sub}</p>
+                </div>
               </ScrollReveal>
             ))}
           </div>

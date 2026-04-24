@@ -678,24 +678,31 @@ export const services: Service[] = [
 
 export const testimonials = [
   {
-    name: 'Rahul Sharma',
-    role: 'Track Day Modder',
-    city: 'Bengaluru',
-    stars: 5,
-    text: 'The custom wrap job on my Ninja 650 is flawless. The attention to detail in the seams is what sets WearUp apart. Total precision.',
-  },
-  {
-    name: 'Ananya Das',
-    role: 'Touring Enthusiast',
-    city: 'Kolkata',
-    text: 'Finding genuine accessories in India used to be a gamble. WearUp is my go-to now. Fast shipping and the merch quality is top-tier.',
+    name: 'Ritwick Lama',
+    role: 'Customer',
+    city: 'Siliguri',
+    text: 'The product is absolutely amazing, without any residual glues and it did not took off the original paint of the motorbike which is the best part.',
     stars: 5,
   },
   {
-    name: 'Vikram Seth',
-    role: 'Pro Adventurer',
-    city: 'Mumbai',
-    text: 'Their ceramic coating actually works. Rode through a massive storm in Munnar and the bike looks like it just came out of the showroom.',
+    name: 'sushant adhikari',
+    role: 'Customer',
+    city: 'Siliguri',
+    stars: 5,
+    text: "Great experience at Wearup India. The team did an amazing job with the ceramic coating on my bike (Ninja 1000SX). The price was reasonable, and the quality of work is exceptional. My bike looks stunning.",
+  },
+  {
+    name: 'Jayanta Arya',
+    role: 'Customer',
+    city: 'Siliguri',
+    text: 'Trained professionals are here to wrap your vehicle. Best in Siliguri. Recommended',
+    stars: 5,
+  },
+  {
+    name: 'Where_is Fariz',
+    role: 'Customer',
+    city: 'India',
+    text: 'I recently purchased a decal kit from WearUp India. The owner was very helpful throughout the process. I received the kit within 4 days via India Post.',
     stars: 5,
   },
 ];

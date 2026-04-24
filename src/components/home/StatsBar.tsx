@@ -47,7 +47,7 @@ function AnimatedNumber({ target, suffix, prefix, decimal }: { target: number; s
     : Math.floor(count).toLocaleString('en-IN');
 
   return (
-    <div ref={ref} className="font-display font-black text-5xl sm:text-6xl text-foreground leading-none tracking-tight">
+    <div ref={ref} className="font-display font-black text-3xl sm:text-4xl text-foreground leading-none tracking-tight">
       {prefix}{display}{suffix}
     </div>
   );
@@ -55,22 +55,22 @@ function AnimatedNumber({ target, suffix, prefix, decimal }: { target: number; s
 
 export default function StatsBar() {
   return (
-    <section className="border-y border-border bg-muted py-16">
+    <section className="border-y border-border bg-muted py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-0">
           {stats.map((stat, i) => (
             <ScrollReveal key={i} direction="up" delay={i * 0.1}>
-              <div className={`flex flex-col items-center text-center group py-4 ${i < stats.length - 1 ? 'md:border-r border-border' : ''}`}>
+              <div className={`flex flex-col items-center text-center group py-2 ${i < stats.length - 1 ? 'md:border-r border-border' : ''}`}>
                 <AnimatedNumber
                   target={stat.value}
                   suffix={stat.suffix}
                   prefix={stat.prefix}
                   decimal={stat.decimal}
                 />
-                <p className="font-mono text-[9px] tracking-[0.25em] text-muted-foreground uppercase mt-3">
+                <p className="font-mono text-[9px] tracking-[0.25em] text-muted-foreground uppercase mt-2">
                   {stat.label}
                 </p>
-                <div className="mt-3 w-6 h-px bg-wu-red/40 group-hover:w-14 transition-all duration-700" />
+                <div className="mt-2 w-4 h-px bg-wu-red/40 group-hover:w-10 transition-all duration-700" />
               </div>
             </ScrollReveal>
           ))}

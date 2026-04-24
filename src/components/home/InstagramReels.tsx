@@ -1,22 +1,24 @@
 'use client';
 
 import ScrollReveal from '@/components/ui/ScrollReveal';
-import { Instagram, ArrowRight } from 'lucide-react';
+import SafeImage from '@/components/ui/SafeImage';
+import { Video, Instagram, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
-// Reel IDs extracted from the Instagram URLs
-const reels = [
-  { id: 'DN0VVGFUpuq', href: 'https://www.instagram.com/reel/DN0VVGFUpuq/' },
-  { id: 'DF0Jky2ywRg', href: 'https://www.instagram.com/reel/DF0Jky2ywRg/' },
-  { id: 'DIk1MSAxUSQ', href: 'https://www.instagram.com/reel/DIk1MSAxUSQ/' },
-  { id: 'DW6Z7piDjFi', href: 'https://www.instagram.com/reel/DW6Z7piDjFi/' },
+// Static representations of Reels/Posts
+const instagramPosts = [
+  { id: '1', href: 'https://www.instagram.com/wearup_ind/', image: '/gallery/DSC00064.jpg', isVideo: true },
+  { id: '2', href: 'https://www.instagram.com/wearup_ind/', image: '/gallery/_DSC0514.jpg', isVideo: true },
+  { id: '3', href: 'https://www.instagram.com/wearup_ind/', image: '/gallery/_DSC6811.jpg', isVideo: true },
+  { id: '4', href: 'https://www.instagram.com/wearup_ind/', image: '/gallery/DSC_9869.jpg', isVideo: true },
+  { id: '5', href: 'https://www.instagram.com/wearup_ind/', image: '/gallery/_DSC9835.jpg', isVideo: false },
+  { id: '6', href: 'https://www.instagram.com/wearup_ind/', image: '/gallery/DSC07517.jpg', isVideo: true },
 ];
 
 export default function InstagramReels() {
   return (
-    <section className="py-24 border-t border-border bg-background overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
+    <section className="py-24 border-t border-border bg-background overflow-hidden relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <ScrollReveal className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6">
           <div>
@@ -37,35 +39,29 @@ export default function InstagramReels() {
           </Link>
         </ScrollReveal>
 
-        {/* Reel Embeds via direct iframe — full fit, clipped cleanly */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-          {reels.map((reel, i) => (
-            <ScrollReveal key={reel.id} direction="up" delay={i * 0.1} className="w-full">
-              <Link href={reel.href} target="_blank" rel="noopener noreferrer" className="block group relative">
-                {/* Outer clipping container — 9:16 fills the portrait video width */}
-                <div
-                  className="relative w-full overflow-hidden rounded-2xl border border-border/50 hover:border-wu-red/30 transition-colors duration-500"
-                  style={{ aspectRatio: '9 / 16' }}
-                >
-                  <iframe
-                    src={`https://www.instagram.com/reel/${reel.id}/embed/`}
-                    style={{
-                      position: 'absolute',
-                      top: '-140px',               // aggressively hide header + profile row
-                      left: 0,
-                      width: '100%',
-                      height: 'calc(100% + 140px + 300px)', // aggressively push chrome deep below clip
-                      border: 'none',
-                      display: 'block',
-                    }}
-                    scrolling="no"
-                    allowFullScreen
-                    loading="lazy"
-                  />
+        {/* Static Instagram Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
+          {instagramPosts.map((post, i) => (
+            <ScrollReveal key={post.id} direction="up" delay={i * 0.1} className="w-full">
+              <Link href={post.href} target="_blank" rel="noopener noreferrer" className="block group relative w-full aspect-square overflow-hidden bg-muted">
+                
+                <SafeImage
+                  src={post.image}
+                  alt="Instagram Post Thumbnail"
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                />
 
-                  {/* Transparent overlay to capture link clicks */}
-                  <div className="absolute inset-0 z-10" />
-                </div>
+                {/* Hover Overlay */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-500 z-10" />
+
+                {/* Video/Reel Icon Indicator */}
+                {post.isVideo && (
+                  <div className="absolute top-3 right-3 z-20 text-white drop-shadow-md opacity-80 group-hover:opacity-100 transition-opacity">
+                    <Video size={20} strokeWidth={1.5} />
+                  </div>
+                )}
               </Link>
             </ScrollReveal>
           ))}
