@@ -11,6 +11,7 @@ import StatsBar from '@/components/home/StatsBar';
 import TestimonialsSection from '@/components/home/Testimonials';
 import InstagramReels from '@/components/home/InstagramReels';
 import CombinedContactCTA from '@/components/home/CombinedContactCTA';
+import OurCustomers from '@/components/home/OurCustomers';
 
 export default function Home() {
   const newArrivals = products.filter(p => p.isNew).reverse().slice(0, 5);
@@ -369,6 +370,9 @@ export default function Home() {
           </Link>
         </ScrollReveal>
       </section>
+
+      {/* ─── OUR CUSTOMERS ─── */}
+      <OurCustomers />
 
       {/* ─── INSTAGRAM REELS ─── */}
       <InstagramReels />
