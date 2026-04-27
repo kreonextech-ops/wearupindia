@@ -1,3 +1,5 @@
+import { getAssetUrl } from '@/lib/assets';
+
 export type Category = {
   slug: string;
   name: string;
@@ -71,17 +73,17 @@ export const categories: Category[] = [
   {
     slug: 'graphic-kits',
     name: 'Graphic Kits',
-    tagline: 'Dress Your Machine',
-    description: 'Custom vinyl wraps and precision-cut kits built for the Indian road. UV-resistant, monsoon-proof materials from 3M and Avery.',
+    tagline: 'Durability Meets Design',
+    description: 'Bold looks, built to endure this graphics kit is UV-resistant, monsoon-proof, and bubble-free for a clean, flawless finish every time. Finished with a tough triple layer laminate, it delivers extra durability, vibrant colors, and long lasting style. Ride hard, stay sharp in any condition.',
     image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
     accentColor: '#E8161B',
   },
   {
     slug: 'bike-accessories',
     name: 'Bike Accessories',
-    tagline: 'Gear Up Right',
-    description: 'Performance parts and protection gear engineered for every Indian terrain.',
-    image: '/images/services/wrapping.png',
+    tagline: 'Upgrade your ride',
+    description: 'Premium bike accessories that protects, boost performance, comfort, and style engineered to handle every road you take.',
+    image: getAssetUrl('/images/services/wrapping.png'),
     accentColor: '#E8161B',
   },
   {
@@ -89,7 +91,7 @@ export const categories: Category[] = [
     name: 'Keychains',
     tagline: 'Pocket Essentials',
     description: 'Premium metal and leather keychains for riders who value detail. Coming Soon.',
-    image: '/images/categories/keychains_v2.png',
+    image: getAssetUrl('/images/categories/keychains_v2.png'),
     accentColor: '#E8161B',
     isComingSoon: true,
   },
@@ -98,7 +100,7 @@ export const categories: Category[] = [
     name: 'T-Shirts',
     tagline: 'Wear The Brand',
     description: 'Minimalist, high-quality rider apparel designed for comfort on and off the saddle. Coming Soon.',
-    image: '/images/categories/tshirts_v2.png',
+    image: getAssetUrl('/images/categories/tshirts_v2.png'),
     accentColor: '#E8161B',
     isComingSoon: true,
   },
@@ -107,7 +109,7 @@ export const categories: Category[] = [
     name: 'Hoodies',
     tagline: 'Ride in Comfort',
     description: 'Heavyweight, premium hoodies for those cold morning sprints. Coming Soon.',
-    image: '/images/categories/hoodies_v2.png',
+    image: getAssetUrl('/images/categories/hoodies_v2.png'),
     accentColor: '#E8161B',
     isComingSoon: true,
   },
@@ -538,14 +540,14 @@ export const products: Product[] = [
 
 export const brands: Brand[] = [
   { name: 'Ather', slug: 'ather', image: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=400&q=80', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'ather')?.models || [] },
-  { name: 'Bajaj', slug: 'bajaj', image: '/images/brands/bajaj.webp', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'bajaj')?.models || [] },
-  { name: 'KTM', slug: 'ktm', image: '/images/brands/ktm.webp', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'ktm')?.models || [] },
-  { name: 'Royal Enfield', slug: 'royal-enfield', image: '/images/brands/re.webp', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'royal-enfield')?.models || [] },
-  { name: 'TVS', slug: 'tvs', image: '/images/brands/tvs.webp', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'tvs')?.models || [] },
-  { name: 'Yamaha', slug: 'yamaha', image: '/images/brands/yamaha.webp', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'yamaha')?.models || [] },
+  { name: 'Bajaj', slug: 'bajaj', image: getAssetUrl('/images/brands/bajaj.webp'), models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'bajaj')?.models || [] },
+  { name: 'KTM', slug: 'ktm', image: getAssetUrl('/images/brands/ktm.webp'), models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'ktm')?.models || [] },
+  { name: 'Royal Enfield', slug: 'royal-enfield', image: getAssetUrl('/images/brands/re.webp'), models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'royal-enfield')?.models || [] },
+  { name: 'TVS', slug: 'tvs', image: getAssetUrl('/images/brands/tvs.webp'), models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'tvs')?.models || [] },
+  { name: 'Yamaha', slug: 'yamaha', image: getAssetUrl('/images/brands/yamaha.webp'), models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'yamaha')?.models || [] },
   { name: 'BMW', slug: 'bmw', image: 'https://images.unsplash.com/photo-1616196236528-761c5655716e?w=400&q=80', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'bmw')?.models || [] },
   { name: 'Hero', slug: 'hero', image: 'https://images.unsplash.com/photo-1642289659020-f56860f1882d?w=400&q=80', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'hero')?.models || [] },
-  { name: 'Kawasaki', slug: 'kawasaki', image: '/images/brands/kawasaki.webp', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'kawasaki')?.models || [] },
+  { name: 'Kawasaki', slug: 'kawasaki', image: getAssetUrl('/images/brands/kawasaki.webp'), models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'kawasaki')?.models || [] },
   { name: 'Honda', slug: 'honda', image: 'https://images.unsplash.com/photo-1649982361664-df8207f2cd4a?w=400&q=80', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'honda')?.models || [] },
   { name: 'Suzuki', slug: 'suzuki', image: 'https://images.unsplash.com/photo-1632763261763-883fd34a8e0f?w=400&q=80', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'suzuki')?.models || [] },
   { name: 'Universal', slug: 'universal', image: 'https://images.unsplash.com/photo-1620986794695-171542f0c79d?w=400&q=80', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'universal')?.models || [] },
@@ -559,7 +561,7 @@ export const services: Service[] = [
     description: 'Elite customization for your motorcycle using world-class vinyl from 3M and Avery Dennison. Our wraps are heat-formed, edge-sealed, and UV-protected to withstand the harsh Indian climate while giving your bike a factory-fresh or custom show-stopper look.',
     price: 'From ₹4,999',
     duration: '2–4 Days',
-    image: '/images/services/wrapping.png',
+    image: getAssetUrl('/images/services/wrapping.png'),
     features: [
       '3M & Avery Dennison Materials',
       'UV + Scratch Protection',
@@ -585,7 +587,7 @@ export const services: Service[] = [
       { label: 'Car Wash', value: '₹400' },
     ],
     duration: '45–90 Minutes',
-    image: '/images/services/wash.png',
+    image: getAssetUrl('/images/services/wash.png'),
     features: [
       'pH-Neutral Snow Foam Blast',
       'Two-Bucket Safe Wash Method',
@@ -607,7 +609,7 @@ export const services: Service[] = [
     description: 'Breathe new life into dull, faded, or oxidized paintwork. Our multi-stage machine polishing removes swirl marks and light scratches, restoring the deep gloss and vibrant depth of your original factory finish.',
     price: 'From ₹3,500',
     duration: '1–2 Days',
-    image: '/images/services/restoration.png',
+    image: getAssetUrl('/images/services/restoration.png'),
     features: [
       'Multi-Stage Paint Correction',
       'Oxidation & Swirl Removal',
@@ -633,7 +635,7 @@ export const services: Service[] = [
       { label: 'Car PPF', value: 'From ₹65,000' },
     ],
     duration: '2–5 Days',
-    image: '/images/services/ppf.png',
+    image: getAssetUrl('/images/services/ppf.png'),
     features: [
       'Self-Healing TPU Technology',
       'Stone Chip & Scratch Resistance',
@@ -659,7 +661,7 @@ export const services: Service[] = [
       { label: 'Car Coating', value: 'From ₹20,000' },
     ],
     duration: '2–3 Days',
-    image: '/images/services/ceramic.png',
+    image: getAssetUrl('/images/services/ceramic.png'),
     features: [
       '9H Hardness Protection',
       'Extreme Hydrophobic (Water Beading)',
@@ -707,7 +709,7 @@ export const testimonials = [
   },
 ];
 
-export const brandMarquee = ['YAMAHA', 'KAWASAKI', 'HONDA', 'ROYAL ENFIELD', 'BAJAJ', 'KTM', 'DUCATI', 'TRIUMPH', 'BMW', 'SUZUKI'];
+export const brandMarquee = ['YAMAHA', 'KAWASAKI', 'HONDA', 'ROYAL ENFIELD', 'BAJAJ', 'KTM', 'DUCATI', 'TRIUMPH', 'BMW', 'SUZUKI', 'ATHER', 'TVS', 'HERO'];
 
 export const formatPrice = (price: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);

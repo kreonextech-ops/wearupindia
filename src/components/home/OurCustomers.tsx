@@ -3,19 +3,21 @@
 import Image from 'next/image';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 
+import { getAssetUrl } from '@/lib/assets';
+
 // Using 9 images total to match the new layout
 const galleryImages = [
-  '/gallery/DSC04131.jpg', // img 1: Top left 1
-  '/gallery/DSC04132.jpg', // img 2: Top left 2
-  '/gallery/_DSC6811.jpg', // img 3: Bottom left (Tall)
+  getAssetUrl('/gallery/DSC04131.jpg'), // img 1: Top left 1
+  getAssetUrl('/gallery/DSC04132.jpg'), // img 2: Top left 2
+  getAssetUrl('/gallery/_DSC6811.jpg'), // img 3: Bottom left (Tall)
   
-  '/gallery/DSC07517.jpg', // img 4: Center top (Tall HERO)
-  '/gallery/_DSC0514.jpg', // img 5: Center bottom 1
-  '/gallery/DSC07576.jpg', // img 6: Center bottom 2
+  getAssetUrl('/gallery/DSC07517.jpg'), // img 4: Center top (Tall HERO)
+  getAssetUrl('/gallery/_DSC0514.jpg'), // img 5: Center bottom 1
+  getAssetUrl('/gallery/DSC07576.jpg'), // img 6: Center bottom 2
   
-  '/gallery/DSC04090.jpg', // img 7: Top right 1
-  '/gallery/DSC04091.jpg', // img 8: Top right 2
-  '/gallery/_DSC9835.jpg', // img 9: Bottom right (Tall)
+  getAssetUrl('/gallery/DSC04090.jpg'), // img 7: Top right 1
+  getAssetUrl('/gallery/DSC04091.jpg'), // img 8: Top right 2
+  getAssetUrl('/gallery/_DSC9835.jpg'), // img 9: Bottom right (Tall)
 ];
 
 function Cell({

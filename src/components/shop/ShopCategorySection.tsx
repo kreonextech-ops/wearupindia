@@ -49,7 +49,7 @@ export default function ShopCategorySection({ category, products }: ShopCategory
                 {category.name}
               </h2>
               
-              <p className="font-body text-muted-foreground text-sm sm:text-lg max-w-2xl leading-relaxed opacity-80">
+              <p className="font-body text-muted-foreground text-sm sm:text-lg max-w-none leading-relaxed opacity-80">
                 {category.description}
               </p>
             </div>

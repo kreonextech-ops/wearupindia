@@ -4,18 +4,15 @@ import ScrollReveal from '@/components/ui/ScrollReveal';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { getAssetUrl } from '@/lib/assets';
+
 // 10 posts for a 5x2 grid
 const instagramPosts = [
-  { id: '1', href: 'https://www.instagram.com/wearup_ind/', image: '/gallery/DSC00064.jpg' },
-  { id: '2', href: 'https://www.instagram.com/wearup_ind/', image: '/gallery/DSC00070.jpg' },
-  { id: '3', href: 'https://www.instagram.com/wearup_ind/', image: '/gallery/DSC00071.jpg' },
-  { id: '4', href: 'https://www.instagram.com/wearup_ind/', image: '/gallery/DSC00088.jpg' },
-  { id: '5', href: 'https://www.instagram.com/wearup_ind/', image: '/gallery/DSC00250.jpg' },
-  { id: '6', href: 'https://www.instagram.com/wearup_ind/', image: '/gallery/DSC00676.jpg' },
-  { id: '7', href: 'https://www.instagram.com/wearup_ind/', image: '/gallery/DSC00677.jpg' },
-  { id: '8', href: 'https://www.instagram.com/wearup_ind/', image: '/gallery/DSC00678.jpg' },
-  { id: '9', href: 'https://www.instagram.com/wearup_ind/', image: '/gallery/DSC00684.jpg' },
-  { id: '10', href: 'https://www.instagram.com/wearup_ind/', image: '/gallery/DSC04090.jpg' },
+  { id: '1', href: 'https://www.instagram.com/wearup_ind/', image: getAssetUrl('/gallery/DSC00064.jpg') },
+  { id: '2', href: 'https://www.instagram.com/wearup_ind/', image: getAssetUrl('/gallery/DSC00070.jpg') },
+  { id: '3', href: 'https://www.instagram.com/wearup_ind/', image: getAssetUrl('/gallery/DSC00071.jpg') },
+  { id: '4', href: 'https://www.instagram.com/wearup_ind/', image: getAssetUrl('/gallery/DSC00088.jpg') },
+  { id: '5', href: 'https://www.instagram.com/wearup_ind/', image: getAssetUrl('/gallery/DSC00250.jpg') },
 ];
 
 export default function InstagramReels() {

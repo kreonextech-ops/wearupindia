@@ -27,16 +27,13 @@ export default function BikeSelector() {
   };
 
   return (
-    <section className="py-24 border-t border-b border-border bg-background relative overflow-hidden">
+    <section className="pt-6 pb-12 md:pb-16 border-b border-border bg-background relative overflow-hidden">
       {/* Background ambient light */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-wu-red/5 blur-[120px] pointer-events-none rounded-full" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <ScrollReveal direction="down" className="text-center mb-16">
-          <p className="font-mono text-[11px] text-wu-red tracking-[0.3em] uppercase mb-4 flex items-center justify-center gap-2">
-            <span className="w-6 h-px bg-wu-red" /> Find Your Fit
-          </p>
-          <h2 className="font-display font-black text-5xl sm:text-7xl text-foreground tracking-tighter leading-[0.9] uppercase mb-6">
+        <ScrollReveal direction="down" className="text-center mb-8 md:mb-10">
+          <h2 className="font-display font-black text-5xl sm:text-7xl text-foreground tracking-tighter leading-[0.9] uppercase">
             Find Products For <span className="text-transparent bg-clip-text bg-gradient-to-r from-wu-red to-[#ff4b4f]">Your Bike</span>
           </h2>
         </ScrollReveal>

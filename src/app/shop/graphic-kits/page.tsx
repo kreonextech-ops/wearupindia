@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
 import { brands, GRAPHIC_KITS_STRUCTURE } from '@/data';
+import { getAssetUrl } from '@/lib/assets';
 import SafeImage from '@/components/ui/SafeImage';
 
 export default function GraphicKitsBrandsPage() {
@@ -63,12 +64,12 @@ export default function GraphicKitsBrandsPage() {
                     Alternatively, using the cinematic images we generated.
                  */}
                 <SafeImage 
-                  src={brand.slug === 'ktm' ? '/images/brands/brand_ktm_bg.png' : 
-                       brand.slug === 'yamaha' ? '/images/brands/brand_yamaha_bg.png' : 
-                       brand.slug === 'kawasaki' ? '/images/brands/brand_kawasaki_bg.png' : 
-                       brand.slug === 'royal-enfield' ? '/images/brands/brand_re_bg.png' :
-                       brand.slug === 'bajaj' ? '/images/brands/brand_bajaj_bg.png' :
-                       brand.slug === 'tvs' ? '/images/brands/brand_tvs_bg.png' :
+                  src={brand.slug === 'ktm' ? getAssetUrl('/images/brands/brand_ktm_bg.png') : 
+                       brand.slug === 'yamaha' ? getAssetUrl('/images/brands/brand_yamaha_bg.png') : 
+                       brand.slug === 'kawasaki' ? getAssetUrl('/images/brands/brand_kawasaki_bg.png') : 
+                       brand.slug === 'royal-enfield' ? getAssetUrl('/images/brands/brand_re_bg.png') :
+                       brand.slug === 'bajaj' ? getAssetUrl('/images/brands/brand_bajaj_bg.png') :
+                       brand.slug === 'tvs' ? getAssetUrl('/images/brands/brand_tvs_bg.png') :
                        brand.image}
                   alt={brand.name}
                   fill

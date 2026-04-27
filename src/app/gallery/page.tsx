@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import GalleryGrid from '@/components/gallery/GalleryGrid';
+import { getAssetUrl } from '@/lib/assets';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,7 +59,7 @@ export default function GalleryPage() {
         {heroPhotos[0] && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={`/gallery/${encodeURIComponent(heroPhotos[0])}`}
+            src={getAssetUrl(`/gallery/${encodeURIComponent(heroPhotos[0])}`)}
             alt="Gallery Hero"
             loading="eager"
             className="absolute inset-0 w-full h-full object-cover scale-105"

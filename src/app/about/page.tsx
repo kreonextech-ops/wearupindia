@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
 const team = [
-  { name: 'Arjun Mehta', role: 'Founder & Head Wrapper', city: 'Bengaluru' },
+  { name: 'Arjun Mehta', role: 'Founder & Head Wrapper', city: 'Siliguri' },
   { name: 'Priya Singh', role: 'Design Lead', city: 'Delhi' },
   { name: 'Rohan Verma', role: 'Head of Detailing', city: 'Mumbai' },
   { name: 'Aisha Khan', role: 'Customer Experience', city: 'Hyderabad' },
@@ -34,27 +34,33 @@ export default function AboutPage() {
             <span className="block text-[clamp(3rem,8vw,6rem)] text-white">BUILT FOR</span>
             <span className="block text-[clamp(3rem,8vw,6rem)] text-[#E8161B] italic">THE BOLD.</span>
           </h1>
-          <p className="font-body text-[#777] max-w-xl text-base leading-relaxed">
-            WearUp was born from a simple frustration: finding premium bike aesthetics in India was near impossible. We changed that.
+          <p className="font-body text-zinc-200 max-w-2xl text-base leading-relaxed text-justify">
+            Wearup is a performance driven motorcycle and car graphics and paint protection film (PPF) company built on one clear vision to redefine automotive styling and protection.
           </p>
         </div>
+        {/* Red separator line */}
+        <div className="absolute bottom-0 left-0 w-full h-px bg-[#E8161B]/40 z-20" />
       </div>
 
       {/* Story */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
-            <p className="font-mono text-[11px] text-[#E8161B] tracking-[0.3em] uppercase mb-4">// The Beginning</p>
-            <h2 className="font-display font-black text-4xl text-white mb-6">FROM GARAGE TO INDIA&apos;S PRECISION WORKSHOP</h2>
-            <div className="space-y-4 font-body text-[#777] text-sm leading-relaxed">
+            <h2 className="font-display font-black text-4xl mb-6 uppercase tracking-tight text-white">
+              Redefining automotive <span className="text-[#E8161B]">style and protection</span>
+            </h2>
+            <div className="space-y-6 font-body text-zinc-200 text-sm sm:text-base leading-relaxed text-justify">
               <p>
-                It started in a garage in Bengaluru in 2019. Our founder Arjun had spent years watching international riders show off stunning custom wraps with zero equivalent available in India. So he trained under European wrap specialists, imported his first roll of 3M film, and started wrapping bikes for friends.
+                We believe every machine tells a story, and our mission is to enhance that story through precision design, cutting-edge materials, and flawless execution.
               </p>
               <p>
-                Word spread fast. Within a year, WearUp had a dedicated workshop, a full team, and a waiting list. Today we serve riders across India — from Royal Enfield enthusiasts in Chennai to sport bike riders in Delhi — with the same obsessive attention to detail that started it all.
+                Specializing in custom graphics, wraps, and advanced PPF solutions, Wearup blends creativity with technology to deliver results that don’t just look exceptional but also stand the test of time. Whether it’s a daily driven car or a passion-built motorcycle, we approach every project with the same attention to detail, ensuring a perfect balance of style, durability, and protection.
               </p>
               <p>
-                We&apos;re not just a shop. We&apos;re a community of riders who believe your machine is an extension of your identity. Every wrap, every decal, every accessory we sell is chosen with that philosophy in mind.
+                At Wearup, we don’t follow trends we set them. Our focus is on innovation, quality craftsmanship, and pushing boundaries to create finishes that turn heads while protecting what matters underneath. From bold transformations to subtle enhancements, we work closely with our clients to bring their vision to life.
+              </p>
+              <p>
+                Driven by passion and fueled by precision, Wearup is more than just a service it’s a commitment to excellence, individuality, and redefining the standard of automotive aesthetics.
               </p>
             </div>
           </div>
@@ -67,8 +73,8 @@ export default function AboutPage() {
               className="object-cover"
             />
             <div className="absolute bottom-6 left-6 bg-[#E8161B] px-4 py-3">
-              <p className="font-display font-black text-2xl text-white">2019</p>
-              <p className="font-mono text-[10px] text-white/70 tracking-widest">FOUNDED IN BENGALURU</p>
+              <p className="font-display font-black text-2xl text-white">2020</p>
+              <p className="font-mono text-[10px] text-white/70 tracking-widest">FOUNDED IN SILIGURI</p>
             </div>
           </div>
         </div>

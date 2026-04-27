@@ -4,7 +4,7 @@ import { StoreProvider } from '@/lib/store-context';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 
 export const metadata: Metadata = {
-  title: 'WearUp Grfx | Ride Bold. Wrap Louder.',
+  title: 'WearUp Gfx | Ride Bold. Wrap Louder.',
   description: 'Premium motorcycle wraps, accessories, detailing and merch for the modern Indian rider.',
   keywords: 'motorcycle wrap india, bike stickers, helmet, bike accessories, riding gear',
 };

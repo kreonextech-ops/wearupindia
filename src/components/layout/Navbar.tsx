@@ -96,7 +96,7 @@ export default function Navbar() {
         }`}
       >
         {/* Announcement Bar */}
-        <div className="bg-wu-red text-white py-2 px-4 shadow-sm relative z-[60]">
+        <div className="bg-wu-red text-white py-1 px-4 shadow-sm relative z-[60]">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="hidden md:block w-24" /> {/* Spacer */}
             
@@ -126,14 +126,26 @@ export default function Navbar() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 md:h-20">
+          <div className="flex items-center justify-between h-14 md:h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative w-10 h-10 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500">
-                <Image src="/logo.png" alt="WearUp Logo" fill className="object-contain" priority />
+            <Link href="/" className="flex items-center h-full group gap-3">
+              <div className="relative h-12 md:h-14 w-12 md:w-14 flex items-center transition-transform duration-500 group-hover:scale-105">
+                <Image 
+                  src="/logo-011.png" 
+                  alt="WearUp Logo" 
+                  fill 
+                  className="object-contain" 
+                  priority 
+                />
               </div>
-              <div className="relative h-7 w-36 sm:h-8 sm:w-48 flex items-center">
-                <Image src="/navbar.png" alt="WearUp Text" fill className="object-contain object-left" priority />
+              <div className="relative h-10 md:h-14 w-44 md:w-60 flex items-center transition-transform duration-500 group-hover:scale-105">
+                <Image 
+                  src="/lgo.png" 
+                  alt="WearUp Text" 
+                  fill 
+                  className="object-contain object-left" 
+                  priority 
+                />
               </div>
             </Link>
 

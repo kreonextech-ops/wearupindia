@@ -8,17 +8,17 @@ export default function BrandMarquee() {
   const items = [...brandMarquee, ...brandMarquee, ...brandMarquee];
 
   return (
-    <div className="bg-[#050505] border-y border-white/5 py-4 overflow-hidden select-none">
+    <div className="bg-[#050505] border-t border-white/5 border-b border-wu-red/30 py-2 overflow-hidden select-none">
       <div className="relative flex">
         <motion.div
           animate={{
-            x: [0, -1035], // Approximate width of one set of items
+            x: [0, -2000], 
           }}
           transition={{
             x: {
               repeat: Infinity,
               repeatType: "loop",
-              duration: 35,
+              duration: 40,
               ease: "linear",
             },
           }}

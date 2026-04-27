@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
+import { uploadToR2 } from '@/lib/r2';
 
 /**
  * Server Action to create a new product with image upload to Supabase Storage
@@ -45,20 +46,8 @@ export async function createProductAction(formData: FormData) {
     const fileName = `${slug}.${fileExt}`;
     const filePath = `products/${fileName}`;
 
-    // 2. Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('products')
-      .upload(filePath, imageFile, {
-        cacheControl: '3600',
-        upsert: false
-      });
-
-    if (uploadError) throw uploadError;
-
-    // 3. Get Public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('products')
-      .getPublicUrl(filePath);
+    // 2. Upload to Cloudflare R2
+    const publicUrl = await uploadToR2(imageFile, filePath);
 
     // 4. Save Product Metadata to Database
     const { data: productData, error: productError } = await supabase

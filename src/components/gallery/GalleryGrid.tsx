@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getAssetUrl } from '@/lib/assets';
 
 interface GalleryGridProps {
   files: string[];
@@ -60,7 +61,7 @@ export default function GalleryGrid({ files }: GalleryGridProps) {
             const isVideo = file.toLowerCase().endsWith('.mp4');
             const span = getSpan(i);
             // Encode filename to handle spaces and special characters in filenames
-            const src = `/gallery/${encodeURIComponent(file)}`;
+            const src = getAssetUrl(`/gallery/${encodeURIComponent(file)}`);
 
             return (
               <div
@@ -149,13 +150,13 @@ export default function GalleryGrid({ files }: GalleryGridProps) {
                 autoPlay controls playsInline 
                 className="max-w-full max-h-full object-contain rounded-lg shadow-2xl ring-1 ring-white/10"
               >
-                <source src={`/gallery/${encodeURIComponent(files[selectedIndex])}`} type="video/mp4" />
+                <source src={getAssetUrl(`/gallery/${encodeURIComponent(files[selectedIndex])}`)} type="video/mp4" />
               </video>
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={selectedIndex}
-                src={`/gallery/${encodeURIComponent(files[selectedIndex])}`}
+                src={getAssetUrl(`/gallery/${encodeURIComponent(files[selectedIndex])}`)}
                 alt="WearUp Gallery Full View"
                 className="max-w-full max-h-full object-contain drop-shadow-2xl rounded-lg"
               />

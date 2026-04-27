@@ -34,5 +34,8 @@ next-env.d.ts
 
 # User Data & Raw Assets
 video and photo/
+/public/videos/
+/public/gallery/
+/public/images/
 test-*.mjs
 scripts/make-me-admin.sql

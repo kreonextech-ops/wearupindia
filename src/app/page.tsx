@@ -2,6 +2,7 @@ import Link from 'next/link';
 import SafeImage from '@/components/ui/SafeImage';
 import { ArrowRight, ArrowUpRight, Shield, Truck, Lock, Phone, Sparkles, Paintbrush } from 'lucide-react';
 import { categories, products, brands, services, testimonials, formatPrice } from '@/data';
+import { getAssetUrl } from '@/lib/assets';
 import ProductCard from '@/components/shop/ProductCard';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import SequentialVideoPlayer from '@/components/ui/SequentialVideoPlayer';
@@ -24,45 +25,69 @@ export default function Home() {
     <main className="bg-background text-foreground transition-colors duration-500">
 
       {/* ─── HERO ─── */}
-      <section className="relative pt-16 md:pt-20 min-h-[100dvh] flex flex-col md:flex-row overflow-hidden bg-black">
+      <section className="relative pt-16 md:pt-20 min-h-[50vh] md:min-h-[60vh] flex flex-col md:flex-row overflow-hidden bg-black">
         {[
           {
-            id: 'wrap-1',
-            src: '/videos/hero-video-1.mp4',
-            title: 'Precision Wraps'
+            id: 'wrap-3',
+            src: getAssetUrl('/videos/hero-video-3.mp4'),
+            title: 'Premium Finish'
           },
           {
-            id: 'wrap-2',
-            src: '/videos/hero-video-2.mp4',
+            id: 'wrap-untitled',
+            src: getAssetUrl('/videos/hero-video-untitled.mp4'),
             title: 'Rider Style'
           },
           {
-            id: 'wrap-3',
-            src: '/videos/hero-video-3.mp4',
-            title: 'Premium Finish'
+            id: 'wrap-1',
+            src: getAssetUrl('/videos/hero-video-1.mp4'),
+            title: 'Precision Wraps'
           }
         ].map((panel, idx) => (
           <div 
             key={panel.id}
-            className={`group relative flex-1 border-b md:border-b-0 md:border-r border-white/5 overflow-hidden transition-all duration-700 ${idx === 0 ? 'min-h-[calc(100vh-64px)] md:min-h-screen' : 'hidden md:block md:min-h-screen hover:flex-[1.8]'}`}
+            className={`group relative flex-1 border-b md:border-b-0 md:border-r border-white/5 overflow-hidden transition-all duration-700 ${idx === 0 ? 'min-h-[40vh] md:min-h-[60vh]' : 'hidden md:block md:min-h-[60vh]'}`}
           >
             {/* Video Background */}
-            <video 
-              autoPlay 
-              muted 
-              loop 
-              playsInline 
-              className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-[2000ms] opacity-60"
-            >
-              <source src={panel.src} type="video/mp4" />
-            </video>
+            {idx === 0 ? (
+              <>
+                {/* Mobile: Sequential playback (3 -> untitled -> 1) */}
+                <div className="md:hidden absolute inset-0">
+                  <SequentialVideoPlayer 
+                    sources={[
+                      getAssetUrl('/videos/hero-video-3.mp4'),
+                      getAssetUrl('/videos/hero-video-untitled.mp4'),
+                      getAssetUrl('/videos/hero-video-1.mp4')
+                    ]}
+                    className="w-full h-full object-cover opacity-60"
+                  />
+                </div>
+                {/* Desktop: Continuous loop */}
+                <video 
+                  autoPlay 
+                  muted 
+                  loop 
+                  playsInline 
+                  src={panel.src}
+                  className="hidden md:block absolute inset-0 w-full h-full object-cover opacity-60"
+                />
+              </>
+            ) : (
+              <video 
+                autoPlay 
+                muted 
+                loop 
+                playsInline 
+                src={panel.src}
+                className="absolute inset-0 w-full h-full object-cover opacity-60"
+              />
+            )}
 
             {/* Premium Overlays */}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
             
             {/* Minimal Brand Overlay - Only on first panel */}
             {idx === 0 && (
-              <div className="absolute bottom-24 left-8 sm:left-12 z-20">
+              <div className="absolute bottom-12 left-8 sm:left-12 z-20">
                  <ScrollReveal direction="up" delay={0.2}>
                    <h1 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl leading-[0.85] tracking-tighter uppercase text-white mb-6 drop-shadow-2xl">
                       Ride <span className="text-wu-red">Bold.</span><br />
@@ -76,10 +101,7 @@ export default function Home() {
               </div>
             )}
 
-            {/* Corner Decorative Accent */}
-            <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-all duration-700 -translate-y-4 group-hover:translate-y-0">
-               <div className="w-8 h-8 border-t border-r border-wu-red" />
-            </div>
+
             
             {/* Bottom Progress Bar Indicator for Panel Index */}
             <div className="absolute bottom-0 left-0 h-1 bg-wu-red/30 w-full opacity-30">
@@ -156,7 +178,7 @@ export default function Home() {
                           {cat.name}
                         </h3>
                         
-                        <p className="font-body text-muted-foreground text-xs max-w-[240px] leading-relaxed mb-8 opacity-80">
+                        <p className="font-body text-white/80 text-sm max-w-xs leading-relaxed mb-8">
                           {cat.description}
                         </p>
                         
@@ -181,17 +203,17 @@ export default function Home() {
                           {cat.slug === 'graphic-kits' ? (
                             <SequentialVideoPlayer 
                               sources={[
-                                "/videos/categories/graphic-kits-1.mp4",
-                                "/videos/categories/graphic-kits-2.mp4"
+                                getAssetUrl("/videos/categories/graphic-kits-1.mp4"),
+                                getAssetUrl("/videos/categories/graphic-kits-2.mp4")
                               ]}
-                              className="w-full h-full object-cover opacity-70 transition-transform duration-[2000ms] group-hover:scale-110"
+                              className="w-full h-full object-cover opacity-70"
                             />
                           ) : (
                             <video 
                               autoPlay muted loop playsInline 
-                              className="w-full h-full object-cover opacity-70 transition-transform duration-[2000ms] group-hover:scale-110"
+                              className="w-full h-full object-cover opacity-70"
                             >
-                              <source src="/videos/categories/bike-accessories.mp4" type="video/mp4" />
+                              <source src={getAssetUrl("/videos/categories/bike-accessories.mp4")} type="video/mp4" />
                             </video>
                           )}
                         </div>
@@ -207,7 +229,7 @@ export default function Home() {
                       <div className="absolute inset-x-0 bottom-0 p-8 sm:p-10 z-20">
                         <p className="font-mono text-[10px] text-wu-red tracking-widest uppercase mb-2 bg-wu-red/10 backdrop-blur-sm w-max px-3 py-1 rounded-full border border-wu-red/20">{cat.tagline}</p>
                         <h3 className="font-display font-black text-4xl sm:text-5xl text-white mb-2 uppercase tracking-tighter drop-shadow-lg">{cat.name}</h3>
-                        <p className="font-body text-white/80 text-sm max-w-xs drop-shadow-md">{cat.description}</p>
+                        <p className="font-body text-white/80 text-sm max-w-2xl drop-shadow-md">{cat.description}</p>
                       </div>
                       <div className="absolute top-6 right-6 w-12 h-12 rounded-full bg-black/40 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 rotate-45 group-hover:rotate-0 transition-all duration-500 shadow-2xl">
                         <ArrowUpRight size={22} />
@@ -303,7 +325,7 @@ export default function Home() {
               autoPlay muted loop playsInline 
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-105 opacity-60"
             >
-              <source src="/videos/services/bike-wrapping.mp4" type="video/mp4" />
+              <source src={getAssetUrl("/videos/services/bike-wrapping.mp4")} type="video/mp4" />
             </video>
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
             <div className="absolute inset-0 p-8 sm:p-12 flex flex-col justify-end items-start">
@@ -332,8 +354,8 @@ export default function Home() {
           <ScrollReveal direction="up" delay={0.15} className="relative h-[450px] lg:h-[600px] rounded-[2.5rem] overflow-hidden group">
             <SequentialVideoPlayer 
               sources={[
-                "/videos/services/ppf-1.mp4", 
-                "/videos/services/ppf-2.mp4"
+                getAssetUrl("/videos/services/ppf-1.mp4"), 
+                getAssetUrl("/videos/services/ppf-2.mp4")
               ]}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-105 opacity-60"
             />
