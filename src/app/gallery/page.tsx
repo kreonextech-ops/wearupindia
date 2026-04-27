@@ -1,17 +1,15 @@
-import fs from 'fs';
-import path from 'path';
 import GalleryGrid from '@/components/gallery/GalleryGrid';
 import { getAssetUrl } from '@/lib/assets';
+import { listGalleryFiles } from '@/lib/r2';
 
 export const dynamic = 'force-dynamic';
 
-export default function GalleryPage() {
+export default async function GalleryPage() {
   let files: string[] = [];
   let heroPhotos: string[] = [];
 
   try {
-    const galleryDir = path.join(process.cwd(), 'public', 'gallery');
-    const rawFiles = fs.readdirSync(galleryDir).filter(f => /\.(jpg|jpeg|png|mp4)$/i.test(f));
+    const rawFiles = await listGalleryFiles();
 
     const videos = rawFiles.filter(f => f.toLowerCase().endsWith('.mp4'));
     const photos = rawFiles.filter(f => !f.toLowerCase().endsWith('.mp4'));

@@ -1,4 +1,4 @@
-import { S3Client } from "@aws-sdk/client-s3";
+import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 
 const r2Client = new S3Client({
@@ -30,4 +30,24 @@ export async function uploadToR2(file: File, path: string) {
   // If you use the R2 dev domain, you'll need that here
   const baseUrl = process.env.R2_PUBLIC_URL || `https://${process.env.R2_BUCKET_NAME}.${process.env.R2_ACCOUNT_ID}.r2.dev`;
   return `${baseUrl}/${path}`;
+}
+
+export async function listGalleryFiles(): Promise<string[]> {
+  try {
+    const command = new ListObjectsV2Command({
+      Bucket: process.env.R2_BUCKET_NAME,
+      Prefix: 'gallery/',
+    });
+    
+    const response = await r2Client.send(command);
+    if (!response.Contents) return [];
+    
+    // Extract filename from the key (e.g., 'gallery/image.jpg' -> 'image.jpg')
+    return response.Contents
+      .map(item => item.Key?.replace('gallery/', '') || '')
+      .filter(name => name && /\.(jpg|jpeg|png|mp4)$/i.test(name));
+  } catch (error) {
+    console.error("Error listing R2 files:", error);
+    return [];
+  }
 }
