@@ -3,12 +3,12 @@
 import { notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { 
   ArrowLeft, Heart, ShoppingCart, Star, Check, Shield, Truck, 
   RotateCcw, Info, Zap, ChevronRight, Share2, Bike
 } from 'lucide-react';
-import { products, categories, brands, formatPrice } from '@/data';
+import { categories, brands, formatPrice, Product } from '@/data';
 import { useStore } from '@/lib/store-context';
 import ProductCard from '@/components/shop/ProductCard';
 import ScrollReveal from '@/components/ui/ScrollReveal';
@@ -17,33 +17,64 @@ import { motion, AnimatePresence } from 'framer-motion';
 type Props = { params: { category: string; product: string } };
 
 export default function ProductPage({ params }: Props) {
-  const product = products.find(p => p.slug === params.product && p.category === params.category);
-  if (!product) notFound();
-
   const { addToCart, addToWishlist, removeFromWishlist, isInWishlist, user } = useStore();
   const router = useRouter();
-  const wishlisted = isInWishlist(product.id);
+
+  const [product, setProduct] = useState<Product | null>(null);
+  const [related, setRelated] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  const related = useMemo(() => products
-    .filter(p => p.category === product.category && p.id !== product.id)
-    .slice(0, 4), [product]);
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      const { getProductBySlugAction, getProductsAction } = await import('@/app/admin/products/actions');
+      
+      const res = await getProductBySlugAction(params.category, params.product);
+      if (res.success && res.data) {
+        setProduct(res.data as unknown as Product);
+        
+        // Load related products
+        const relatedRes = await getProductsAction(params.category);
+        if (relatedRes.success && relatedRes.data) {
+           setRelated((relatedRes.data as unknown as Product[]).filter((p: any) => p.id !== res.data.id).slice(0, 4));
+        }
+      } else {
+        router.push('/404');
+      }
+      setIsLoading(false);
+    }
+    loadData();
+  }, [params.category, params.product, router]);
 
-  const category = categories.find(c => c.slug === product.category);
+  const wishlisted = product ? isInWishlist(product.id) : false;
+  const category = categories.find(c => c.slug === params.category);
   
   // Cross-reference compatible brands from the updated data
   const compatibleBrandData = useMemo(() => 
-    brands.filter(b => product.compatibleBrands?.includes(b.slug)),
+    product ? brands.filter(b => product.compatibleBrands?.includes(b.slug)) : [],
     [product]
   );
 
   const handleAddToCart = () => {
+    if (!product) return;
     addToCart(product, quantity);
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-muted border-t-wu-red rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!product) return null;
 
   return (
     <div className="min-h-screen bg-background text-foreground">

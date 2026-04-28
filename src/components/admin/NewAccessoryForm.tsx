@@ -119,20 +119,20 @@ export default function NewAccessoryForm({ onSuccess }: NewAccessoryFormProps) {
       <div className="space-y-2">
         <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Accessory Image</label>
         <div className="relative group">
-          {preview ? (
-            <div className="relative aspect-square max-w-sm mx-auto rounded-2xl overflow-hidden border border-white/10">
+          {preview && (
+            <div className="relative aspect-square max-w-sm mx-auto rounded-2xl overflow-hidden border border-white/10 mb-4">
               <Image src={preview} alt="Preview" fill className="object-cover" />
               <button type="button" onClick={() => setPreview(null)} className="absolute top-3 right-3 p-2 bg-black/60 rounded-full text-white hover:bg-[#E8161B] transition-all">
                 <X size={14} />
               </button>
             </div>
-          ) : (
-            <label className="flex flex-col items-center justify-center aspect-square max-w-sm mx-auto rounded-2xl border-2 border-dashed border-white/5 bg-white/[0.02] hover:bg-white/[0.04] cursor-pointer group transition-all">
-              <Upload className="text-white/20 group-hover:text-[#E8161B] mb-2" size={24} />
-              <p className="text-white/40 font-mono text-[10px] uppercase tracking-widest">Upload Photo</p>
-              <input type="file" name="image" accept="image/*" className="hidden" onChange={handleImageChange} required />
-            </label>
           )}
+          
+          <label className={`flex flex-col items-center justify-center aspect-square max-w-sm mx-auto rounded-2xl border-2 border-dashed border-white/5 bg-white/[0.02] hover:bg-white/[0.04] cursor-pointer group transition-all ${preview ? 'hidden' : ''}`}>
+            <Upload className="text-white/20 group-hover:text-[#E8161B] mb-2" size={24} />
+            <p className="text-white/40 font-mono text-[10px] uppercase tracking-widest">Upload Photo</p>
+            <input type="file" name="image" accept="image/*" className="hidden" onChange={handleImageChange} required={!preview} />
+          </label>
         </div>
       </div>
 

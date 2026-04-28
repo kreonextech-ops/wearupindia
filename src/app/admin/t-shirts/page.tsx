@@ -8,7 +8,8 @@ import {
 import Image from 'next/image';
 import Sheet from '@/components/ui/Sheet';
 import NewTShirtForm from '@/components/admin/NewTShirtForm';
-import { formatPrice, products } from '@/data';
+import { formatPrice, products, Product } from '@/data';
+import { getProductsAction } from '@/app/admin/products/actions';
 
 // Mock metrics for now
 const metrics = [
@@ -22,8 +23,20 @@ export default function AdminTShirtsPage() {
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [filterType, setFilterType] = React.useState('all');
+  const [baseTshirts, setBaseTshirts] = React.useState<Product[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
 
-  const baseTshirts = products.filter(p => p.category === 't-shirts' || p.category === 'tshirts' || p.category === 'tshirt');
+  React.useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      const res = await getProductsAction('t-shirts');
+      if (res.success && res.data) {
+        setBaseTshirts(res.data as unknown as Product[]);
+      }
+      setIsLoading(false);
+    }
+    loadData();
+  }, []);
 
   const filteredTshirts = React.useMemo(() => {
     return baseTshirts.filter((product) => {
@@ -33,6 +46,13 @@ export default function AdminTShirtsPage() {
       return matchesSearch && matchesFilter;
     });
   }, [baseTshirts, searchQuery, filterType]);
+
+  // Update dynamic metrics
+  const displayMetrics = React.useMemo(() => [
+    ...metrics.slice(0, 2),
+    { label: 'Active Items', value: baseTshirts.length.toString(), trend: '0%', icon: Shirt },
+    ...metrics.slice(3)
+  ], [baseTshirts]);
 
   return (
     <div className="space-y-10">
@@ -67,7 +87,7 @@ export default function AdminTShirtsPage() {
 
       {/* ─── METRICS ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {metrics.map((metric, idx) => {
+        {displayMetrics.map((metric, idx) => {
           const Icon = metric.icon;
           return (
             <div key={idx} className={`p-6 rounded-2xl border transition-all ${metric.alert ? 'bg-red-500/5 border-red-500/20' : 'bg-white/[0.02] border-white/5'}`}>
@@ -93,11 +113,19 @@ export default function AdminTShirtsPage() {
         title="Add New T-Shirt"
         description="Configure sizing, materials, and stock levels for new apparel."
       >
-        <NewTShirtForm onSuccess={() => setIsSheetOpen(false)} />
+        <NewTShirtForm onSuccess={() => {
+          setIsSheetOpen(false);
+          window.location.reload(); // Refresh to see new data
+        }} />
       </Sheet>
 
       {/* ─── T-SHIRT LIST ─── */}
-      {filteredTshirts.length === 0 ? (
+      {isLoading ? (
+        <div className="py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.01]">
+          <div className="w-8 h-8 border-2 border-white/20 border-t-[#E8161B] rounded-full animate-spin mb-4" />
+          <h3 className="font-display font-black text-xl text-white uppercase tracking-widest">Loading Apparel...</h3>
+        </div>
+      ) : filteredTshirts.length === 0 ? (
         <div className="py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.01]">
           <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-6">
             <Shirt size={24} className="text-[#E8161B]" />

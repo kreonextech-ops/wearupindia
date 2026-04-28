@@ -153,10 +153,10 @@ export const categories: Category[] = [
     slug: 'tshirts',
     name: 'T-Shirts',
     tagline: 'Wear The Brand',
-    description: 'Minimalist, high-quality rider apparel designed for comfort on and off the saddle. Coming Soon.',
+    description: 'Minimalist, high-quality rider apparel designed for comfort on and off the saddle.',
     image: getAssetUrl('/images/categories/tshirts_v2.png'),
     accentColor: '#E8161B',
-    isComingSoon: true,
+    isComingSoon: false,
   },
   {
     slug: 'hoodies',

@@ -29,8 +29,20 @@ export default function CategoryPage({ params }: Props) {
     bikeBrand: 'all',
   });
 
-  const categoryProducts = useMemo(() => {
-    return products.filter(p => p.category === params.category);
+  const [categoryProducts, setCategoryProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadProducts() {
+      setIsLoading(true);
+      const { getProductsAction } = await import('@/app/admin/products/actions');
+      const res = await getProductsAction(params.category);
+      if (res.success && res.data) {
+        setCategoryProducts(res.data as unknown as Product[]);
+      }
+      setIsLoading(false);
+    }
+    loadProducts();
   }, [params.category]);
 
   const filteredProducts = useMemo(() => {
@@ -168,7 +180,12 @@ export default function CategoryPage({ params }: Props) {
             </div>
 
             {/* Products */}
-            {filteredProducts.length > 0 ? (
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-40 border border-dashed border-border rounded-[3rem] bg-muted/10 mx-4">
+                <div className="w-10 h-10 border-4 border-muted border-t-wu-red rounded-full animate-spin mb-8" />
+                <h3 className="font-display font-black text-xl text-foreground uppercase italic tracking-tighter">Loading...</h3>
+              </div>
+            ) : filteredProducts.length > 0 ? (
               <div className={`grid grid-cols-2 gap-6 sm:gap-8 ${isSidebarOpen ? 'lg:grid-cols-2 xl:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
                 {filteredProducts.map((product, i) => (
                   <ScrollReveal key={product.id} direction="up" delay={i * 0.05}>

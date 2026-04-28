@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Package, TrendingUp, Settings, IndianRupee, Plus, X, Search, Filter, Shield } from 'lucide-react';
 import NewAccessoryForm from '@/components/admin/NewAccessoryForm';
-
-import { products } from '@/data';
+import { getProductsAction } from '@/app/admin/products/actions';
+import { Product } from '@/data';
 
 const metrics = {
   totalItems: 0,
@@ -17,9 +17,20 @@ export default function AdminBikeAccessoriesPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [baseAccessories, setBaseAccessories] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Base accessories
-  const baseAccessories = products.filter(p => p.category === 'bike-accessories');
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      const res = await getProductsAction('bike-accessories');
+      if (res.success && res.data) {
+        setBaseAccessories(res.data as unknown as Product[]);
+      }
+      setIsLoading(false);
+    }
+    loadData();
+  }, []);
 
   // Filtered and searched accessories
   const filteredAccessories = useMemo(() => {
@@ -57,7 +68,7 @@ export default function AdminBikeAccessoriesPage() {
       {/* METRICS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Items', value: metrics.totalItems, icon: Package },
+          { label: 'Total Items', value: baseAccessories.length, icon: Package },
           { label: 'Low Stock', value: metrics.lowStock, icon: Shield },
           { label: 'Monthly Sales', value: metrics.monthlySales, icon: TrendingUp },
           { label: 'Revenue (₹)', value: metrics.revenue, icon: IndianRupee },
@@ -105,7 +116,12 @@ export default function AdminBikeAccessoriesPage() {
       </div>
 
       {/* LIST CONTENT */}
-      {filteredAccessories.length === 0 ? (
+      {isLoading ? (
+        <div className="py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.01]">
+          <div className="w-8 h-8 border-2 border-white/20 border-t-[#E8161B] rounded-full animate-spin mb-4" />
+          <h3 className="font-display font-black text-xl text-white uppercase tracking-widest">Loading Accessories...</h3>
+        </div>
+      ) : filteredAccessories.length === 0 ? (
         <div className="py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.01]">
           <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-6">
             <Package size={24} className="text-[#E8161B]" />

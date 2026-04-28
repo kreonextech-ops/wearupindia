@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Layers, TrendingUp, Package, IndianRupee, Plus, X, Search, Filter } from 'lucide-react';
 import NewGraphicKitForm from '@/components/admin/NewGraphicKitForm';
-
-import { products } from '@/data';
+import { getProductsAction } from '@/app/admin/products/actions';
+import { Product } from '@/data';
 
 const metrics = {
   totalKits: 0,
@@ -17,18 +17,31 @@ export default function AdminGraphicKitsPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [baseKits, setBaseKits] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Base kits
-  const baseKits = products.filter(p => p.category === 'graphic-kits');
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      const res = await getProductsAction('graphic-kits');
+      if (res.success && res.data) {
+        setBaseKits(res.data as unknown as Product[]);
+      }
+      setIsLoading(false);
+    }
+    loadData();
+  }, []);
 
   // Filtered and searched kits
   const filteredKits = useMemo(() => {
     return baseKits.filter((product) => {
+      const brand = product.meta_data?.brand || product.meta_data?.bike_brand;
+      const model = product.meta_data?.model || product.meta_data?.bike_model;
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            product.meta_data?.bike_brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            product.meta_data?.bike_model?.toLowerCase().includes(searchQuery.toLowerCase());
+                            brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            model?.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesFilter = filterType === 'all' || product.meta_data?.bike_brand === filterType;
+      const matchesFilter = filterType === 'all' || brand === filterType;
 
       return matchesSearch && matchesFilter;
     });
@@ -36,7 +49,7 @@ export default function AdminGraphicKitsPage() {
 
   // Extract unique brands for the filter dropdown
   const uniqueBrands = useMemo(() => {
-    const brands = new Set(baseKits.map(p => p.meta_data?.bike_brand).filter(Boolean));
+    const brands = new Set(baseKits.map(p => p.meta_data?.brand || p.meta_data?.bike_brand).filter(Boolean));
     return Array.from(brands);
   }, [baseKits]);
 
@@ -58,7 +71,7 @@ export default function AdminGraphicKitsPage() {
       {/* METRICS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Kits', value: metrics.totalKits, icon: Layers },
+          { label: 'Total Kits', value: baseKits.length, icon: Layers },
           { label: 'Total Stock', value: metrics.totalStock, icon: Package },
           { label: 'Monthly Sales', value: metrics.monthlySales, icon: TrendingUp },
           { label: 'Revenue (₹)', value: metrics.revenue, icon: IndianRupee },
@@ -106,7 +119,12 @@ export default function AdminGraphicKitsPage() {
       </div>
 
       {/* LIST CONTENT */}
-      {filteredKits.length === 0 ? (
+      {isLoading ? (
+        <div className="py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.01]">
+          <div className="w-8 h-8 border-2 border-white/20 border-t-[#E8161B] rounded-full animate-spin mb-4" />
+          <h3 className="font-display font-black text-xl text-white uppercase tracking-widest">Loading Graphic Kits...</h3>
+        </div>
+      ) : filteredKits.length === 0 ? (
         <div className="py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.01]">
           <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-6">
             <Layers size={24} className="text-[#E8161B]" />

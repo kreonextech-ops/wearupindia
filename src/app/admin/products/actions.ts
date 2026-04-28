@@ -108,3 +108,90 @@ export async function createProductAction(formData: FormData) {
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * Server Action to fetch products, optionally filtered by category
+ */
+export async function getProductsAction(categorySlug?: string) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  try {
+    let query = supabase.from('products').select(`*, categories!inner(slug)`);
+    
+    if (categorySlug) {
+      query = query.eq('categories.slug', categorySlug);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+    
+    if (error) throw error;
+
+    // Map to frontend Product type
+    const mappedProducts = data.map((p: any) => ({
+      id: p.id,
+      slug: p.slug,
+      name: p.name,
+      category: p.categories.slug,
+      price: Number(p.price),
+      stock: p.stock,
+      inStock: p.stock > 0,
+      description: p.description || '',
+      images: p.images || [],
+      rating: 0,
+      reviews: 0,
+      specs: [],
+      compatibleBrands: p.meta_data?.brand ? [p.meta_data.brand] : [],
+      compatibleModels: p.meta_data?.compatible_models || [],
+      meta_data: p.meta_data || {},
+    }));
+
+    return { success: true, data: mappedProducts };
+  } catch (error: any) {
+    console.error('getProductsAction Error:', error);
+    return { success: false, error: error.message, data: [] };
+  }
+}
+
+/**
+ * Server Action to fetch a specific product by slug
+ */
+export async function getProductBySlugAction(categorySlug: string, productSlug: string) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`*, categories!inner(slug)`)
+      .eq('categories.slug', categorySlug)
+      .eq('slug', productSlug)
+      .single();
+    
+    if (error) throw error;
+
+    // Map to frontend Product type
+    const mappedProduct = {
+      id: data.id,
+      slug: data.slug,
+      name: data.name,
+      category: data.categories.slug,
+      price: Number(data.price),
+      stock: data.stock,
+      inStock: data.stock > 0,
+      description: data.description || '',
+      images: data.images || [],
+      rating: 0,
+      reviews: 0,
+      specs: [],
+      compatibleBrands: data.meta_data?.brand ? [data.meta_data.brand] : [],
+      compatibleModels: data.meta_data?.compatible_models || [],
+      meta_data: data.meta_data || {},
+    };
+
+    return { success: true, data: mappedProduct };
+  } catch (error: any) {
+    console.error('getProductBySlugAction Error:', error);
+    return { success: false, error: error.message, data: null };
+  }
+}

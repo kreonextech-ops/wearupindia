@@ -73,8 +73,8 @@ export default function NewTShirtForm({ onSuccess }: NewTShirtFormProps) {
       <div className="space-y-3">
         <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Apparel Image</label>
         <div className="relative group">
-          {preview ? (
-            <div className="relative aspect-[3/4] max-w-xs mx-auto rounded-2xl overflow-hidden border border-white/10">
+          {preview && (
+            <div className="relative aspect-[3/4] max-w-xs mx-auto rounded-2xl overflow-hidden border border-white/10 mb-4">
               <Image src={preview} alt="Preview" fill className="object-cover" />
               <button
                 type="button"
@@ -84,23 +84,23 @@ export default function NewTShirtForm({ onSuccess }: NewTShirtFormProps) {
                 <X size={16} />
               </button>
             </div>
-          ) : (
-            <label className="flex flex-col items-center justify-center aspect-[3/4] max-w-xs mx-auto rounded-2xl border-2 border-dashed border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:border-[#E8161B]/30 transition-all cursor-pointer group">
-              <div className="p-4 bg-white/5 rounded-full mb-4 group-hover:scale-110 transition-transform">
-                <Upload className="text-white/40 group-hover:text-[#E8161B]" size={24} />
-              </div>
-              <p className="text-white/60 font-display font-bold text-sm">Upload Design</p>
-              <p className="text-white/20 font-mono text-[10px] mt-2 uppercase tracking-widest text-center px-4">Ideal size: 1200x1600px<br/>PNG, JPG up to 5MB</p>
-              <input 
-                type="file" 
-                name="image" 
-                accept="image/*" 
-                className="hidden" 
-                onChange={handleImageChange}
-                required 
-              />
-            </label>
           )}
+          
+          <label className={`flex flex-col items-center justify-center aspect-[3/4] max-w-xs mx-auto rounded-2xl border-2 border-dashed border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:border-[#E8161B]/30 transition-all cursor-pointer group ${preview ? 'hidden' : ''}`}>
+            <div className="p-4 bg-white/5 rounded-full mb-4 group-hover:scale-110 transition-transform">
+              <Upload className="text-white/40 group-hover:text-[#E8161B]" size={24} />
+            </div>
+            <p className="text-white/60 font-display font-bold text-sm">Upload Design</p>
+            <p className="text-white/20 font-mono text-[10px] mt-2 uppercase tracking-widest text-center px-4">Ideal size: 1200x1600px<br/>PNG, JPG up to 5MB</p>
+            <input 
+              type="file" 
+              name="image" 
+              accept="image/*" 
+              className="hidden" 
+              onChange={handleImageChange}
+              required={!preview} 
+            />
+          </label>
         </div>
       </div>
 
