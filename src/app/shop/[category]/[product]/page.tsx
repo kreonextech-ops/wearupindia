@@ -128,13 +128,44 @@ export default function ProductPage({ params }: Props) {
                  <h2 className="font-display font-black text-4xl text-foreground tracking-tight uppercase mb-10 leading-none">Product <span className="text-wu-red">Details</span></h2>
                  
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {product.specs.map((spec, i) => (
-                      <div key={i} className="p-6 bg-foreground/[0.02] border border-border rounded-2xl group hover:bg-foreground/[0.04] transition-colors">
-                        <p className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase mb-1">{spec.label}</p>
-                        <p className="font-display font-bold text-foreground text-lg tracking-tight transition-colors">{spec.value}</p>
-                      </div>
-                    ))}
+                    {(() => {
+                      const dynamicSpecs = (product as any).meta_data?.specs || {};
+                      const hasDynamicSpecs = Object.keys(dynamicSpecs).length > 0;
+                      
+                      if (hasDynamicSpecs) {
+                        return Object.entries(dynamicSpecs).map(([key, value], i) => {
+                          if (key === 'installation_note') return null;
+                          const formattedLabel = key.replace(/_/g, ' ');
+                          return (
+                            <div key={i} className="p-6 bg-foreground/[0.02] border border-border rounded-2xl group hover:bg-foreground/[0.04] transition-colors">
+                              <p className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase mb-1">{formattedLabel}</p>
+                              <p className="font-display font-bold text-foreground text-lg tracking-tight transition-colors">{value as string}</p>
+                            </div>
+                          );
+                        });
+                      }
+
+                      return product.specs?.map((spec, i) => (
+                        <div key={i} className="p-6 bg-foreground/[0.02] border border-border rounded-2xl group hover:bg-foreground/[0.04] transition-colors">
+                          <p className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase mb-1">{spec.label}</p>
+                          <p className="font-display font-bold text-foreground text-lg tracking-tight transition-colors">{spec.value}</p>
+                        </div>
+                      ));
+                    })()}
                  </div>
+
+                 {/* Installation Note */}
+                 {((product as any).meta_data?.specs?.installation_note) && (
+                   <div className="mt-6 p-6 bg-blue-500/5 border border-blue-500/10 rounded-2xl flex gap-4">
+                     <Info className="text-blue-500 shrink-0 mt-0.5" size={18} />
+                     <div>
+                       <h4 className="font-display font-bold text-sm text-foreground uppercase tracking-widest mb-1">Installation Note</h4>
+                       <p className="font-body text-sm text-foreground/60 leading-relaxed">
+                         {(product as any).meta_data.specs.installation_note}
+                       </p>
+                     </div>
+                   </div>
+                 )}
               </ScrollReveal>
             </div>
           </div>

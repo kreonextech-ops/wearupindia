@@ -69,6 +69,58 @@ export const GRAPHIC_KITS_STRUCTURE = [
   { brand: 'Suzuki', slug: 'suzuki', models: ['Hayabusa', 'Gixxer SF-155/250'] },
 ];
 
+export const MOTORCYCLE_ACCESSORIES_STRUCTURE = [
+  {
+    category: 'Performance',
+    slug: 'performance',
+    items: ['Liqui Moly', 'Brake Oil', 'BMC Air Filter', 'RCB Brakes', 'RCB Suspension']
+  },
+  {
+    category: 'Luggage Accessories Touring',
+    slug: 'luggage-accessories-touring',
+    items: ['Top Box 45L', 'Petrol Cans', 'Bungee Cords', 'Navigation System']
+  },
+  {
+    category: 'Fog Lights',
+    slug: 'fog-lights',
+    items: ['Foglight - 5 LED', 'Fog Light - 4 LED', 'Fog Light - P49', 'MG - VK 70 Pro', 'VK 50 S', 'VK 60']
+  },
+  {
+    category: 'Bags and Backpacks',
+    slug: 'bags-and-backpacks',
+    items: ['Saddle Bag', 'Rack Less Bag', 'Crash Bar Bag', 'Tail Bag', 'Tank Bag', 'Handle Bar Bag', 'Backpack 100% Waterproof', 'Waist Bag', 'Hydration Bag']
+  },
+  {
+    category: 'Helmet',
+    slug: 'helmet',
+    items: ['Anti Fog', 'Helmet Cleaner', 'GoPro Mount', 'Goggles 100%']
+  },
+  {
+    category: 'Accessories',
+    slug: 'accessories',
+    items: ['Foglight Clamp', 'Mobile Mount', 'GoPro Mount', 'Spools', 'Hand Grips', 'Brake Lever Grips', 'Gear Cover', 'Gear Shoe Cover', 'Key Chain']
+  },
+  {
+    category: 'Bike Protection',
+    slug: 'bike-protection',
+    items: ['Crashguard', 'Saddle Stay', 'Stand Extender', 'Head Light Grill', 'Radiator Grill', 'Body Cover', 'Engine Guard and Skid Plate', 'Frame Slider', 'Disc Lock', 'Coolant Guard', 'Master Cylinder Guard', 'Foot Peg Extender']
+  }
+];
+
+export type AccessoryCategory = {
+  name: string;
+  slug: string;
+  image: string;
+  items: string[];
+};
+
+export const accessoryCategories: AccessoryCategory[] = MOTORCYCLE_ACCESSORIES_STRUCTURE.map(cat => ({
+  name: cat.category,
+  slug: cat.slug,
+  image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=600&q=80', // Placeholder
+  items: cat.items
+}));
+
 export const categories: Category[] = [
   {
     slug: 'graphic-kits',
@@ -115,441 +167,19 @@ export const categories: Category[] = [
   },
 ];
 
-export const products: Product[] = [
-  // ─── YAMAHA FZ-25 GRAPHIC KITS (Model-specific samples) ───
-  {
-    id: 'gk-fz25-001',
-    slug: 'yamaha-fz25-venom-design-full-body-kit',
-    name: 'Yamaha FZ 25 – Venom Design [Full Body Edge To Edge Wrap / Decal / Sticker Kit]',
-    category: 'graphic-kits',
-    price: 2999,
-    originalPrice: 4999,
-    badge: 'NEW',
-    rating: 4.8,
-    reviews: 23,
-    images: [
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=90',
-      'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=1200&q=90',
-      'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=1200&q=90',
-    ],
-    description: 'The Venom Design Full Body Kit is a precision edge-to-edge wrap designed exclusively for the Yamaha FZ 25. Inspired by aggressive racing aesthetics, this kit transforms your naked street fighter into a track-ready machine. Manufactured with genuine 3M MPI 1105 cast vinyl with UV laminate — this kit survives harsh Indian climates.',
-    marketingTagline: '3M Scratchless Series: Your ride deserves nothing but the best.',
-    specs: [
-      { label: 'Material', value: '3M Cast Vinyl + UV Laminate' },
-      { label: 'Fit', value: 'Yamaha FZ 25 (All Years)' },
-      { label: 'Coverage', value: 'Full Body – Edge To Edge' },
-      { label: 'Durability', value: '5+ Years Outdoor' },
-      { label: 'Finish', value: 'Gloss / Matte (Choose at checkout)' },
-      { label: 'Application', value: 'DIY + Professional Guide Included' },
-    ],
-    kitIncludes: [
-      'Front Fender Wrap',
-      'Fuel Tank Full Wrap',
-      'Side Fairings (L + R)',
-      'Tail Piece Wrap',
-      'Swingarm Sticker',
-      'Engine Cowl Decal',
-      'Rim Strips (Set of 16)',
-      'Application Squeegee + Heat Gun Guide',
-    ],
-    installationSteps: [
-      { step: 1, title: 'Clean the Surface', desc: 'Use isopropyl alcohol to degrease all panels. Ensure zero dust or moisture. A clean surface is 70% of the job.' },
-      { step: 2, title: 'Measure & Position', desc: 'Line up each panel piece using the guide markers printed on the film backing. Do not peel the full sheet at once.' },
-      { step: 3, title: 'Apply with Squeegee', desc: 'Peel 2–3 cm, position, and use the squeegee at a 45° angle to push out bubbles from center outward.' },
-      { step: 4, title: 'Heat & Conform', desc: 'Use a heat gun at 60–70°C on curved sections and edges. This activates the adhesive and allows the film to conform to complex curves.' },
-      { step: 5, title: 'Trim & Seal Edges', desc: 'Use the included precision blade to trim overlaps neatly. Press all edges firmly. Your kit is ready.' },
-    ],
-    whyChoose: [
-      { icon: 'shield', title: '3M Certified Materials', desc: 'Every kit uses genuine 3M MPI 1105 cast vinyl — same material used by professional wrap studios.' },
-      { icon: 'droplets', title: 'Monsoon Proof', desc: 'UV laminate coat protects against harsh UV, rain, and road debris. Built for Indian conditions.' },
-      { icon: 'scissors', title: 'Precision Die-Cut', desc: 'Every piece is cut by a precision plotter to match your exact bike model — no trimming needed.' },
-      { icon: 'undo', title: 'Zero Paint Damage', desc: 'Leaves no adhesive residue. Peel off clean anytime — it won\'t harm your stock paint.' },
-    ],
-    inStock: true,
-    isNew: true,
-    compatibleBrands: ['yamaha'],
-    compatibleModels: ['fz-25'],
-  },
-  {
-    id: 'gk-fz25-002',
-    slug: 'yamaha-fz25-abstract-design-full-body-kit',
-    name: 'Yamaha FZ 25 – Abstract Design [Full Body Edge To Edge Wrap / Decal / Sticker Kit]',
-    category: 'graphic-kits',
-    price: 2999,
-    originalPrice: 4999,
-    badge: 'NEW',
-    rating: 4.7,
-    reviews: 18,
-    images: [
-      'https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?w=1200&q=90',
-      'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=1200&q=90',
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=90',
-    ],
-    description: 'The Abstract Design brings a contemporary art-meets-machine aesthetic to your FZ 25. Geometric patterns flow across the tank, fairings, and tail — giving the bike a gallery-worthy, one-of-a-kind look on every street corner. Premium 3M materials ensure it looks as good on day 1 as it does 5 years later.',
-    marketingTagline: '3M Scratchless Series: Your ride deserves nothing but the best.',
-    specs: [
-      { label: 'Material', value: '3M Cast Vinyl + UV Laminate' },
-      { label: 'Fit', value: 'Yamaha FZ 25 (All Years)' },
-      { label: 'Coverage', value: 'Full Body – Edge To Edge' },
-      { label: 'Durability', value: '5+ Years Outdoor' },
-      { label: 'Finish', value: 'Gloss / Matte (Choose at checkout)' },
-      { label: 'Application', value: 'DIY + Professional Guide Included' },
-    ],
-    kitIncludes: [
-      'Front Fender Wrap',
-      'Fuel Tank Full Wrap',
-      'Side Fairings (L + R)',
-      'Tail Piece Wrap',
-      'Swingarm Sticker',
-      'Engine Cowl Decal',
-      'Rim Strips (Set of 16)',
-      'Application Squeegee + Heat Gun Guide',
-    ],
-    installationSteps: [
-      { step: 1, title: 'Clean the Surface', desc: 'Use isopropyl alcohol to degrease all panels. Ensure zero dust or moisture. A clean surface is 70% of the job.' },
-      { step: 2, title: 'Measure & Position', desc: 'Line up each panel piece using the guide markers printed on the film backing. Do not peel the full sheet at once.' },
-      { step: 3, title: 'Apply with Squeegee', desc: 'Peel 2–3 cm, position, and use the squeegee at a 45° angle to push out bubbles from center outward.' },
-      { step: 4, title: 'Heat & Conform', desc: 'Use a heat gun at 60–70°C on curved sections and edges. This activates the adhesive and allows the film to conform to complex curves.' },
-      { step: 5, title: 'Trim & Seal Edges', desc: 'Use the included precision blade to trim overlaps neatly. Press all edges firmly. Your kit is ready.' },
-    ],
-    whyChoose: [
-      { icon: 'shield', title: '3M Certified Materials', desc: 'Every kit uses genuine 3M MPI 1105 cast vinyl — same material used by professional wrap studios.' },
-      { icon: 'droplets', title: 'Monsoon Proof', desc: 'UV laminate coat protects against harsh UV, rain, and road debris. Built for Indian conditions.' },
-      { icon: 'scissors', title: 'Precision Die-Cut', desc: 'Every piece is cut by a precision plotter to match your exact bike model — no trimming needed.' },
-      { icon: 'undo', title: 'Zero Paint Damage', desc: 'Leaves no adhesive residue. Peel off clean anytime — it won\'t harm your stock paint.' },
-    ],
-    inStock: true,
-    isNew: true,
-    compatibleBrands: ['yamaha'],
-    compatibleModels: ['fz-25'],
-  },
-  // Stickers & Wraps
-  {
-    id: 'sw-001',
-    slug: 'heritage-decal-kit-re',
-    name: 'Heritage Decal Kit – Royal Enfield',
-    category: 'graphic-kits',
-    price: 1299,
-    originalPrice: 1899,
-    badge: 'BEST SELLER',
-    rating: 4.8,
-    reviews: 312,
-    images: [
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
-      'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=800&q=80',
-    ],
-    description: 'Specially crafted vinyl decal kit for Royal Enfield classics. Deep-etched graphics with UV-laminate coat — handles torrential monsoon and harsh sun alike.',
-    specs: [
-      { label: 'Material', value: '3M Cast Vinyl + UV Laminate' },
-      { label: 'Fit', value: 'Royal Enfield Classic 350/500' },
-      { label: 'Durability', value: '5+ Years' },
-      { label: 'Application', value: 'DIY with guide included' },
-    ],
-    inStock: true,
-    isBestSeller: true,
-    compatibleBrands: ['royal-enfield'],
-  },
-  {
-    id: 'sw-002',
-    slug: 'hex-grip-tank-pads',
-    name: 'Hex-Grip Tank Pads',
-    category: 'graphic-kits',
-    price: 599,
-    originalPrice: 899,
-    badge: 'NEW',
-    rating: 4.6,
-    reviews: 189,
-    images: [
-      'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=800&q=80',
-    ],
-    description: 'High-grip hex-pattern tank pad protectors. Anti-scratch, fuel-resistant, and precision die-cut for a seamless factory finish.',
-    specs: [
-      { label: 'Material', value: '3D Carbon Fiber Vinyl' },
-      { label: 'Size', value: '15cm × 10cm per pad (set of 2)' },
-      { label: 'Adhesive', value: 'Premium 3M' },
-      { label: 'Finish', value: 'Matte / Gloss' },
-    ],
-    inStock: true,
-    isNew: true,
-    compatibleBrands: ['yamaha', 'ktm', 'kawasaki', 'honda'],
-  },
-  {
-    id: 'sw-003',
-    slug: 'full-bike-wrap-kit',
-    name: 'Full Bike Wrap Kit – Matte Black',
-    category: 'graphic-kits',
-    price: 8999,
-    rating: 4.9,
-    reviews: 94,
-    images: [
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
-    ],
-    description: 'Complete matte-black transformation wrap. Avery Dennison MPI 1105 film for total coverage — doors, panels, fairings.',
-    specs: [
-      { label: 'Material', value: 'Avery Dennison MPI 1105' },
-      { label: 'Finish', value: 'Matte Black' },
-      { label: 'Coverage', value: 'Full bike (excl. chrome)' },
-      { label: 'Durability', value: '7 Years' },
-    ],
-    inStock: true,
-    compatibleBrands: ['yamaha', 'ktm', 'kawasaki', 'honda', 'royal-enfield', 'ducati', 'triumph', 'bmw', 'suzuki'],
-  },
-  {
-    id: 'sw-004',
-    slug: 'racing-number-plate-sticker',
-    name: 'Racing Number Plate Sticker',
-    category: 'graphic-kits',
-    price: 299,
-    rating: 4.5,
-    reviews: 441,
-    images: [
-      'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=800&q=80',
-    ],
-    description: 'Custom racing number plates with hi-vis reflective finish. Track-legal and road-ready.',
-    specs: [
-      { label: 'Material', value: 'Reflective Vinyl' },
-      { label: 'Customizable', value: 'Yes – Number + Name' },
-      { label: 'Size', value: 'Standard / Custom' },
-    ],
-    inStock: true,
-    compatibleBrands: ['yamaha', 'ktm', 'kawasaki', 'honda', 'suzuki'],
-  },
-  {
-    id: 'sw-005',
-    slug: 'carbon-fiber-wrap-3m',
-    name: '3M Carbon Fiber – Textured Wrap',
-    category: 'graphic-kits',
-    price: 3499,
-    rating: 4.8,
-    reviews: 152,
-    images: ['https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?w=800&q=80'],
-    description: 'Genuine 3M 2080 Series textured carbon fiber wrap. High-conformability for complex curves like aero-wings and mirrors.',
-    specs: [{ label: 'Series', value: '2080 Textured' }, { label: 'Air-Release', value: 'Comply™ Tech' }],
-    inStock: true,
-    isNew: true,
-    compatibleBrands: ['ducati', 'kawasaki', 'bmw', 'yamaha'],
-  },
-  {
-    id: 'sw-006',
-    slug: 'neon-rim-strips',
-    name: 'Reflective Neon Rim Strips',
-    category: 'graphic-kits',
-    price: 399,
-    originalPrice: 599,
-    rating: 4.4,
-    reviews: 820,
-    images: ['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80'],
-    description: 'High-visibility fluorescent rim strips. Precision curved for 17-inch wheels (set of 16).',
-    specs: [{ label: 'Reflectivity', value: 'Class A' }, { label: 'Compatibility', value: '17" Wheels' }],
-    inStock: true,
-    compatibleBrands: ['ktm', 'yamaha', 'honda', 'bajaj'],
-  },
-  // Accessories
-  {
-    id: 'ac-001',
-    slug: 'carbon-phantom-helmet',
-    name: 'Carbon Phantom Helmet',
-    category: 'bike-accessories',
-    price: 24999,
-    originalPrice: 29999,
-    badge: 'NEW',
-    rating: 4.9,
-    reviews: 67,
-    images: [
-      'https://images.unsplash.com/photo-1591370874773-6702e8f12fd8?w=800&q=80',
-    ],
-    description: 'Full-face carbon fiber shell helmet with anti-fog visor and emergency release cheek pads. DOT & ISI certified.',
-    specs: [
-      { label: 'Shell', value: 'Carbon Fiber Composite' },
-      { label: 'Certification', value: 'DOT, ISI' },
-      { label: 'Visor', value: 'Anti-fog, UV400' },
-      { label: 'Weight', value: '1,350g' },
-      { label: 'Sizes', value: 'S, M, L, XL, XXL' },
-    ],
-    inStock: true,
-    isNew: true,
-    compatibleBrands: ['yamaha', 'ktm', 'kawasaki', 'honda', 'royal-enfield', 'ducati', 'triumph', 'bmw', 'suzuki'],
-  },
-  {
-    id: 'ac-002',
-    slug: 'x-pro-racing-gloves',
-    name: 'X-Pro Racing Gloves',
-    category: 'bike-accessories',
-    price: 6499,
-    originalPrice: 8999,
-    rating: 4.7,
-    reviews: 203,
-    images: [
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
-    ],
-    description: 'Track-tested leather racing gloves with carbon knuckle guards, pre-curved fingers and wrist brace system.',
-    specs: [
-      { label: 'Material', value: 'Kangaroo Leather' },
-      { label: 'Protection', value: 'CE Level 1' },
-      { label: 'Knuckles', value: 'Hard Carbon Insert' },
-      { label: 'Closure', value: 'Dual-Velcro Wrist Wrap' },
-    ],
-    inStock: true,
-    isBestSeller: true,
-    compatibleBrands: ['yamaha', 'ktm', 'kawasaki', 'honda', 'royal-enfield', 'ducati', 'triumph', 'bmw', 'suzuki'],
-  },
-  {
-    id: 'ac-003',
-    slug: 'pro-series-gold-chain',
-    name: 'Pro-Series Gold Drive Chain',
-    category: 'bike-accessories',
-    price: 4500,
-    badge: 'BEST VALUE',
-    rating: 4.6,
-    reviews: 158,
-    images: [
-      'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=800&q=80',
-    ],
-    description: '520-pitch gold X-ring chain with pre-stretched links and double-sealed O-ring tech for extended life.',
-    specs: [
-      { label: 'Pitch', value: '520' },
-      { label: 'Links', value: '118 (Standard)' },
-      { label: 'Seal', value: 'X-Ring' },
-      { label: 'Tensile Strength', value: '3,200 kg' },
-    ],
-    inStock: true,
-    compatibleBrands: ['yamaha', 'ktm', 'kawasaki', 'honda', 'suzuki'],
-  },
-  {
-    id: 'ac-004',
-    slug: 'velocity-rider-boots',
-    name: 'Velocity Rider Boots',
-    category: 'bike-accessories',
-    price: 12499,
-    originalPrice: 15999,
-    rating: 4.8,
-    reviews: 88,
-    images: [
-      'https://images.unsplash.com/photo-1591370874773-6702e8f12fd8?w=800&q=80',
-    ],
-    description: 'Full-grain leather moto boots with ankle reinforcement, oil-resistant sole and waterproof membrane.',
-    specs: [
-      { label: 'Upper', value: 'Full-Grain Leather' },
-      { label: 'Sole', value: 'Rubber, Oil-Resistant' },
-      { label: 'Ankle', value: 'TPU Reinforced' },
-      { label: 'Waterproof', value: 'Gore-Tex Membrane' },
-    ],
-    inStock: true,
-    isBestSeller: true,
-    compatibleBrands: ['yamaha', 'ktm', 'kawasaki', 'honda', 'royal-enfield', 'ducati', 'triumph', 'bmw', 'suzuki'],
-  },
-  {
-    id: 'ac-005',
-    slug: 'ducati-corsa-tank-bag',
-    name: 'Ducati Corsa Semi-Rigid Tank Bag',
-    category: 'bike-accessories',
-    price: 8999,
-    rating: 4.9,
-    reviews: 24,
-    images: ['https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=800&q=80'],
-    description: 'Premium semi-rigid tank bag with Givi Tanklock system. Red accents and official Corsa branding.',
-    specs: [{ label: 'Volume', value: '5L' }, { label: 'Mount', value: 'Tanklock' }],
-    inStock: true,
-    compatibleBrands: ['ducati'],
-  },
-  // Merchandise
-  {
-    id: 'me-001',
-    slug: 'tech-wear-hoodie',
-    name: 'Tech-Wear Hoodie',
-    category: 'bike-accessories',
-    price: 4499,
-    originalPrice: 5999,
-    badge: 'HOT',
-    rating: 4.7,
-    reviews: 346,
-    images: [
-      'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&q=80',
-    ],
-    description: 'Heavyweight 400 GSM fleece hoodie with embroidered WearUp logo patch. Pre-shrunk, relaxed-fit.',
-    specs: [
-      { label: 'Material', value: '400 GSM Fleece' },
-      { label: 'Fit', value: 'Relaxed / Oversized' },
-      { label: 'Logo', value: 'Embroidered Chest Patch' },
-      { label: 'Sizes', value: 'S – 3XL' },
-    ],
-    inStock: true,
-    isBestSeller: true,
-    compatibleBrands: ['yamaha', 'ktm', 'kawasaki', 'honda', 'royal-enfield', 'ducati', 'triumph', 'bmw', 'suzuki'],
-  },
-  {
-    id: 'me-002',
-    slug: 'kinetic-logo-tee',
-    name: 'Kinetic Logo Tee',
-    category: 'bike-accessories',
-    price: 1299,
-    rating: 4.5,
-    reviews: 512,
-    images: [
-      'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&q=80',
-    ],
-    description: '220 GSM cotton jersey tee with screen-printed WearUp graphic. Pre-washed for softer feel.',
-    specs: [
-      { label: 'Material', value: '220 GSM Cotton Jersey' },
-      { label: 'Print', value: 'Screen Print' },
-      { label: 'Fit', value: 'Regular' },
-      { label: 'Sizes', value: 'XS – 3XL' },
-    ],
-    inStock: true,
-    compatibleBrands: ['yamaha', 'ktm', 'kawasaki', 'honda', 'royal-enfield', 'ducati', 'triumph', 'bmw', 'suzuki'],
-  },
-  {
-    id: 'me-003',
-    slug: 'mach-1-leather-jacket',
-    name: 'Mach-1 Leather Jacket',
-    category: 'bike-accessories',
-    price: 18999,
-    originalPrice: 24999,
-    badge: 'PREMIUM',
-    rating: 4.9,
-    reviews: 127,
-    images: [
-      'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&q=80',
-    ],
-    description: 'CE-rated motorcycle leather jacket with removable armor at shoulders, elbows and back. Full-grain cowhide.',
-    specs: [
-      { label: 'Leather', value: 'Full-Grain Cowhide 1.2mm' },
-      { label: 'Armor', value: 'CE Level 1 – Removable' },
-      { label: 'Lining', value: 'Mesh Ventilated' },
-      { label: 'Sizes', value: 'S – 4XL' },
-    ],
-    inStock: true,
-    isNew: true,
-    compatibleBrands: ['yamaha', 'ktm', 'kawasaki', 'honda', 'royal-enfield', 'ducati', 'triumph', 'bmw', 'suzuki'],
-  },
-  {
-    id: 'me-004',
-    slug: 'phantom-rider-gloves-street',
-    name: 'Phantom Street Performance Gloves',
-    category: 'bike-accessories',
-    price: 2499,
-    rating: 4.6,
-    reviews: 112,
-    images: ['https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&q=80'],
-    description: 'Lightweight textile/leather hybrid gloves for daily city commuting. Touchscreen sensitive fingertips.',
-    specs: [{ label: 'Material', value: 'Mesh/Goat Leather' }, { label: 'Usage', value: 'Daily City' }],
-    inStock: true,
-    compatibleBrands: ['ktm', 'yamaha', 'bajaj', 'royal-enfield'],
-  },
-];
-
+export const products: Product[] = [];
 export const brands: Brand[] = [
-  { name: 'Ather', slug: 'ather', image: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=400&q=80', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'ather')?.models || [] },
-  { name: 'Bajaj', slug: 'bajaj', image: getAssetUrl('/images/brands/bajaj.webp'), models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'bajaj')?.models || [] },
-  { name: 'KTM', slug: 'ktm', image: getAssetUrl('/images/brands/ktm.webp'), models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'ktm')?.models || [] },
-  { name: 'Royal Enfield', slug: 'royal-enfield', image: getAssetUrl('/images/brands/re.webp'), models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'royal-enfield')?.models || [] },
-  { name: 'TVS', slug: 'tvs', image: getAssetUrl('/images/brands/tvs.webp'), models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'tvs')?.models || [] },
-  { name: 'Yamaha', slug: 'yamaha', image: getAssetUrl('/images/brands/yamaha.webp'), models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'yamaha')?.models || [] },
-  { name: 'BMW', slug: 'bmw', image: 'https://images.unsplash.com/photo-1616196236528-761c5655716e?w=400&q=80', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'bmw')?.models || [] },
-  { name: 'Hero', slug: 'hero', image: 'https://images.unsplash.com/photo-1642289659020-f56860f1882d?w=400&q=80', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'hero')?.models || [] },
-  { name: 'Kawasaki', slug: 'kawasaki', image: getAssetUrl('/images/brands/kawasaki.webp'), models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'kawasaki')?.models || [] },
-  { name: 'Honda', slug: 'honda', image: 'https://images.unsplash.com/photo-1649982361664-df8207f2cd4a?w=400&q=80', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'honda')?.models || [] },
-  { name: 'Suzuki', slug: 'suzuki', image: 'https://images.unsplash.com/photo-1632763261763-883fd34a8e0f?w=400&q=80', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'suzuki')?.models || [] },
+  { name: 'Ather', slug: 'ather', image: '/images/brands/ather.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'ather')?.models || [] },
+  { name: 'Bajaj', slug: 'bajaj', image: '/images/brands/pulsar.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'bajaj')?.models || [] },
+  { name: 'KTM', slug: 'ktm', image: '/images/brands/ktm.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'ktm')?.models || [] },
+  { name: 'Royal Enfield', slug: 'royal-enfield', image: '/images/brands/royal-enfield.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'royal-enfield')?.models || [] },
+  { name: 'TVS', slug: 'tvs', image: '/images/brands/tvs.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'tvs')?.models || [] },
+  { name: 'Yamaha', slug: 'yamaha', image: '/images/brands/yamaha.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'yamaha')?.models || [] },
+  { name: 'BMW', slug: 'bmw', image: '/images/brands/bmw.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'bmw')?.models || [] },
+  { name: 'Hero', slug: 'hero', image: '/images/brands/hero.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'hero')?.models || [] },
+  { name: 'Kawasaki', slug: 'kawasaki', image: '/images/brands/kawasaki.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'kawasaki')?.models || [] },
+  { name: 'Honda', slug: 'honda', image: '/images/brands/honda.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'honda')?.models || [] },
+  { name: 'Suzuki', slug: 'suzuki', image: '/images/brands/suzuki.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'suzuki')?.models || [] },
   { name: 'Universal', slug: 'universal', image: 'https://images.unsplash.com/photo-1620986794695-171542f0c79d?w=400&q=80', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'universal')?.models || [] },
 ];
 
@@ -678,36 +308,7 @@ export const services: Service[] = [
   },
 ];
 
-export const testimonials = [
-  {
-    name: 'Ritwick Lama',
-    role: 'Customer',
-    city: 'Siliguri',
-    text: 'The product is absolutely amazing, without any residual glues and it did not took off the original paint of the motorbike which is the best part.',
-    stars: 5,
-  },
-  {
-    name: 'sushant adhikari',
-    role: 'Customer',
-    city: 'Siliguri',
-    stars: 5,
-    text: "Great experience at Wearup India. The team did an amazing job with the ceramic coating on my bike (Ninja 1000SX). The price was reasonable, and the quality of work is exceptional. My bike looks stunning.",
-  },
-  {
-    name: 'Jayanta Arya',
-    role: 'Customer',
-    city: 'Siliguri',
-    text: 'Trained professionals are here to wrap your vehicle. Best in Siliguri. Recommended',
-    stars: 5,
-  },
-  {
-    name: 'Where_is Fariz',
-    role: 'Customer',
-    city: 'India',
-    text: 'I recently purchased a decal kit from WearUp India. The owner was very helpful throughout the process. I received the kit within 4 days via India Post.',
-    stars: 5,
-  },
-];
+export const testimonials: any[] = [];
 
 export const brandMarquee = ['YAMAHA', 'KAWASAKI', 'HONDA', 'ROYAL ENFIELD', 'BAJAJ', 'KTM', 'DUCATI', 'TRIUMPH', 'BMW', 'SUZUKI', 'ATHER', 'TVS', 'HERO'];
 

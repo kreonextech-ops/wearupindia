@@ -21,7 +21,31 @@ export async function createProductAction(formData: FormData) {
     const stock = parseInt(formData.get('stock') as string);
     const brand = formData.get('brand') as string;
     const model = formData.get('model') as string;
+    const subCategory = formData.get('sub_category') as string;
+    const itemType = formData.get('item_type') as string;
     const imageFile = formData.get('image') as File;
+    
+    // Capture dynamic specs (any field not in core list)
+    const coreKeys = ['name', 'category_slug', 'price', 'description', 'stock', 'brand', 'model', 'image', 'compatibleModels', 'pricingMatrix', 'sub_category', 'item_type'];
+    const specs: Record<string, any> = {};
+    formData.forEach((value, key) => {
+      if (!coreKeys.includes(key) && typeof value === 'string') {
+        specs[key] = value;
+      }
+    });
+
+    let compatibleModels = [];
+    let pricingMatrix = null;
+    try {
+      if (formData.get('compatibleModels')) {
+        compatibleModels = JSON.parse(formData.get('compatibleModels') as string);
+      }
+      if (formData.get('pricingMatrix')) {
+        pricingMatrix = JSON.parse(formData.get('pricingMatrix') as string);
+      }
+    } catch (e) {
+      console.error('Error parsing JSON from formData', e);
+    }
 
     if (!imageFile || imageFile.size === 0) {
       throw new Error('Please upload an image.');
@@ -64,7 +88,12 @@ export async function createProductAction(formData: FormData) {
           meta_data: {
             brand,
             model,
-            is_graphic_kit: categorySlug === 'graphic-kits'
+            sub_category: subCategory,
+            item_type: itemType,
+            is_graphic_kit: categorySlug === 'graphic-kits',
+            compatible_models: compatibleModels,
+            pricing_matrix: pricingMatrix,
+            specs: specs
           }
         },
       ])

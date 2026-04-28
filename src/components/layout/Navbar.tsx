@@ -252,6 +252,9 @@ export default function Navbar() {
                         <Link href="/profile" className="flex items-center px-3 py-2.5 text-sm text-foreground/80 hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors font-display font-medium">
                           Profile Details
                         </Link>
+                        <Link href="/admin" className="flex items-center px-3 py-2.5 text-sm text-wu-red hover:text-white hover:bg-wu-red/10 rounded-xl transition-colors font-display font-medium">
+                          Admin Panel
+                        </Link>
                         <Link href="/profile" className="flex items-center px-3 py-2.5 text-sm text-foreground/80 hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors font-display font-medium">
                           My Orders
                         </Link>

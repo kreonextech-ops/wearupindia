@@ -1,16 +1,14 @@
 import Link from 'next/link';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
-import { brands, GRAPHIC_KITS_STRUCTURE } from '@/data';
-import { getAssetUrl } from '@/lib/assets';
+import { accessoryCategories } from '@/data';
 import SafeImage from '@/components/ui/SafeImage';
 
-export default function GraphicKitsBrandsPage() {
+export default function MotorcycleAccessoriesPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* ─── HERO HEADER ─── */}
       <div className="relative pt-32 pb-16 bg-muted/30 border-b border-border overflow-hidden">
         <div className="absolute inset-0 z-0 opacity-20">
-          {/* Subtle background texture */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-wu-red/10 via-background to-background" />
         </div>
         
@@ -19,21 +17,21 @@ export default function GraphicKitsBrandsPage() {
             <ArrowLeft size={14} /> Back to Shop
           </Link>
           <h1 className="font-display font-black text-5xl sm:text-7xl text-foreground uppercase tracking-tighter italic mb-4">
-            Graphic Kits
+            Bike Accessories
           </h1>
           <p className="font-body text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
-            Select your motorcycle manufacturer to explore precision-cut, premium vinyl kits tailored perfectly for your machine's aggressive lines.
+            Premium bike accessories that protect, boost performance, comfort, and style—engineered to handle every road you take.
           </p>
         </div>
       </div>
 
-      {/* ─── QUICK NAV BAR (Optional, mimicking screenshot structure) ─── */}
+      {/* ─── QUICK NAV BAR ─── */}
       <div className="bg-foreground text-background overflow-x-auto whitespace-nowrap scrollbar-hide border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-start sm:justify-center gap-8 sm:gap-12 w-max sm:w-auto">
-          {brands.map(brand => (
-            <Link key={brand.slug} href={`/shop/graphic-kits/${brand.slug}`} className="group flex flex-col items-center">
-              <span className="font-display font-bold text-xs uppercase tracking-widest group-hover:text-wu-red transition-colors">{brand.name}</span>
-              <span className="font-mono text-[9px] text-muted-foreground opacity-70 group-hover:opacity-100">{brand.models?.length || 0} Models</span>
+          {accessoryCategories.map(cat => (
+            <Link key={cat.slug} href={`/shop/bike-accessories/${cat.slug}`} className="group flex flex-col items-center">
+              <span className="font-display font-bold text-xs uppercase tracking-widest group-hover:text-wu-red transition-colors">{cat.name}</span>
+              <span className="font-mono text-[9px] text-muted-foreground opacity-70 group-hover:opacity-100">{cat.items?.length || 0} Items</span>
             </Link>
           ))}
         </div>
@@ -46,26 +44,22 @@ export default function GraphicKitsBrandsPage() {
           <ChevronRight size={12} className="text-border" />
           <Link href="/shop" className="hover:text-foreground transition-colors">Shop</Link>
           <ChevronRight size={12} className="text-border" />
-          <span className="text-foreground font-bold">Graphic Kits</span>
+          <span className="text-foreground font-bold">Bike Accessories</span>
         </div>
 
-        {/* ─── BRAND GRID ─── */}
+        {/* ─── CATEGORY GRID ─── */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {brands.map((brand) => (
+          {accessoryCategories.map((cat) => (
             <Link 
-              href={`/shop/graphic-kits/${brand.slug}`} 
-              key={brand.slug}
+              href={`/shop/bike-accessories/${cat.slug}`} 
+              key={cat.slug}
               className="group relative flex flex-col bg-muted/10 border border-border overflow-hidden hover:border-wu-red/50 transition-colors"
             >
               {/* Image Container */}
               <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted/20 flex items-center justify-center">
-                 {/* 
-                    If we have transparent bike PNGs, this looks great. 
-                    Alternatively, using the cinematic images we generated.
-                 */}
                 <SafeImage 
-                  src={brand.image}
-                  alt={brand.name}
+                  src={cat.image}
+                  alt={cat.name}
                   fill
                   className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
                 />
@@ -75,11 +69,11 @@ export default function GraphicKitsBrandsPage() {
               {/* Content */}
               <div className="relative z-10 p-5 bg-background border-t border-border flex flex-col">
                 <h2 className="font-display font-black text-xl text-foreground uppercase tracking-wider mb-1 group-hover:text-wu-red transition-colors">
-                  {brand.name}
+                  {cat.name}
                 </h2>
                 <div className="flex items-center justify-between mt-1">
                   <span className="font-mono text-[9px] tracking-widest uppercase text-muted-foreground">
-                    {brand.models?.length || 0} Models Available
+                    {cat.items?.length || 0} Subcategories
                   </span>
                   <ChevronRight size={14} className="text-muted-foreground group-hover:text-wu-red transform group-hover:translate-x-1 transition-all" />
                 </div>

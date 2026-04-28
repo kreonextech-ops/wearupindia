@@ -34,6 +34,9 @@ export default function GraphicKitProductPage({ params }: Props) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [selectedFinish, setSelectedFinish] = useState('Glossy');
+  const [selectedQuality, setSelectedQuality] = useState('Standard');
+  const [selectedModel, setSelectedModel] = useState(product.compatibleModels?.[0] || '');
 
   const related = useMemo(() => products
     .filter(p => p.category === 'graphic-kits' && p.id !== product.id)
@@ -53,6 +56,21 @@ export default function GraphicKitProductPage({ params }: Props) {
   const discount = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : null;
+
+  // Calculate dynamic price based on selections
+  let currentPrice = product.price;
+  const matrix = (product as any).pricingMatrix || (product as any).meta_data?.pricing_matrix;
+  
+  if (matrix && selectedModel && matrix[selectedModel]) {
+    const variantPricing = matrix[selectedModel][selectedQuality];
+    if (variantPricing && variantPricing[selectedFinish]) {
+      currentPrice = Number(variantPricing[selectedFinish]);
+    }
+  } else {
+    // Fallback logic for legacy mock data to demonstrate dynamic pricing
+    if (selectedQuality === 'Premium') currentPrice += 1500;
+    if (selectedFinish === 'Matte') currentPrice += 300;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -159,18 +177,61 @@ export default function GraphicKitProductPage({ params }: Props) {
                     {product.rating} · {product.reviews} reviews
                   </span>
                 </div>
+                
+                {/* Custom Description provided by user */}
+                <div className="mt-6 text-sm text-foreground/70 font-body leading-relaxed space-y-4 bg-foreground/[0.02] p-5 rounded-2xl border border-border">
+                  <p>Transform your ride with our high-quality Graphics Kit, crafted for riders who want standout looks with reliable performance in every condition.</p>
+                  
+                  <div>
+                    <p className="font-display font-bold text-foreground mb-2 flex items-center gap-2">
+                      <span className="text-wu-red">🔥</span> Key Features:
+                    </p>
+                    <ul className="space-y-2 list-none">
+                      <li className="flex gap-2">
+                        <span className="text-wu-red mt-1">•</span> 
+                        <span><strong>Bubble-Free Material:</strong> Advanced air-release vinyl ensures smooth, hassle-free installation without bubbles</span>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="text-wu-red mt-1">•</span> 
+                        <span><strong>UV Resistant:</strong> Fade-proof colors that stay vibrant even under harsh sunlight</span>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="text-wu-red mt-1">•</span> 
+                        <span><strong>Monsoon-Proof Laminate:</strong> Special protective layer designed to withstand rain, moisture, and humid conditions</span>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="text-wu-red mt-1">•</span> 
+                        <span><strong>Premium Quality Vinyl:</strong> Durable and flexible material for a perfect fit on curves and edges</span>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="text-wu-red mt-1">•</span> 
+                        <span><strong>High-Definition Printing:</strong> Sharp graphics with rich, long-lasting colors</span>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="text-wu-red mt-1">•</span> 
+                        <span><strong>Scratch Protection:</strong> Shields your original paint from minor scratches and wear</span>
+                      </li>
+                    </ul>
+                  </div>
+                  
+                  <ul className="space-y-1 text-xs text-foreground/60 border-t border-border/50 pt-3">
+                    <li className="flex items-center gap-2"><Check size={12} className="text-green-500" /> Built for Indian weather conditions from scorching heat to heavy rains</li>
+                    <li className="flex items-center gap-2"><Check size={12} className="text-green-500" /> Enhances your vehicle&apos;s look instantly</li>
+                    <li className="flex items-center gap-2"><Check size={12} className="text-green-500" /> Long-lasting finish without peeling or fading</li>
+                  </ul>
+                </div>
               </div>
 
               {/* Price Card */}
               <div className="bg-foreground/[0.03] border border-border rounded-3xl p-7 space-y-6">
                 {/* Price */}
                 <div className="flex items-baseline gap-4">
-                  <span className="font-display font-black text-5xl text-foreground tracking-tighter">{formatPrice(product.price)}</span>
+                  <span className="font-display font-black text-5xl text-foreground tracking-tighter">{formatPrice(currentPrice)}</span>
                   {product.originalPrice && (
                     <div className="flex flex-col">
                       <span className="font-display font-bold text-xl text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
                       <span className="font-mono text-[9px] text-green-500 tracking-widest uppercase">
-                        Save {formatPrice(product.originalPrice - product.price)}
+                        Save {formatPrice(product.originalPrice - currentPrice)}
                       </span>
                     </div>
                   )}
@@ -200,8 +261,55 @@ export default function GraphicKitProductPage({ params }: Props) {
                   </div>
                 )}
 
+                {/* ─── NEW DROPDOWN SELECTIONS ─── */}
+                <div className="space-y-4 pt-2">
+                  {/* Model Selection (Only if > 1 model) */}
+                  {product.compatibleModels && product.compatibleModels.length > 1 && (
+                    <div className="space-y-2">
+                      <label className="font-mono text-[10px] text-foreground/50 tracking-widest uppercase block">Select Model</label>
+                      <select 
+                        value={selectedModel}
+                        onChange={(e) => setSelectedModel(e.target.value)}
+                        className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm font-display font-bold uppercase tracking-wide focus:outline-none focus:border-wu-red transition-all cursor-pointer appearance-none"
+                      >
+                        {product.compatibleModels.map(model => (
+                          <option key={model} value={model}>{model.toUpperCase().replace(/-/g, ' ')}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Finish Selection */}
+                    <div className="space-y-2">
+                      <label className="font-mono text-[10px] text-foreground/50 tracking-widest uppercase block">Finish Type</label>
+                      <select 
+                        value={selectedFinish}
+                        onChange={(e) => setSelectedFinish(e.target.value)}
+                        className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm font-display font-bold uppercase tracking-wide focus:outline-none focus:border-wu-red transition-all cursor-pointer appearance-none"
+                      >
+                        <option value="Glossy">Glossy</option>
+                        <option value="Matte">Matte</option>
+                      </select>
+                    </div>
+
+                    {/* Quality Selection */}
+                    <div className="space-y-2">
+                      <label className="font-mono text-[10px] text-foreground/50 tracking-widest uppercase block">Material Quality</label>
+                      <select 
+                        value={selectedQuality}
+                        onChange={(e) => setSelectedQuality(e.target.value)}
+                        className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm font-display font-bold uppercase tracking-wide focus:outline-none focus:border-wu-red transition-all cursor-pointer appearance-none"
+                      >
+                        <option value="Standard">Standard</option>
+                        <option value="Premium">Premium</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Quantity + Cart */}
-                <div className="space-y-3">
+                <div className="space-y-3 pt-2">
                   <div className="flex items-center border border-border rounded-xl overflow-hidden bg-background/50">
                     <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-14 h-12 text-foreground/40 hover:text-foreground hover:bg-foreground/5 transition-colors text-xl font-bold">−</button>
                     <span className="flex-1 text-center font-display font-black text-xl text-foreground">{quantity}</span>
