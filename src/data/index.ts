@@ -33,6 +33,8 @@ export type Product = {
   installationSteps?: { step: number; title: string; desc: string }[];
   whyChoose?: { icon: string; title: string; desc: string }[];
   marketingTagline?: string;
+  // Dynamic metadata for accessories, graphic kits, t-shirts
+  meta_data?: Record<string, any>;
 };
 
 export type Service = {
