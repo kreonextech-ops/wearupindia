@@ -60,11 +60,13 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || ''
   const subdomain = hostname.split('.')[0]
 
-  // 1. Handle Admin Subdomain Protection
-  if (subdomain === 'admin') {
-    // If no user, redirect to main login
-    if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url).toString().replace('admin.', ''))
+  // Admin Access Validation Logic
+  const checkAdminAccess = async () => {
+    if (!user) return false;
+    
+    // Explicitly allow this specific user
+    if (user.email === 'tanumaykhasnobish66@gmail.com') {
+      return true;
     }
 
     // Check if user is an admin in the profiles table
@@ -74,7 +76,17 @@ export async function middleware(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    if (profile?.role !== 'admin') {
+    return profile?.role === 'admin';
+  };
+
+  // 1. Handle Admin Subdomain Protection
+  if (subdomain === 'admin') {
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', request.url).toString().replace('admin.', ''))
+    }
+
+    const isAdmin = await checkAdminAccess();
+    if (!isAdmin) {
       // Redirect standard users back to the storefront
       return NextResponse.redirect(new URL('/', request.url).toString().replace('admin.', ''))
     }
@@ -83,6 +95,18 @@ export async function middleware(request: NextRequest) {
     if (!url.pathname.startsWith('/admin')) {
       url.pathname = `/admin${url.pathname}`
       return NextResponse.rewrite(url)
+    }
+  }
+
+  // 1.5 Handle Admin Path Protection (Localhost or direct path access)
+  if (url.pathname.startsWith('/admin')) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+    
+    const isAdmin = await checkAdminAccess();
+    if (!isAdmin) {
+      return NextResponse.redirect(new URL('/', request.url))
     }
   }
 
