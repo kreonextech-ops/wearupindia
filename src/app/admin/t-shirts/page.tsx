@@ -3,213 +3,219 @@
 import * as React from 'react';
 import { 
   Search, Filter, Plus, Edit3, Trash2, ShieldCheck, Box,
-  TrendingUp, Activity, DollarSign, Shirt
+  TrendingUp, Activity, DollarSign, Shirt, AlertTriangle, X
 } from 'lucide-react';
 import Image from 'next/image';
 import Sheet from '@/components/ui/Sheet';
 import NewTShirtForm from '@/components/admin/NewTShirtForm';
-import { formatPrice, products, Product } from '@/data';
-import { getProductsAction } from '@/app/admin/products/actions';
-
-// Mock metrics for now
-const metrics = [
-  { label: 'Total Sales (T-Shirts)', value: '₹0', trend: '0%', icon: DollarSign },
-  { label: 'Units Sold', value: '0', trend: '0%', icon: TrendingUp },
-  { label: 'Active Items', value: '0', trend: '0%', icon: Shirt },
-  { label: 'Low Stock Alert', value: '0', trend: 'Sizes', icon: Activity, alert: false },
-];
+import { 
+  getProductsWithVariantsAction, 
+  deleteProductAction, 
+  updateTShirtAction 
+} from '@/app/admin/products/actions';
 
 export default function AdminTShirtsPage() {
-  const [isSheetOpen, setIsSheetOpen] = React.useState(false);
+  const [isAddSheetOpen, setIsAddSheetOpen] = React.useState(false);
+  const [isEditSheetOpen, setIsEditSheetOpen] = React.useState(false);
+  const [editingProduct, setEditingProduct] = React.useState<any>(null);
+  const [deleteConfirm, setDeleteConfirm] = React.useState<string | null>(null);
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [filterType, setFilterType] = React.useState('all');
-  const [baseTshirts, setBaseTshirts] = React.useState<Product[]>([]);
+  const [tshirts, setTshirts] = React.useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [actionLoading, setActionLoading] = React.useState(false);
+  const [toast, setToast] = React.useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
-  React.useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      const res = await getProductsAction('t-shirts');
-      if (res.success && res.data) {
-        setBaseTshirts(res.data as unknown as Product[]);
-      }
-      setIsLoading(false);
+  const loadData = React.useCallback(async () => {
+    setIsLoading(true);
+    const res = await getProductsWithVariantsAction('tshirts');
+    if (res.success && res.data) {
+      setTshirts(res.data);
     }
-    loadData();
+    setIsLoading(false);
   }, []);
 
-  const filteredTshirts = React.useMemo(() => {
-    return baseTshirts.filter((product) => {
-      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-      // Just a placeholder filter if there are sub-categories of t-shirts in the future
-      const matchesFilter = filterType === 'all' || product.meta_data?.sub_category === filterType;
-      return matchesSearch && matchesFilter;
-    });
-  }, [baseTshirts, searchQuery, filterType]);
+  React.useEffect(() => { loadData(); }, [loadData]);
 
-  // Update dynamic metrics
-  const displayMetrics = React.useMemo(() => [
-    ...metrics.slice(0, 2),
-    { label: 'Active Items', value: baseTshirts.length.toString(), trend: '0%', icon: Shirt },
-    ...metrics.slice(3)
-  ], [baseTshirts]);
+  const showToast = (msg: string, type: 'success' | 'error') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  const handleDelete = async (productId: string) => {
+    setActionLoading(true);
+    const res = await deleteProductAction(productId);
+    setActionLoading(false);
+    setDeleteConfirm(null);
+    if (res.success) {
+      showToast('Deleted successfully.', 'success');
+      loadData();
+    } else {
+      showToast(res.error || 'Failed to delete.', 'error');
+    }
+  };
+
+  const filteredTshirts = React.useMemo(() => {
+    return tshirts.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [tshirts, searchQuery]);
 
   return (
     <div className="space-y-10">
-      {/* ─── HEADER ─── */}
+      {/* Toast */}
+      {toast && (
+        <div className={`fixed top-6 right-6 z-[200] flex items-center gap-3 px-5 py-4 rounded-xl border shadow-2xl transition-all ${
+          toast.type === 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-red-500/10 border-red-500/30 text-red-400'
+        }`}>
+          <span className="font-mono text-[11px] tracking-widest uppercase">{toast.msg}</span>
+          <button onClick={() => setToast(null)}><X size={14} /></button>
+        </div>
+      )}
+
+      {/* Delete Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="bg-[#111] border border-white/10 rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl">
+            <h3 className="font-display font-black text-white text-lg uppercase mb-4">Confirm Delete?</h3>
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-3 rounded-xl border border-white/10 text-white/60 text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-all">Cancel</button>
+              <button onClick={() => handleDelete(deleteConfirm)} disabled={actionLoading} className="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold uppercase tracking-widest transition-all">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/5">
         <div>
-          <p className="font-mono text-[10px] text-[#E8161B] tracking-[0.4em] uppercase mb-2 opacity-50">// Apparel Division</p>
+          <p className="font-mono text-[10px] text-[#E8161B] tracking-[0.4em] uppercase mb-2 opacity-50">// Redefined Apparel</p>
           <h1 className="font-display font-black text-4xl sm:text-5xl text-white tracking-tight uppercase leading-none">T-Shirts</h1>
         </div>
         <div className="flex gap-3">
-           <div className="relative group hidden sm:block">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
-              <input 
-                type="text" 
-                placeholder="Search T-Shirts..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-white/5 border border-white/5 rounded-full py-2.5 pl-12 pr-6 text-sm text-white focus:outline-none focus:border-[#E8161B]/50 focus:bg-white/10 w-64 transition-all"
-              />
-           </div>
-           <button className="p-2.5 bg-white/5 border border-white/10 rounded-lg text-white/40 hover:text-white transition-colors">
-              <Filter size={18} />
-           </button>
-           <button 
-            onClick={() => setIsSheetOpen(true)}
-            className="flex items-center gap-3 px-6 py-2.5 bg-[#E8161B] rounded-lg font-display font-bold text-xs tracking-widest uppercase hover:bg-[#B81015] transition-all shadow-[0_5px_15px_rgba(232,22,27,0.3)]"
-           >
-              <Plus size={16} /> Add T-Shirt
-           </button>
+          <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="bg-white/5 border border-white/5 rounded-full py-2.5 px-6 text-sm text-white focus:outline-none focus:border-[#E8161B]/50 transition-all w-64" />
+          <button onClick={() => setIsAddSheetOpen(true)} className="flex items-center gap-3 px-6 py-2.5 bg-[#E8161B] rounded-lg font-display font-bold text-xs tracking-widest uppercase hover:bg-[#B81015] transition-all shadow-[0_5px_15px_rgba(232,22,27,0.3)]"><Plus size={16} /> Add Product</button>
         </div>
       </div>
 
-      {/* ─── METRICS ─── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {displayMetrics.map((metric, idx) => {
-          const Icon = metric.icon;
-          return (
-            <div key={idx} className={`p-6 rounded-2xl border transition-all ${metric.alert ? 'bg-red-500/5 border-red-500/20' : 'bg-white/[0.02] border-white/5'}`}>
-              <div className="flex justify-between items-start mb-4">
-                <div className={`p-2.5 rounded-lg ${metric.alert ? 'bg-red-500/10 text-red-500' : 'bg-white/5 text-white/40'}`}>
-                  <Icon size={18} />
-                </div>
-                <span className={`font-mono text-[10px] tracking-widest px-2 py-1 rounded-full ${metric.alert ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>
-                  {metric.trend}
-                </span>
-              </div>
-              <h3 className="font-display font-black text-3xl text-white mb-1">{metric.value}</h3>
-              <p className="font-mono text-[10px] text-white/40 tracking-[0.2em] uppercase">{metric.label}</p>
-            </div>
-          );
-        })}
+      {/* Metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+          <h3 className="font-display font-black text-3xl text-white mb-1">{tshirts.length}</h3>
+          <p className="font-mono text-[10px] text-white/40 uppercase tracking-widest italic">Total Designs</p>
+        </div>
+        <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+          <h3 className="font-display font-black text-3xl text-white mb-1">{tshirts.reduce((acc, p) => acc + (p.stock || 0), 0)}</h3>
+          <p className="font-mono text-[10px] text-white/40 uppercase tracking-widest italic">Inventory Units</p>
+        </div>
       </div>
 
-      {/* ─── NEW T-SHIRT SHEET ─── */}
-      <Sheet 
-        isOpen={isSheetOpen} 
-        onClose={() => setIsSheetOpen(false)}
-        title="Add New T-Shirt"
-        description="Configure sizing, materials, and stock levels for new apparel."
-      >
-        <NewTShirtForm onSuccess={() => {
-          setIsSheetOpen(false);
-          window.location.reload(); // Refresh to see new data
-        }} />
-      </Sheet>
-
-      {/* ─── T-SHIRT LIST ─── */}
+      {/* Table */}
       {isLoading ? (
-        <div className="py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.01]">
-          <div className="w-8 h-8 border-2 border-white/20 border-t-[#E8161B] rounded-full animate-spin mb-4" />
-          <h3 className="font-display font-black text-xl text-white uppercase tracking-widest">Loading Apparel...</h3>
-        </div>
-      ) : filteredTshirts.length === 0 ? (
-        <div className="py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.01]">
-          <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-6">
-            <Shirt size={24} className="text-[#E8161B]" />
-          </div>
-          <h3 className="font-display font-black text-xl text-white uppercase tracking-widest mb-2">No T-Shirts Found</h3>
-          <p className="font-body text-sm text-white/40 max-w-sm text-center">
-            {searchQuery ? "Try adjusting your search." : "Your apparel database is currently empty. Start by adding your first T-Shirt."}
-          </p>
-          {!searchQuery && (
-            <button 
-              onClick={() => setIsSheetOpen(true)}
-              className="mt-8 text-[#E8161B] font-display font-bold text-xs uppercase tracking-widest hover:underline decoration-2 underline-offset-4 flex items-center gap-2"
-            >
-              <Plus size={14} /> Add First T-Shirt
-            </button>
-          )}
-        </div>
+        <div className="py-20 flex justify-center"><div className="w-8 h-8 border-2 border-white/20 border-t-[#E8161B] rounded-full animate-spin" /></div>
       ) : (
-      <div className="bg-[#0A0A0A] border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-white/5 bg-white/[0.02]">
-              <th className="px-6 py-5 font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Product</th>
-              <th className="px-6 py-5 font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Status</th>
-              <th className="px-6 py-5 font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Total Stock</th>
-              <th className="px-6 py-5 font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Size Breakdown</th>
-              <th className="px-6 py-5 font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/5 font-body">
-            {filteredTshirts.map((product) => (
-              <tr key={product.id} className="group hover:bg-white/[0.02] transition-colors">
-                <td className="px-6 py-5">
-                   <div className="flex items-center gap-4">
-                      <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-white/10 flex-shrink-0 group-hover:border-[#E8161B]/30 transition-colors">
-                         <Image src={product.images ? product.images[0] : (product as any).image} alt="" fill className="object-cover" />
-                      </div>
-                      <div>
-                         <p className="font-display font-bold text-white group-hover:text-[#E8161B] transition-colors">{product.name}</p>
-                         <p className="font-mono text-[9px] text-white/20 tracking-widest uppercase">SKU: {product.id.slice(0,8)}</p>
-                      </div>
-                   </div>
-                </td>
-                <td className="px-6 py-5">
-                   <span className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[9px] font-mono tracking-widest uppercase ${
-                      product.inStock
-                        ? 'bg-green-500/10 text-green-500 border border-green-500/20' 
-                        : 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
-                   }`}>
-                      {product.inStock ? <ShieldCheck size={10} /> : <Box size={10} />}
-                      {product.inStock ? 'In Stock' : 'Out of Stock'}
-                   </span>
-                </td>
-                <td className="px-6 py-5">
-                   <p className="font-display font-bold text-white/60">{(product as any).stock || 0} Units</p>
-                </td>
-                <td className="px-6 py-5">
-                   <div className="flex gap-1.5">
-                     {Object.entries(product.meta_data?.sizes || {}).map(([size, count]) => (
-                       <div key={size} className="flex flex-col items-center">
-                         <span className={`w-7 h-7 rounded flex items-center justify-center font-display text-[10px] font-bold ${(count as number) > 0 ? 'bg-white/10 text-white' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
-                           {size}
-                         </span>
-                         <span className="text-[8px] font-mono text-white/30 mt-1">{count as React.ReactNode}</span>
-                       </div>
-                     ))}
-                   </div>
-                </td>
-                <td className="px-6 py-5">
-                   <div className="flex items-center justify-end gap-2">
-                     <button className="p-2 text-white/20 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-                        <Edit3 size={16} />
-                     </button>
-                     <button className="p-2 text-white/20 hover:text-red-500 hover:bg-red-500/5 rounded-lg transition-all">
-                        <Trash2 size={16} />
-                     </button>
-                   </div>
-                </td>
+        <div className="bg-[#0A0A0A] border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
+          <table className="w-full text-left">
+            <thead className="bg-white/[0.02] border-b border-white/5 font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">
+              <tr>
+                <th className="px-6 py-5">Product</th>
+                <th className="px-6 py-5">Total Stock</th>
+                <th className="px-6 py-5">Size Breakdown</th>
+                <th className="px-6 py-5 text-right">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-white/5 font-body">
+              {filteredTshirts.map((p) => (
+                <tr key={p.id} className="group hover:bg-white/[0.02] transition-colors">
+                  <td className="px-6 py-5 flex items-center gap-4">
+                    <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-white/10 bg-white/5 flex-shrink-0">
+                      {p.images?.[0] && <Image src={p.images[0]} alt="" fill className="object-cover" />}
+                    </div>
+                    <div>
+                      <p className="font-display font-bold text-white group-hover:text-[#E8161B] transition-colors uppercase">{p.name}</p>
+                      <p className="font-mono text-[9px] text-white/20 tracking-widest">₹{p.price}</p>
+                    </div>
+                  </td>
+                  <td className="px-6 py-5">
+                    <span className={`px-2 py-1 rounded-full text-[9px] font-mono tracking-widest uppercase ${p.stock > 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                      {p.stock} Units
+                    </span>
+                  </td>
+                  <td className="px-6 py-5">
+                    <div className="flex gap-1.5">
+                      {Object.entries(p.sizes || {}).map(([size, qty]: any) => (
+                        <div key={size} className="flex flex-col items-center">
+                          <span className={`w-7 h-7 rounded flex items-center justify-center font-display text-[10px] font-bold ${qty > 0 ? 'bg-white/10 text-white' : 'bg-red-500/10 text-red-500 opacity-30'}`}>{size}</span>
+                          <span className="text-[8px] font-mono text-white/20 mt-1">{qty}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-6 py-5 text-right">
+                    <div className="flex justify-end gap-2">
+                      <button onClick={() => { setEditingProduct(p); setIsEditSheetOpen(true); }} className="p-2 text-white/20 hover:text-white transition-all"><Edit3 size={16} /></button>
+                      <button onClick={() => setDeleteConfirm(p.id)} className="p-2 text-white/20 hover:text-red-500 transition-all"><Trash2 size={16} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
+
+      {/* Sheets */}
+      <Sheet isOpen={isAddSheetOpen} onClose={() => setIsAddSheetOpen(false)} title="Add Product"><NewTShirtForm onSuccess={() => { setIsAddSheetOpen(false); loadData(); showToast('Product added!', 'success'); }} /></Sheet>
+      <Sheet isOpen={isEditSheetOpen} onClose={() => { setIsEditSheetOpen(false); setEditingProduct(null); }} title="Edit Product">
+        {editingProduct && <EditTShirtForm product={editingProduct} onSuccess={() => { setIsEditSheetOpen(false); loadData(); showToast('Updated!', 'success'); }} />}
+      </Sheet>
     </div>
+  );
+}
+
+function EditTShirtForm({ product, onSuccess }: any) {
+  const [error, setError] = React.useState<string | null>(null);
+  const [pending, setPending] = React.useState(false);
+  const [preview, setPreview] = React.useState(product.images?.[0]);
+  const [sizes, setSizes] = React.useState(product.sizes || { S: 0, M: 0, L: 0, XL: 0, XXL: 0 });
+
+  const handleSizeChange = (size: string, val: string) => {
+    const num = parseInt(val) || 0;
+    setSizes((prev: any) => ({ ...prev, [size]: num >= 0 ? num : 0 }));
+  };
+
+  const clientAction = async (formData: FormData) => {
+    setError(null);
+    setPending(true);
+    formData.append('sizes', JSON.stringify(sizes));
+    const res = await updateTShirtAction(product.id, formData);
+    setPending(false);
+    if (res.success) onSuccess();
+    else setError(res.error || 'Failed to update.');
+  };
+
+  return (
+    <form action={clientAction} className="space-y-6 max-h-[70vh] overflow-y-auto pr-4">
+      {error && <p className="text-red-500 text-xs font-mono">{error}</p>}
+      <div className="space-y-3">
+        {preview && <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-white/10"><Image src={preview} alt="" fill className="object-cover" /></div>}
+        <input type="file" name="image" accept="image/*" onChange={(e: any) => e.target.files[0] && setPreview(URL.createObjectURL(e.target.files[0]))} className="hidden" id="edit-img" />
+        <label htmlFor="edit-img" className="block p-3 bg-white/5 border border-white/10 rounded-xl text-center text-[10px] font-mono text-white/40 cursor-pointer uppercase">Replace Image</label>
+      </div>
+      <input name="name" defaultValue={product.name} placeholder="Product Name" className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white text-sm" required />
+      <input name="price" type="number" defaultValue={product.price} placeholder="Price" className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white text-sm" required />
+      
+      <div className="grid grid-cols-5 gap-2 pt-4 border-t border-white/5">
+        {Object.keys(sizes).map(s => (
+          <div key={s} className="space-y-2">
+            <div className="bg-white/5 border border-white/10 rounded-t-lg py-1 text-center font-display font-black text-[10px] text-white">{s}</div>
+            <input type="number" value={sizes[s] === 0 ? '' : sizes[s]} onChange={e => handleSizeChange(s, e.target.value)} placeholder="0" className="w-full bg-white/5 border border-white/5 rounded-b-lg py-2 text-center text-white text-xs" />
+          </div>
+        ))}
+      </div>
+
+      <textarea name="description" defaultValue={product.description} rows={4} className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white text-sm" />
+
+      <button type="submit" disabled={pending} className="w-full py-4 bg-[#E8161B] text-white rounded-xl font-display font-black text-xs uppercase tracking-widest transition-all">
+        {pending ? 'Updating...' : 'Save Changes'}
+      </button>
+    </form>
   );
 }
