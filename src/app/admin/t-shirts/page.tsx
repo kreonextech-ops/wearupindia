@@ -143,25 +143,25 @@ export default function AdminTShirtsPage() {
                 </td>
                 <td className="px-6 py-5">
                    <span className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[9px] font-mono tracking-widest uppercase ${
-                      product.status === 'In Stock'
+                      product.inStock
                         ? 'bg-green-500/10 text-green-500 border border-green-500/20' 
                         : 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
                    }`}>
-                      {product.status === 'In Stock' ? <ShieldCheck size={10} /> : <Box size={10} />}
-                      {product.status}
+                      {product.inStock ? <ShieldCheck size={10} /> : <Box size={10} />}
+                      {product.inStock ? 'In Stock' : 'Out of Stock'}
                    </span>
                 </td>
                 <td className="px-6 py-5">
-                   <p className="font-display font-bold text-white/60">{product.stockTotal} Units</p>
+                   <p className="font-display font-bold text-white/60">{(product as any).stock || 0} Units</p>
                 </td>
                 <td className="px-6 py-5">
                    <div className="flex gap-1.5">
-                     {Object.entries(product.sizes).map(([size, count]) => (
+                     {Object.entries(product.meta_data?.sizes || {}).map(([size, count]) => (
                        <div key={size} className="flex flex-col items-center">
-                         <span className={`w-7 h-7 rounded flex items-center justify-center font-display text-[10px] font-bold ${count > 0 ? 'bg-white/10 text-white' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
+                         <span className={`w-7 h-7 rounded flex items-center justify-center font-display text-[10px] font-bold ${(count as number) > 0 ? 'bg-white/10 text-white' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
                            {size}
                          </span>
-                         <span className="text-[8px] font-mono text-white/30 mt-1">{count}</span>
+                         <span className="text-[8px] font-mono text-white/30 mt-1">{count as React.ReactNode}</span>
                        </div>
                      ))}
                    </div>
