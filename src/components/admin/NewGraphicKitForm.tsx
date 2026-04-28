@@ -97,16 +97,32 @@ export default function NewGraphicKitForm({ onSuccess }: NewGraphicKitFormProps)
       <div className="space-y-3">
         <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Kit Preview Image</label>
         <div className="relative group">
+          <input 
+            type="file" 
+            name="image" 
+            id="kit-image-input"
+            accept="image/*" 
+            className="hidden" 
+            onChange={handleImageChange} 
+            required={!preview} 
+          />
+          
           {preview ? (
-            <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10">
+            <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group">
               <Image src={preview} alt="Preview" fill className="object-cover" />
-              <button type="button" onClick={() => setPreview(null)} className="absolute top-4 right-4 p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-red-500 transition-all"><X size={16} /></button>
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <label htmlFor="kit-image-input" className="p-3 bg-white/10 backdrop-blur-md rounded-full text-white cursor-pointer hover:bg-white/20 transition-all">
+                  <Upload size={20} />
+                </label>
+                <button type="button" onClick={() => setPreview(null)} className="ml-4 p-3 bg-red-500/20 backdrop-blur-md rounded-full text-red-500 hover:bg-red-500 hover:text-white transition-all">
+                  <X size={20} />
+                </button>
+              </div>
             </div>
           ) : (
-            <label className="flex flex-col items-center justify-center aspect-video rounded-2xl border-2 border-dashed border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:border-[#E8161B]/30 transition-all cursor-pointer">
+            <label htmlFor="kit-image-input" className="flex flex-col items-center justify-center aspect-video rounded-2xl border-2 border-dashed border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:border-[#E8161B]/30 transition-all cursor-pointer">
               <Upload className="text-white/20 mb-4" size={32} />
               <p className="text-white/60 font-display font-bold text-sm uppercase tracking-widest">Upload Kit Design</p>
-              <input type="file" name="image" accept="image/*" className="hidden" onChange={handleImageChange} required />
             </label>
           )}
         </div>

@@ -4,19 +4,20 @@ import * as React from 'react';
 import { useFormStatus } from 'react-dom';
 import { Upload, X, Package, Tag, IndianRupee, Database, AlignLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { createProductAction } from '@/app/admin/products/actions';
+import { createProductAction, updateProductAction } from '@/app/admin/products/actions';
 import { GRAPHIC_KITS_STRUCTURE } from '@/data';
 import Image from 'next/image';
 
 interface NewProductFormProps {
+  product?: any;
   onSuccess: () => void;
 }
 
-export default function NewProductForm({ onSuccess }: NewProductFormProps) {
-  const [preview, setPreview] = React.useState<string | null>(null);
+export default function NewProductForm({ product, onSuccess }: NewProductFormProps) {
+  const [preview, setPreview] = React.useState<string | null>(product?.images?.[0] || null);
   const [error, setError] = React.useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = React.useState<string>('');
-  const [selectedBrand, setSelectedBrand] = React.useState<string>('');
+  const [selectedCategory, setSelectedCategory] = React.useState<string>(product?.category || '');
+  const [selectedBrand, setSelectedBrand] = React.useState<string>(product?.meta_data?.brand || '');
   const formRef = React.useRef<HTMLFormElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,7 +31,18 @@ export default function NewProductForm({ onSuccess }: NewProductFormProps) {
 
   const clientAction = async (formData: FormData) => {
     setError(null);
-    const result = await createProductAction(formData);
+    let result;
+    
+    if (product) {
+      // Update Mode - we don't have a generic updateProductAction yet that handles everything
+      // but we can use the same pattern or create one.
+      // Actually, looking at actions.ts, there is updateTShirtAction and updateGraphicKitAction.
+      // Let's check if there's a generic one.
+      // If not, I'll implement a simple one in actions.ts.
+      result = await updateProductAction(product.id, formData);
+    } else {
+      result = await createProductAction(formData);
+    }
     
     if (result.success) {
       formRef.current?.reset();
@@ -39,7 +51,7 @@ export default function NewProductForm({ onSuccess }: NewProductFormProps) {
       setSelectedBrand('');
       onSuccess();
     } else {
-      setError(result.error || 'Failed to add product.');
+      setError(result.error || 'Failed to process request.');
     }
   };
 
@@ -96,6 +108,7 @@ export default function NewProductForm({ onSuccess }: NewProductFormProps) {
              <input 
               name="name"
               type="text" 
+              defaultValue={product?.name || ''}
               placeholder="e.g. Yamaha FZ 25 – Venom Design"
               className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#E8161B]/50 focus:bg-white/10 transition-all font-body text-sm"
               required
@@ -110,6 +123,7 @@ export default function NewProductForm({ onSuccess }: NewProductFormProps) {
              <input 
               name="price"
               type="number" 
+              defaultValue={product?.price || ''}
               placeholder="0"
               className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#E8161B]/50 focus:bg-white/10 transition-all font-body text-sm"
               required
@@ -124,6 +138,7 @@ export default function NewProductForm({ onSuccess }: NewProductFormProps) {
              <input 
               name="stock"
               type="number" 
+              defaultValue={product?.stock || ''}
               placeholder="0"
               className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#E8161B]/50 focus:bg-white/10 transition-all font-body text-sm"
               required
@@ -145,7 +160,8 @@ export default function NewProductForm({ onSuccess }: NewProductFormProps) {
               <option value="" className="bg-[#0A0A0A]">Select Category...</option>
               <option value="graphic-kits" className="bg-[#0A0A0A]">Graphic Kits</option>
               <option value="bike-accessories" className="bg-[#0A0A0A]">Bike Accessories</option>
-              <option value="merchandise" className="bg-[#0A0A0A]">Merchandise</option>
+              <option value="tshirts" className="bg-[#0A0A0A]">T-Shirts</option>
+              <option value="merchandise" className="bg-[#0A0A0A]">Other Merchandise</option>
             </select>
           </div>
         </div>
@@ -197,6 +213,7 @@ export default function NewProductForm({ onSuccess }: NewProductFormProps) {
              <textarea 
               name="description"
               rows={4}
+              defaultValue={product?.description || ''}
               placeholder="Enter product details..."
               className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#E8161B]/50 focus:bg-white/10 transition-all font-body text-sm"
               required

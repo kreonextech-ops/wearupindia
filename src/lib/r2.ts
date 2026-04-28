@@ -1,4 +1,4 @@
-import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { S3Client, ListObjectsV2Command, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 
 const r2Client = new S3Client({
@@ -26,10 +26,25 @@ export async function uploadToR2(file: File, path: string) {
   await upload.done();
   
   // Return the public URL
-  // If you use a custom domain: https://assets.wearup.in/path
-  // If you use the R2 dev domain, you'll need that here
-  const baseUrl = process.env.R2_PUBLIC_URL || `https://${process.env.R2_BUCKET_NAME}.${process.env.R2_ACCOUNT_ID}.r2.dev`;
+  // Priority: 
+  // 1. R2_PUBLIC_URL environment variable
+  // 2. Cloudflare R2 Dev Domain (pub-<account-id>.r2.dev)
+  const baseUrl = process.env.R2_PUBLIC_URL || `https://pub-${process.env.R2_ACCOUNT_ID}.r2.dev`;
   return `${baseUrl}/${path}`;
+}
+
+export async function deleteFromR2(path: string) {
+  try {
+    const command = new DeleteObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME,
+      Key: path,
+    });
+    await r2Client.send(command);
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error deleting from R2:", error);
+    return { success: false, error: error.message };
+  }
 }
 
 export async function listGalleryFiles(): Promise<string[]> {

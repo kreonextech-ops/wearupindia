@@ -16,8 +16,12 @@ export default function NewTShirtForm({ onSuccess }: NewTShirtFormProps) {
   const formRef = React.useRef<HTMLFormElement>(null);
 
   // Size inventory state
-  const [sizes, setSizes] = React.useState({
-    S: 0, M: 0, L: 0, XL: 0, XXL: 0
+  const [sizes, setSizes] = React.useState<Record<string, { active: boolean; qty: number }>>({
+    S: { active: false, qty: 0 },
+    M: { active: false, qty: 0 },
+    L: { active: false, qty: 0 },
+    XL: { active: false, qty: 0 },
+    XXL: { active: false, qty: 0 }
   });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,26 +29,64 @@ export default function NewTShirtForm({ onSuccess }: NewTShirtFormProps) {
     if (file) setPreview(URL.createObjectURL(file));
   };
 
-  const handleSizeChange = (size: keyof typeof sizes, value: string) => {
+  const toggleSize = (size: string) => {
+    setSizes(prev => ({
+      ...prev,
+      [size]: { ...prev[size], active: !prev[size].active, qty: !prev[size].active ? 1 : 0 }
+    }));
+  };
+
+  const handleQtyChange = (size: string, value: string) => {
     const num = parseInt(value) || 0;
-    setSizes(prev => ({ ...prev, [size]: num >= 0 ? num : 0 }));
+    setSizes(prev => ({
+      ...prev,
+      [size]: { 
+        ...prev[size], 
+        qty: num >= 0 ? num : 0, 
+        active: num > 0 ? true : prev[size].active 
+      }
+    }));
   };
 
   const clientAction = async (formData: FormData) => {
     setError(null);
-    formData.append('sizes', JSON.stringify(sizes));
+    
+    // Only send active sizes with qty > 0
+    const activeSizes: Record<string, number> = {};
+    Object.entries(sizes).forEach(([s, data]) => {
+      if (data.active && data.qty > 0) activeSizes[s] = data.qty;
+    });
+
+    if (Object.keys(activeSizes).length === 0) {
+      setError("Please set a quantity for at least one size.");
+      return;
+    }
+
+    formData.append('sizes', JSON.stringify(activeSizes));
 
     const result = await createTShirtAction(formData);
     
     if (result.success) {
       formRef.current?.reset();
       setPreview(null);
-      setSizes({ S: 0, M: 0, L: 0, XL: 0, XXL: 0 });
+      setSizes({
+        S: { active: false, qty: 0 },
+        M: { active: false, qty: 0 },
+        L: { active: false, qty: 0 },
+        XL: { active: false, qty: 0 },
+        XXL: { active: false, qty: 0 }
+      });
       onSuccess();
     } else {
       setError(result.error || 'Failed to add T-Shirt.');
     }
   };
+
+  // Calculate summary
+  const summary = Object.entries(sizes)
+    .filter(([_, d]) => d.active && d.qty > 0)
+    .map(([s, d]) => `${s}: ${d.qty}`)
+    .join(' | ');
 
   return (
     <form ref={formRef} action={clientAction} className="space-y-6 max-h-[70vh] overflow-y-auto pr-4 custom-scrollbar">
@@ -88,7 +130,7 @@ export default function NewTShirtForm({ onSuccess }: NewTShirtFormProps) {
           <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Product Name</label>
           <div className="relative">
              <Package className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
-             <input name="name" type="text" placeholder="e.g. Graphic Oversized Tee" className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:border-[#E8161B]/50 transition-all text-sm" required />
+             <input name="name" type="text" placeholder="e.g. Graphic Oversized Tee" className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:border-[#E8161B]/50 transition-all text-sm outline-none" required />
           </div>
         </div>
 
@@ -96,7 +138,7 @@ export default function NewTShirtForm({ onSuccess }: NewTShirtFormProps) {
           <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Price (₹)</label>
           <div className="relative">
              <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
-             <input name="price" type="number" placeholder="999" className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:border-[#E8161B]/50 transition-all text-sm" required />
+             <input name="price" type="number" placeholder="999" className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:border-[#E8161B]/50 transition-all text-sm outline-none" required />
           </div>
         </div>
 
@@ -104,7 +146,7 @@ export default function NewTShirtForm({ onSuccess }: NewTShirtFormProps) {
           <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Fit Type</label>
           <div className="relative">
              <Scissors className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
-             <select name="fit" className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:border-[#E8161B]/50 transition-all text-sm appearance-none cursor-pointer">
+             <select name="fit" className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:border-[#E8161B]/50 transition-all text-sm appearance-none cursor-pointer outline-none">
               <option value="Oversized" className="bg-[#0A0A0A]">Oversized Fit</option>
               <option value="Regular" className="bg-[#0A0A0A]">Regular Fit</option>
               <option value="Slim" className="bg-[#0A0A0A]">Slim Fit</option>
@@ -117,18 +159,43 @@ export default function NewTShirtForm({ onSuccess }: NewTShirtFormProps) {
       <div className="space-y-4 pt-4 border-t border-white/5">
         <label className="font-mono text-[10px] text-[#E8161B] tracking-[0.2em] uppercase font-bold block">Size & Inventory (Units)</label>
         <div className="grid grid-cols-5 gap-2">
-          {(Object.keys(sizes) as Array<keyof typeof sizes>).map((size) => (
+          {Object.entries(sizes).map(([size, data]) => (
             <div key={size} className="space-y-2">
-              <div className="bg-white/5 border border-white/10 rounded-t-lg py-2 text-center font-display font-black text-xs text-white">{size}</div>
-              <input type="number" min="0" value={sizes[size] === 0 ? '' : sizes[size]} onChange={(e) => handleSizeChange(size, e.target.value)} placeholder="0" className="w-full bg-white/5 border border-white/5 rounded-b-lg py-3 text-center text-white focus:border-[#E8161B]/50 transition-all text-sm" />
+              <button
+                type="button"
+                onClick={() => toggleSize(size)}
+                className={`w-full py-2 rounded-t-lg font-display font-black text-xs transition-all border-x border-t ${
+                  data.active 
+                    ? 'bg-[#E8161B] border-[#E8161B] text-white shadow-[0_0_15px_rgba(232,22,27,0.2)]' 
+                    : 'bg-white/5 border-white/10 text-white/20'
+                }`}
+              >
+                {size}
+              </button>
+              <input
+                type="number"
+                min="0"
+                value={data.qty === 0 ? '' : data.qty}
+                onChange={(e) => handleQtyChange(size, e.target.value)}
+                placeholder="0"
+                className={`w-full bg-white/5 border border-white/5 rounded-b-lg py-3 text-center text-white focus:border-[#E8161B]/50 transition-all text-sm outline-none ${
+                  !data.active ? 'opacity-30' : 'bg-white/[0.08]'
+                }`}
+              />
             </div>
           ))}
         </div>
+        {summary && (
+          <div className="p-3 bg-white/5 border border-white/5 rounded-xl text-center">
+            <p className="font-mono text-[9px] text-white/40 uppercase tracking-widest mb-1">Stock Summary</p>
+            <p className="font-display font-black text-[11px] text-[#E8161B] uppercase tracking-wider">{summary}</p>
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">
         <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Description</label>
-        <textarea name="description" rows={4} placeholder="Enter apparel details..." className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white focus:border-[#E8161B]/50 transition-all text-sm" required />
+        <textarea name="description" rows={4} placeholder="Enter apparel details..." className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white focus:border-[#E8161B]/50 transition-all text-sm outline-none" required />
       </div>
 
       <SubmitButton />

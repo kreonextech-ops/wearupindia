@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Lock, ArrowRight, ClipboardList, ShoppingBag, Sparkles, ShieldCheck, Zap } from 'lucide-react';
-import { products, categories } from '@/data';
+import { categories, Product } from '@/data';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import ShopCategorySection from '@/components/shop/ShopCategorySection';
 import BulkOrderModal from '@/components/shop/BulkOrderModal';
@@ -11,6 +11,26 @@ import BulkOrderModal from '@/components/shop/BulkOrderModal';
 export default function ShopPage() {
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadAllProducts() {
+      setIsLoading(true);
+      try {
+        const { getAllProductsAction } = await import('@/app/admin/products/actions');
+        const res = await getAllProductsAction();
+        if (res.success && res.data) {
+          setAllProducts(res.data as unknown as Product[]);
+        }
+      } catch (error) {
+        console.error('Failed to load shop products:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadAllProducts();
+  }, []);
 
   const openBulkModal = (categoryName: string) => {
     setSelectedCategory(categoryName);
@@ -77,20 +97,29 @@ export default function ShopPage() {
 
       {/* ─── CATEGORY ROWS ─── */}
       <div className="pb-24 space-y-12">
-        {/* Active Categories */}
-        {categories.map((category) => {
-          if (!category.isComingSoon) {
-            const categoryProducts = products.filter(p => p.category === category.slug);
-            return (
-              <ShopCategorySection 
-                key={category.slug} 
-                category={category} 
-                products={categoryProducts} 
-              />
-            );
-          }
-          return null;
-        })}
+        {isLoading ? (
+          <div className="py-20 flex flex-col items-center justify-center">
+            <div className="w-10 h-10 border-4 border-muted border-t-wu-red rounded-full animate-spin mb-4" />
+            <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">Loading Catalog...</p>
+          </div>
+        ) : (
+          <>
+            {/* Active Categories */}
+            {categories.map((category) => {
+              if (!category.isComingSoon) {
+                const categoryProducts = allProducts.filter(p => p.category === category.slug);
+                return (
+                  <ShopCategorySection 
+                    key={category.slug} 
+                    category={category} 
+                    products={categoryProducts} 
+                  />
+                );
+              }
+              return null;
+            })}
+          </>
+        )}
 
         {/* Coming Soon Categories */}
         {categories.map((category) => {

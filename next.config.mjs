@@ -6,7 +6,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'plus.unsplash.com' },
       { protocol: 'https', hostname: 'www.transparenttextures.com' },
       { protocol: 'https', hostname: '*.supabase.co' },
-      { protocol: 'https', hostname: 'pub-31f370b9c507419ebf40c697be9f14c7.r2.dev' },
+      { protocol: 'https', hostname: '*.r2.dev' },
     ],
     // Cache optimized images for 30 days to prevent re-processing on every request
     minimumCacheTTL: 60 * 60 * 24 * 30,

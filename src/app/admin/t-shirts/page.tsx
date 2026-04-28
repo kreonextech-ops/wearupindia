@@ -174,17 +174,57 @@ function EditTShirtForm({ product, onSuccess }: any) {
   const [error, setError] = React.useState<string | null>(null);
   const [pending, setPending] = React.useState(false);
   const [preview, setPreview] = React.useState(product.images?.[0]);
-  const [sizes, setSizes] = React.useState(product.sizes || { S: 0, M: 0, L: 0, XL: 0, XXL: 0 });
+  
+  // Initialize sizes from product.sizes
+  const [sizes, setSizes] = React.useState<Record<string, { active: boolean; qty: number }>>(() => {
+    const base = {
+      S: { active: false, qty: 0 },
+      M: { active: false, qty: 0 },
+      L: { active: false, qty: 0 },
+      XL: { active: false, qty: 0 },
+      XXL: { active: false, qty: 0 }
+    };
+    if (product.sizes) {
+      Object.entries(product.sizes).forEach(([s, qty]: any) => {
+        if (base[s as keyof typeof base]) {
+          base[s as keyof typeof base] = { active: true, qty: qty };
+        }
+      });
+    }
+    return base;
+  });
 
-  const handleSizeChange = (size: string, val: string) => {
-    const num = parseInt(val) || 0;
-    setSizes((prev: any) => ({ ...prev, [size]: num >= 0 ? num : 0 }));
+  const toggleSize = (size: string) => {
+    setSizes(prev => ({
+      ...prev,
+      [size]: { ...prev[size], active: !prev[size].active, qty: !prev[size].active ? (prev[size].qty || 1) : 0 }
+    }));
+  };
+
+  const handleQtyChange = (size: string, value: string) => {
+    const num = parseInt(value) || 0;
+    setSizes(prev => ({
+      ...prev,
+      [size]: { ...prev[size], qty: num >= 0 ? num : 0, active: num > 0 ? true : prev[size].active }
+    }));
   };
 
   const clientAction = async (formData: FormData) => {
     setError(null);
     setPending(true);
-    formData.append('sizes', JSON.stringify(sizes));
+
+    const activeSizes: Record<string, number> = {};
+    Object.entries(sizes).forEach(([s, data]) => {
+      if (data.active) activeSizes[s] = data.qty;
+    });
+
+    if (Object.keys(activeSizes).length === 0) {
+      setError("Please select at least one size.");
+      setPending(false);
+      return;
+    }
+
+    formData.append('sizes', JSON.stringify(activeSizes));
     const res = await updateTShirtAction(product.id, formData);
     setPending(false);
     if (res.success) onSuccess();
@@ -192,29 +232,58 @@ function EditTShirtForm({ product, onSuccess }: any) {
   };
 
   return (
-    <form action={clientAction} className="space-y-6 max-h-[70vh] overflow-y-auto pr-4">
-      {error && <p className="text-red-500 text-xs font-mono">{error}</p>}
+    <form action={clientAction} className="space-y-6 max-h-[70vh] overflow-y-auto pr-4 custom-scrollbar">
+      {error && <p className="text-red-500 text-xs font-mono uppercase tracking-widest p-3 bg-red-500/5 border border-red-500/10 rounded-xl">{error}</p>}
+      
       <div className="space-y-3">
         {preview && <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-white/10"><Image src={preview} alt="" fill className="object-cover" /></div>}
         <input type="file" name="image" accept="image/*" onChange={(e: any) => e.target.files[0] && setPreview(URL.createObjectURL(e.target.files[0]))} className="hidden" id="edit-img" />
-        <label htmlFor="edit-img" className="block p-3 bg-white/5 border border-white/10 rounded-xl text-center text-[10px] font-mono text-white/40 cursor-pointer uppercase">Replace Image</label>
+        <label htmlFor="edit-img" className="block p-3 bg-white/5 border border-white/10 rounded-xl text-center text-[10px] font-mono text-white/40 cursor-pointer uppercase hover:bg-white/10 transition-colors">Replace Image</label>
       </div>
-      <input name="name" defaultValue={product.name} placeholder="Product Name" className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white text-sm" required />
-      <input name="price" type="number" defaultValue={product.price} placeholder="Price" className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white text-sm" required />
+
+      <div className="space-y-2">
+        <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Product Name</label>
+        <input name="name" defaultValue={product.name} placeholder="Product Name" className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white text-sm focus:border-[#E8161B]/50 outline-none transition-all" required />
+      </div>
+
+      <div className="space-y-2">
+        <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Price (₹)</label>
+        <input name="price" type="number" defaultValue={product.price} placeholder="Price" className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white text-sm focus:border-[#E8161B]/50 outline-none transition-all" required />
+      </div>
       
-      <div className="grid grid-cols-5 gap-2 pt-4 border-t border-white/5">
-        {Object.keys(sizes).map(s => (
-          <div key={s} className="space-y-2">
-            <div className="bg-white/5 border border-white/10 rounded-t-lg py-1 text-center font-display font-black text-[10px] text-white">{s}</div>
-            <input type="number" value={sizes[s] === 0 ? '' : sizes[s]} onChange={e => handleSizeChange(s, e.target.value)} placeholder="0" className="w-full bg-white/5 border border-white/5 rounded-b-lg py-2 text-center text-white text-xs" />
-          </div>
-        ))}
+      <div className="space-y-4 pt-4 border-t border-white/5">
+        <label className="font-mono text-[10px] text-[#E8161B] tracking-[0.2em] uppercase font-bold block">Size & Inventory</label>
+        <div className="grid grid-cols-5 gap-2">
+          {Object.entries(sizes).map(([s, data]) => (
+            <div key={s} className="space-y-2">
+              <button
+                type="button"
+                onClick={() => toggleSize(s)}
+                className={`w-full py-1 text-center font-display font-black text-[10px] rounded-t-lg transition-all border-x border-t ${
+                  data.active ? 'bg-[#E8161B] border-[#E8161B] text-white' : 'bg-white/5 border-white/10 text-white/20'
+                }`}
+              >
+                {s}
+              </button>
+              <input
+                type="number"
+                value={data.qty}
+                onChange={e => handleQtyChange(s, e.target.value)}
+                placeholder="0"
+                className={`w-full bg-white/5 border border-white/5 rounded-b-lg py-2 text-center text-white text-xs focus:border-[#E8161B]/50 outline-none transition-all ${!data.active ? 'opacity-20' : ''}`}
+              />
+            </div>
+          ))}
+        </div>
       </div>
 
-      <textarea name="description" defaultValue={product.description} rows={4} className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white text-sm" />
+      <div className="space-y-2">
+        <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Description</label>
+        <textarea name="description" defaultValue={product.description} rows={4} className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white text-sm focus:border-[#E8161B]/50 outline-none transition-all" />
+      </div>
 
-      <button type="submit" disabled={pending} className="w-full py-4 bg-[#E8161B] text-white rounded-xl font-display font-black text-xs uppercase tracking-widest transition-all">
-        {pending ? 'Updating...' : 'Save Changes'}
+      <button type="submit" disabled={pending} className="w-full py-4 bg-[#E8161B] text-white rounded-xl font-display font-black text-xs uppercase tracking-[0.3em] transition-all hover:bg-[#B81015] shadow-lg shadow-wu-red/20">
+        {pending ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto" /> : 'Update Product'}
       </button>
     </form>
   );

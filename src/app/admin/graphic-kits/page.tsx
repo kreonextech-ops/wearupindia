@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Layers, Package, Plus, X, Search, Filter, Trash2, Edit3, Bike, IndianRupee } from 'lucide-react';
 import NewGraphicKitForm from '@/components/admin/NewGraphicKitForm';
-import { getProductsWithVariantsAction, deleteProductAction } from '@/app/admin/products/actions';
+import { getProductsWithVariantsAction, deleteProductAction, updateGraphicKitAction } from '@/app/admin/products/actions';
 import Image from 'next/image';
 import Sheet from '@/components/ui/Sheet';
 

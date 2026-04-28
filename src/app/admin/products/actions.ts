@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
-import { uploadToR2 } from '@/lib/r2';
+import { uploadToR2, deleteFromR2 } from '@/lib/r2';
 
 /**
  * REDEFINED: Create T-Shirt with proper Variant management
@@ -21,22 +21,19 @@ export async function createTShirtAction(formData: FormData) {
     const fit = formData.get('fit') as string;
     const material = formData.get('material') as string;
     const sku = formData.get('sku') as string;
-    const sizesRaw = formData.get('sizes') as string; // JSON string from form
+    const sizesRaw = formData.get('sizes') as string; 
 
     let sizes: Record<string, number> = {};
     try { sizes = JSON.parse(sizesRaw); } catch { sizes = {}; }
 
-    // 1. Resolve Category ID
     const { data: cat } = await supabase.from('categories').select('id').eq('slug', 'tshirts').single();
-    if (!cat) throw new Error('T-Shirts category not found. Run the seed script.');
+    if (!cat) throw new Error('T-Shirts category not found.');
 
-    // 2. Upload Image to R2
     const slug = name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '') + '-' + uuidv4().slice(0, 4);
     const fileExt = imageFile.name.split('.').pop();
     const filePath = `products/tshirts/${slug}.${fileExt}`;
     const publicUrl = await uploadToR2(imageFile, filePath);
 
-    // 3. Insert Base Product
     const totalStock = Object.values(sizes).reduce((a, b) => a + b, 0);
     const { data: product, error: pError } = await supabase
       .from('products')
@@ -55,7 +52,6 @@ export async function createTShirtAction(formData: FormData) {
 
     if (pError) throw pError;
 
-    // 4. Insert Variants (Sizes)
     const variantRows = Object.entries(sizes)
       .filter(([_, qty]) => qty >= 0)
       .map(([size, qty]) => ({
@@ -71,7 +67,8 @@ export async function createTShirtAction(formData: FormData) {
     }
 
     revalidatePath('/admin/t-shirts');
-    revalidatePath('/shop/tshirts');
+    revalidatePath('/shop');
+    revalidatePath('/shop/t-shirts');
     return { success: true, data: product };
   } catch (error: any) {
     console.error('createTShirtAction Error:', error);
@@ -80,7 +77,106 @@ export async function createTShirtAction(formData: FormData) {
 }
 
 /**
- * REDEFINED: Update T-Shirt and its Variants
+ * GENERIC: Backwards compatibility for other categories
+ */
+export async function createProductAction(formData: FormData) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  try {
+    const name = formData.get('name') as string;
+    const categorySlug = formData.get('category_slug') as string;
+    const price = parseFloat(formData.get('price') as string);
+    const description = formData.get('description') as string;
+    const stock = parseInt(formData.get('stock') as string) || 0;
+    const imageFile = formData.get('image') as File | null;
+
+    const { data: cat } = await supabase.from('categories').select('id').eq('slug', categorySlug).single();
+    if (!cat) throw new Error(`Category ${categorySlug} not found`);
+
+    let imageUrls: string[] = [];
+    if (imageFile && imageFile.size > 0) {
+      const slug = name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '') + '-' + uuidv4().slice(0, 4);
+      const fileExt = imageFile.name.split('.').pop();
+      const filePath = `products/${categorySlug}/${slug}.${fileExt}`;
+      const url = await uploadToR2(imageFile, filePath);
+      imageUrls = [url];
+    }
+
+    const { data, error } = await supabase
+      .from('products')
+      .insert([{
+        name,
+        slug: name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '') + '-' + uuidv4().slice(0, 4),
+        category_id: cat.id,
+        price,
+        description,
+        stock,
+        images: imageUrls,
+        meta_data: {}
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    revalidatePath('/admin/products');
+    revalidatePath('/shop');
+    return { success: true, data };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * GENERIC: Update Product
+ */
+export async function updateProductAction(productId: string, formData: FormData) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  try {
+    const name = formData.get('name') as string;
+    const price = parseFloat(formData.get('price') as string);
+    const description = formData.get('description') as string;
+    const stock = parseInt(formData.get('stock') as string) || 0;
+    const imageFile = formData.get('image') as File | null;
+
+    const { data: existing } = await supabase.from('products').select('*').eq('id', productId).single();
+    if (!existing) throw new Error('Product not found');
+
+    let imageUrls = existing.images;
+    if (imageFile && imageFile.size > 0) {
+      const slug = existing.slug; // Keep same slug
+      const fileExt = imageFile.name.split('.').pop();
+      const filePath = `products/${slug}-${uuidv4().slice(0, 4)}.${fileExt}`;
+      const url = await uploadToR2(imageFile, filePath);
+      imageUrls = [url];
+    }
+
+    const { error } = await supabase
+      .from('products')
+      .update({
+        name,
+        price,
+        description,
+        stock,
+        images: imageUrls,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', productId);
+
+    if (error) throw error;
+    
+    revalidatePath('/admin/products');
+    revalidatePath('/shop');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * REDEFINED: Update T-Shirt
  */
 export async function updateTShirtAction(productId: string, formData: FormData) {
   const cookieStore = cookies();
@@ -96,19 +192,17 @@ export async function updateTShirtAction(productId: string, formData: FormData) 
     let sizes: Record<string, number> = {};
     try { sizes = JSON.parse(sizesRaw); } catch { sizes = {}; }
 
-    // 1. Get existing product
     const { data: existing } = await supabase.from('products').select('*').eq('id', productId).single();
     if (!existing) throw new Error('Product not found');
 
     let imageUrls = existing.images;
     if (imageFile && imageFile.size > 0) {
       const fileExt = imageFile.name.split('.').pop();
-      const filePath = `products/tshirts/${existing.slug}-${uuidv4().slice(0,4)}.${fileExt}`;
+      const filePath = `products/tshirts/${existing.slug}-${uuidv4().slice(0, 4)}.${fileExt}`;
       const publicUrl = await uploadToR2(imageFile, filePath);
       imageUrls = [publicUrl];
     }
 
-    // 2. Update Base Product
     const totalStock = Object.values(sizes).reduce((a, b) => a + b, 0);
     const { error: pError } = await supabase
       .from('products')
@@ -124,7 +218,6 @@ export async function updateTShirtAction(productId: string, formData: FormData) 
 
     if (pError) throw pError;
 
-    // 3. Update Variants (Delete and Re-insert for simplicity/consistency)
     await supabase.from('variants').delete().eq('product_id', productId);
     const variantRows = Object.entries(sizes).map(([size, qty]) => ({
       product_id: productId,
@@ -138,27 +231,95 @@ export async function updateTShirtAction(productId: string, formData: FormData) 
     revalidatePath('/shop/tshirts');
     return { success: true };
   } catch (error: any) {
-    console.error('updateTShirtAction Error:', error);
     return { success: false, error: error.message };
   }
 }
 
 /**
- * REDEFINED: Delete Product
+ * Utility to extract R2 Key from URL
+ */
+function getR2Key(url: string) {
+  try {
+    const baseUrl = process.env.R2_PUBLIC_URL || `https://${process.env.R2_BUCKET_NAME}.${process.env.R2_ACCOUNT_ID}.r2.dev`;
+    if (url.startsWith(baseUrl)) {
+      return url.replace(`${baseUrl}/`, '');
+    }
+    // Fallback for different URL structures if needed
+    const parts = url.split('/');
+    const productsIndex = parts.indexOf('products');
+    if (productsIndex !== -1) {
+      return parts.slice(productsIndex).join('/');
+    }
+    return url;
+  } catch {
+    return url;
+  }
+}
+
+/**
+ * REDEFINED: Delete Product with R2 cleanup
  */
 export async function deleteProductAction(productId: string) {
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
-
   try {
-    // Variants will be deleted automatically via CASCADE if schema is correct
+    // 1. Fetch product to get image URLs
+    const { data: product } = await supabase
+      .from('products')
+      .select('images')
+      .eq('id', productId)
+      .single();
+
+    if (product?.images && Array.isArray(product.images)) {
+      // 2. Delete each image from R2
+      for (const url of product.images) {
+        const key = getR2Key(url);
+        await deleteFromR2(key);
+      }
+    }
+
+    // 3. Delete from database
     const { error } = await supabase.from('products').delete().eq('id', productId);
     if (error) throw error;
 
     revalidatePath('/admin/t-shirts');
+    revalidatePath('/admin/graphic-kits');
+    revalidatePath('/admin/products');
     return { success: true };
   } catch (error: any) {
+    console.error('Delete Error:', error);
     return { success: false, error: error.message };
+  }
+}
+
+/**
+ * REDEFINED: Fetch All Products (Admin)
+ */
+export async function getAllProductsAction() {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`*, categories(slug, name)`)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return {
+      success: true,
+      data: data.map((p: any) => ({
+        ...p,
+        category: p.categories?.slug || 'uncategorized',
+        categoryName: p.categories?.name || 'Uncategorized',
+        inStock: p.stock > 0,
+        rating: 5,
+        reviews: 0
+      }))
+    };
+  } catch (error: any) {
+    return { success: false, error: error.message, data: [] };
   }
 }
 
@@ -172,23 +333,21 @@ export async function getProductsWithVariantsAction(categorySlug: string) {
   try {
     const { data, error } = await supabase
       .from('products')
-      .select(`
-        *,
-        categories!inner(slug),
-        variants(*)
-      `)
+      .select(`*, categories!inner(slug), variants(*)`)
       .eq('categories.slug', categorySlug)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: data.map((p: any) => ({
         ...p,
         category: p.categories.slug,
         inStock: p.stock > 0,
-        // Map variants array back to a sizes object for the UI
+        rating: 5,
+        reviews: 0,
+        compatibleBrands: p.meta_data?.brand ? [p.meta_data.brand] : [],
         sizes: p.variants.reduce((acc: any, v: any) => {
           acc[v.value] = v.stock;
           return acc;
@@ -201,7 +360,74 @@ export async function getProductsWithVariantsAction(categorySlug: string) {
 }
 
 /**
- * REDEFINED: Create Graphic Kit with Matrix Variants
+ * GENERIC: Fetch Products (Backwards compatibility)
+ */
+export async function getProductsAction(categorySlug: string) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`*, categories!inner(slug)`)
+      .eq('categories.slug', categorySlug)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    
+    const mappedData = data.map((p: any) => ({
+      ...p,
+      category: p.categories.slug,
+      inStock: p.stock > 0,
+      rating: 5,
+      reviews: 0,
+      compatibleBrands: p.meta_data?.brand ? [p.meta_data.brand] : []
+    }));
+
+    return { success: true, data: mappedData };
+  } catch (error: any) {
+    return { success: false, error: error.message, data: [] };
+  }
+}
+
+export async function getProductBySlugAction(categorySlug: string, productSlug: string) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        categories!inner(slug),
+        variants(*)
+      `)
+      .eq('categories.slug', categorySlug)
+      .eq('slug', productSlug)
+      .single();
+
+    if (error) throw error;
+
+    const mappedProduct = {
+      ...data,
+      category: data.categories.slug,
+      inStock: data.stock > 0,
+      rating: 5,
+      reviews: 0,
+      compatibleBrands: data.meta_data?.brand ? [data.meta_data.brand] : [],
+      sizes: data.variants?.reduce((acc: any, v: any) => {
+        acc[v.value] = v.stock;
+        return acc;
+      }, {})
+    };
+
+    return { success: true, data: mappedProduct };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * REDEFINED: Create Graphic Kit
  */
 export async function createGraphicKitAction(formData: FormData) {
   const cookieStore = cookies();
@@ -212,25 +438,26 @@ export async function createGraphicKitAction(formData: FormData) {
     const brand = formData.get('brand') as string;
     const model = formData.get('model') as string;
     const description = formData.get('description') as string;
-    const imageFile = formData.get('image') as File;
+    const imageFile = formData.get('image') as File | null;
     const compatibleModelsRaw = formData.get('compatibleModels') as string;
     const pricingMatrixRaw = formData.get('pricingMatrix') as string;
+
+    if (!imageFile || !imageFile.name || imageFile.size === 0) {
+      throw new Error('Design image is required.');
+    }
 
     const compatibleModels = JSON.parse(compatibleModelsRaw);
     const pricingMatrix = JSON.parse(pricingMatrixRaw);
 
-    // 1. Resolve Category
     const { data: cat } = await supabase.from('categories').select('id').eq('slug', 'graphic-kits').single();
     if (!cat) throw new Error('Graphic Kits category not found.');
 
-    // 2. Upload Image to R2
-    const slug = name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '') + '-' + uuidv4().slice(0, 4);
-    const fileExt = imageFile.name.split('.').pop();
+    const safeName = name || 'Untitled Design';
+    const slug = safeName.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '') + '-' + uuidv4().slice(0, 4);
+    const fileExt = imageFile.name.split('.').pop() || 'jpg';
     const filePath = `products/graphic-kits/${slug}.${fileExt}`;
     const publicUrl = await uploadToR2(imageFile, filePath);
 
-    // 3. Insert Base Product
-    // Use the lowest price from the matrix as the "Starting At" price
     const allPrices = Object.values(pricingMatrix).flatMap((m: any) => [
       parseFloat(m.Standard.Matte), parseFloat(m.Standard.Glossy),
       parseFloat(m.Premium.Matte), parseFloat(m.Premium.Glossy)
@@ -245,28 +472,19 @@ export async function createGraphicKitAction(formData: FormData) {
         category_id: cat.id,
         price: basePrice,
         description,
-        stock: 999, // Graphic kits are usually made-to-order
+        stock: 999,
         images: [publicUrl],
-        meta_data: { 
-          brand, 
-          model, 
-          compatible_models: compatibleModels,
-          type: 'graphic-kit'
-        }
+        meta_data: { brand, model, compatible_models: compatibleModels, pricing_matrix: pricingMatrix, type: 'graphic-kit' }
       }])
       .select()
       .single();
 
     if (pError) throw pError;
 
-    // 4. Insert Variants (Model + Quality + Finish)
-    // Create variants for EVERY compatible model and EVERY quality/finish combination
     const variantRows: any[] = [];
-    
     compatibleModels.forEach((mName: string) => {
       const modelPricing = pricingMatrix[mName];
       if (!modelPricing) return;
-
       variantRows.push(
         { product_id: product.id, name: 'Option', value: `${mName} - Standard Matte`, price_adjustment: parseFloat(modelPricing.Standard.Matte) - basePrice, stock: 999 },
         { product_id: product.id, name: 'Option', value: `${mName} - Standard Glossy`, price_adjustment: parseFloat(modelPricing.Standard.Glossy) - basePrice, stock: 999 },
@@ -281,9 +499,10 @@ export async function createGraphicKitAction(formData: FormData) {
     }
 
     revalidatePath('/admin/graphic-kits');
+    revalidatePath('/shop');
+    revalidatePath('/shop/graphic-kits');
     return { success: true, data: product };
   } catch (error: any) {
-    console.error('createGraphicKitAction Error:', error);
     return { success: false, error: error.message };
   }
 }
@@ -301,28 +520,20 @@ export async function updateGraphicKitAction(productId: string, formData: FormDa
     const imageFile = formData.get('image') as File | null;
     const basePrice = parseFloat(formData.get('price') as string);
 
-    // 1. Get existing
     const { data: existing } = await supabase.from('products').select('*').eq('id', productId).single();
     if (!existing) throw new Error('Product not found');
 
     let imageUrls = existing.images;
     if (imageFile && imageFile.size > 0) {
       const fileExt = imageFile.name.split('.').pop();
-      const filePath = `products/graphic-kits/${existing.slug}-${uuidv4().slice(0,4)}.${fileExt}`;
+      const filePath = `products/graphic-kits/${existing.slug}-${uuidv4().slice(0, 4)}.${fileExt}`;
       const publicUrl = await uploadToR2(imageFile, filePath);
       imageUrls = [publicUrl];
     }
 
-    // 2. Update Base
     const { error: pError } = await supabase
       .from('products')
-      .update({
-        name,
-        price: basePrice,
-        description,
-        images: imageUrls,
-        updated_at: new Date().toISOString()
-      })
+      .update({ name, price: basePrice, description, images: imageUrls, updated_at: new Date().toISOString() })
       .eq('id', productId);
 
     if (pError) throw pError;

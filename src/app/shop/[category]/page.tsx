@@ -24,7 +24,7 @@ export default function CategoryPage({ params }: Props) {
 
   const [filters, setFilters] = useState<FilterState>({
     search: '',
-    priceRange: [0, 50000],
+    priceRange: [0, 1000000],
     brands: [],
     bikeBrand: 'all',
   });

@@ -1,15 +1,15 @@
 'use client';
 
+import * as React from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useMemo } from 'react';
 import { 
-  Heart, ShoppingCart, Star, Check, Shield, Truck, 
-  RotateCcw, ChevronRight, Share2, Bike, Scissors, Droplets, Undo2,
-  MessageCircle, Phone
+  Heart, ShoppingCart, Check, Shield, Truck, 
+  RotateCcw, ChevronRight, Bike, Scissors, Droplets,
+  MessageCircle, Info
 } from 'lucide-react';
-import { products, categories, brands, formatPrice } from '@/data';
+import { formatPrice, Product } from '@/data';
 import { useStore } from '@/lib/store-context';
 import ProductCard from '@/components/shop/ProductCard';
 import ScrollReveal from '@/components/ui/ScrollReveal';
@@ -17,134 +17,169 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 type Props = { params: { slug: string } };
 
-const iconMap: Record<string, React.ElementType> = {
-  shield: Shield,
-  droplets: Droplets,
-  scissors: Scissors,
-  undo: Undo2,
-};
-
 export default function GraphicKitProductPage({ params }: Props) {
-  const product = products.find(p => p.slug === params.slug && p.category === 'graphic-kits');
-  if (!product) notFound();
+  const [product, setProduct] = React.useState<Product | null>(null);
+  const [related, setRelated] = React.useState<Product[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [error, setError] = React.useState(false);
 
-  const { addToCart, addToWishlist, removeFromWishlist, isInWishlist, user } = useStore();
+  const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useStore();
   const router = useRouter();
-  const wishlisted = isInWishlist(product.id);
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [quantity, setQuantity] = useState(1);
-  const [addedToCart, setAddedToCart] = useState(false);
-  const [selectedFinish, setSelectedFinish] = useState('Glossy');
-  const [selectedQuality, setSelectedQuality] = useState('Standard');
-  const [selectedModel, setSelectedModel] = useState(product.compatibleModels?.[0] || '');
+  
+  const [selectedImage, setSelectedImage] = React.useState(0);
+  const [quantity, setQuantity] = React.useState(1);
+  const [addedToCart, setAddedToCart] = React.useState(false);
+  const [selectedFinish, setSelectedFinish] = React.useState('Glossy');
+  const [selectedQuality, setSelectedQuality] = React.useState('Standard');
+  const [selectedModel, setSelectedModel] = React.useState('');
 
-  const related = useMemo(() => products
-    .filter(p => p.category === 'graphic-kits' && p.id !== product.id)
-    .slice(0, 4), [product]);
+  React.useEffect(() => {
+    async function loadProduct() {
+      setIsLoading(true);
+      try {
+        const { getProductBySlugAction, getProductsAction } = await import('@/app/admin/products/actions');
+        const res = await getProductBySlugAction('graphic-kits', params.slug);
+        
+        if (res.success && res.data) {
+          const p = res.data as unknown as Product;
+          setProduct(p);
+          
+          const models = p.meta_data?.compatible_models || [];
+          if (models.length > 0) setSelectedModel(models[0]);
 
-  const compatibleBrandData = useMemo(() =>
-    brands.filter(b => product.compatibleBrands?.includes(b.slug)),
-    [product]
-  );
+          const relatedRes = await getProductsAction('graphic-kits');
+          if (relatedRes.success && relatedRes.data) {
+            setRelated((relatedRes.data as unknown as Product[])
+              .filter(item => item.id !== p.id)
+              .slice(0, 4)
+            );
+          }
+        } else {
+          setError(true);
+        }
+      } catch (err) {
+        setError(true);
+      }
+      setIsLoading(false);
+    }
+    loadProduct();
+  }, [params.slug]);
+
+  const currentPrice = React.useMemo(() => {
+    if (!product) return 0;
+    const matrix = product.meta_data?.pricing_matrix;
+    if (matrix) {
+      let modelData = matrix[selectedModel];
+      if (!modelData) {
+        const modelKey = Object.keys(matrix).find(k => k.toLowerCase().trim() === selectedModel.toLowerCase().trim());
+        if (modelKey) modelData = matrix[modelKey];
+      }
+      if (modelData) {
+        const qualityKey = Object.keys(modelData).find(k => k.toLowerCase() === selectedQuality.toLowerCase()) || selectedQuality;
+        const finishData = modelData[qualityKey];
+        if (finishData) {
+          const finishKey = Object.keys(finishData).find(k => k.toLowerCase() === selectedFinish.toLowerCase()) || selectedFinish;
+          const priceValue = finishData[finishKey];
+          if (priceValue) return Number(priceValue);
+        }
+      }
+    }
+    let fallbackPrice = product.price;
+    if (selectedQuality.toLowerCase() === 'premium') fallbackPrice += 1000;
+    if (selectedFinish.toLowerCase() === 'matte') fallbackPrice += 300;
+    return fallbackPrice;
+  }, [product, selectedModel, selectedQuality, selectedFinish]);
+
+  const wishlisted = product ? isInWishlist(product.id) : false;
 
   const handleAddToCart = () => {
-    addToCart(product, quantity);
+    if (!product) return;
+    addToCart({
+      ...product,
+      price: currentPrice,
+      selectedModel: selectedModel || undefined,
+      selectedFinish: selectedFinish || undefined,
+      selectedQuality: selectedQuality || undefined,
+    } as any, quantity);
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
-  const discount = product.originalPrice
-    ? Math.round((1 - product.price / product.originalPrice) * 100)
-    : null;
-
-  // Calculate dynamic price based on selections
-  let currentPrice = product.price;
-  const matrix = (product as any).pricingMatrix || (product as any).meta_data?.pricing_matrix;
-  
-  if (matrix && selectedModel && matrix[selectedModel]) {
-    const variantPricing = matrix[selectedModel][selectedQuality];
-    if (variantPricing && variantPricing[selectedFinish]) {
-      currentPrice = Number(variantPricing[selectedFinish]);
-    }
-  } else {
-    // Fallback logic for legacy mock data to demonstrate dynamic pricing
-    if (selectedQuality === 'Premium') currentPrice += 1500;
-    if (selectedFinish === 'Matte') currentPrice += 300;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+        <div className="w-10 h-10 border-2 border-border border-t-wu-red rounded-full animate-spin mb-4" />
+        <p className="text-muted-foreground text-xs font-medium uppercase tracking-widest">Loading Product...</p>
+      </div>
+    );
   }
 
-  return (
-    <div className="min-h-screen bg-background">
+  if (error || !product) notFound();
 
-      {/* ─── BREADCRUMB ─── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-6">
-        <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-hide">
-          <Link href="/" className="text-muted-foreground hover:text-foreground font-mono text-[9px] tracking-[0.25em] uppercase transition-colors">Home</Link>
-          <ChevronRight size={10} className="text-muted-foreground/50 flex-shrink-0" />
-          <Link href="/shop/graphic-kits" className="text-muted-foreground hover:text-foreground font-mono text-[9px] tracking-[0.25em] uppercase transition-colors">Graphic Kits</Link>
-          <ChevronRight size={10} className="text-muted-foreground/50 flex-shrink-0" />
-          <span className="text-foreground/30 font-mono text-[9px] tracking-[0.25em] uppercase truncate">{product.name}</span>
-        </div>
+  const discount = product?.originalPrice ? Math.round((1 - currentPrice / product.originalPrice) * 100) : null;
+
+  return (
+    <div className="min-h-screen bg-background pb-20">
+      
+      {/* Navigation / Breadcrumb */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8">
+        <nav className="flex items-center gap-2 text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-widest overflow-x-auto whitespace-nowrap scrollbar-hide">
+          <Link href="/" className="hover:text-wu-red transition-colors">Home</Link>
+          <ChevronRight size={12} className="opacity-30" />
+          <Link href="/shop/graphic-kits" className="hover:text-wu-red transition-colors">Graphic Kits</Link>
+          <ChevronRight size={12} className="opacity-30" />
+          <span className="text-foreground truncate max-w-[200px]">{product.name}</span>
+        </nav>
       </div>
 
-      {/* ─── TOP SPLIT: GALLERY + CHECKOUT ─── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 xl:gap-20">
-
-          {/* LEFT: Image Gallery */}
-          <div className="lg:col-span-7 space-y-4">
-            <div className="relative">
-              <div className="relative aspect-[4/3] bg-card overflow-hidden rounded-3xl border border-border shadow-2xl">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={selectedImage}
-                    initial={{ opacity: 0, scale: 1.04 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.96 }}
-                    transition={{ duration: 0.4, ease: 'circOut' }}
-                    className="relative w-full h-full"
-                  >
-                    <Image
-                      src={product.images[selectedImage] || product.images[0]}
-                      alt={product.name}
-                      fill
-                      className="object-cover"
-                      priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/30 to-transparent pointer-events-none" />
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Badges */}
-                <div className="absolute top-5 left-5 flex flex-col gap-2 z-10">
-                  {product.badge && (
-                    <span className="font-display font-black text-[10px] px-3 py-1.5 bg-wu-red text-white tracking-[0.2em] uppercase rounded-full shadow-[0_5px_15px_rgba(232,22,27,0.5)]">
-                      {product.badge}
-                    </span>
-                  )}
-                  {discount && (
-                    <span className="font-display font-black text-[10px] px-3 py-1.5 bg-green-500 text-white tracking-[0.2em] uppercase rounded-full border border-border">
-                      {discount}% OFF
-                    </span>
-                  )}
-                </div>
-
-                <button className="absolute top-5 right-5 w-10 h-10 rounded-full bg-background/50 backdrop-blur-xl border border-border flex items-center justify-center text-foreground/50 hover:text-foreground transition-all z-10">
-                  <Share2 size={15} />
-                </button>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-16">
+          
+          {/* Gallery Section */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-muted/50 border border-border group shadow-sm">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedImage}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="relative w-full h-full"
+                >
+                  <Image
+                    src={product.images[selectedImage] || product.images[0]}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                </motion.div>
+              </AnimatePresence>
+              
+              {/* Badges */}
+              <div className="absolute top-6 left-6 flex flex-col gap-2">
+                {product.badge && (
+                  <span className="bg-wu-red text-white text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">
+                    {product.badge}
+                  </span>
+                )}
+                {discount && discount > 0 && (
+                  <span className="bg-background text-foreground text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider border border-border">
+                    {discount}% Off
+                  </span>
+                )}
               </div>
             </div>
 
             {/* Thumbnails */}
             {product.images.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
                 {product.images.map((img, i) => (
                   <button
                     key={i}
                     onClick={() => setSelectedImage(i)}
-                    className={`relative w-24 h-20 rounded-2xl overflow-hidden flex-shrink-0 border-2 transition-all duration-300 ${
-                      selectedImage === i
-                        ? 'border-wu-red scale-105 shadow-[0_0_12px_rgba(232,22,27,0.4)]'
-                        : 'border-transparent opacity-40 hover:opacity-100 grayscale hover:grayscale-0'
+                    className={`relative w-24 h-20 rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all ${
+                      selectedImage === i ? 'border-wu-red' : 'border-transparent opacity-60 hover:opacity-100'
                     }`}
                   >
                     <Image src={img} alt="" fill className="object-cover" />
@@ -152,397 +187,174 @@ export default function GraphicKitProductPage({ params }: Props) {
                 ))}
               </div>
             )}
+
+            {/* Product Details / Features */}
+            <div className="pt-10 border-t border-border mt-10">
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                <Info size={20} className="text-wu-red" /> 
+                Product Specifications
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { title: 'Bubble-Free Technology', desc: 'Air-release vinyl for easy, bubble-free DIY installation.', icon: Check },
+                  { title: 'Weather & UV Proof', desc: 'Special coating protects against fading and monsoon rains.', icon: Shield },
+                  { title: 'Precision Cut', desc: 'Durable vinyl machine-cut for a perfect fit on your bike.', icon: Scissors },
+                  { title: 'High Definition', desc: 'Sharp graphics with rich, long-lasting colors.', icon: Star },
+                ].map((item, i) => (
+                  <div key={i} className="p-5 border border-border rounded-2xl hover:border-wu-red/30 transition-colors bg-muted/5">
+                    <div className="w-8 h-8 rounded-lg bg-wu-red/10 text-wu-red flex items-center justify-center mb-3">
+                      <item.icon size={16} />
+                    </div>
+                    <h3 className="text-sm font-bold mb-1">{item.title}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-8 p-6 bg-muted/30 rounded-2xl">
+                <p className="text-sm text-muted-foreground leading-relaxed italic">
+                  "Transform your ride with our high-quality Graphics Kit, crafted for riders who want standout looks with reliable performance in every condition. Built for Indian weather conditions from scorching heat to heavy rains."
+                </p>
+              </div>
+            </div>
           </div>
 
-          {/* RIGHT: Sticky Checkout */}
+          {/* Configuration Section */}
           <div className="lg:col-span-5">
-            <div className="lg:sticky lg:top-28 space-y-7">
-
-              {/* Title + Rating */}
+            <div className="lg:sticky lg:top-32 space-y-8">
               <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <p className="font-mono text-[9px] text-wu-red tracking-[0.4em] uppercase">Graphic Kit</p>
-                  <div className="h-px flex-1 bg-wu-red/20" />
-                </div>
-                <h1 className="font-display font-black text-2xl sm:text-3xl text-foreground tracking-tight leading-snug uppercase mb-4">
-                  {product.name}
-                </h1>
-                <div className="flex items-center gap-3">
-                  <div className="flex gap-0.5 text-wu-red">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={13} fill={i < Math.floor(product.rating) ? 'currentColor' : 'none'} />
-                    ))}
-                  </div>
-                  <span className="font-mono text-[9px] text-foreground/40 tracking-widest">
-                    {product.rating} · {product.reviews} reviews
-                  </span>
-                </div>
-                
-                {/* Custom Description provided by user */}
-                <div className="mt-6 text-sm text-foreground/70 font-body leading-relaxed space-y-4 bg-foreground/[0.02] p-5 rounded-2xl border border-border">
-                  <p>Transform your ride with our high-quality Graphics Kit, crafted for riders who want standout looks with reliable performance in every condition.</p>
-                  
-                  <div>
-                    <p className="font-display font-bold text-foreground mb-2 flex items-center gap-2">
-                      <span className="text-wu-red">🔥</span> Key Features:
-                    </p>
-                    <ul className="space-y-2 list-none">
-                      <li className="flex gap-2">
-                        <span className="text-wu-red mt-1">•</span> 
-                        <span><strong>Bubble-Free Material:</strong> Advanced air-release vinyl ensures smooth, hassle-free installation without bubbles</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-wu-red mt-1">•</span> 
-                        <span><strong>UV Resistant:</strong> Fade-proof colors that stay vibrant even under harsh sunlight</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-wu-red mt-1">•</span> 
-                        <span><strong>Monsoon-Proof Laminate:</strong> Special protective layer designed to withstand rain, moisture, and humid conditions</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-wu-red mt-1">•</span> 
-                        <span><strong>Premium Quality Vinyl:</strong> Durable and flexible material for a perfect fit on curves and edges</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-wu-red mt-1">•</span> 
-                        <span><strong>High-Definition Printing:</strong> Sharp graphics with rich, long-lasting colors</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-wu-red mt-1">•</span> 
-                        <span><strong>Scratch Protection:</strong> Shields your original paint from minor scratches and wear</span>
-                      </li>
-                    </ul>
-                  </div>
-                  
-                  <ul className="space-y-1 text-xs text-foreground/60 border-t border-border/50 pt-3">
-                    <li className="flex items-center gap-2"><Check size={12} className="text-green-500" /> Built for Indian weather conditions from scorching heat to heavy rains</li>
-                    <li className="flex items-center gap-2"><Check size={12} className="text-green-500" /> Enhances your vehicle&apos;s look instantly</li>
-                    <li className="flex items-center gap-2"><Check size={12} className="text-green-500" /> Long-lasting finish without peeling or fading</li>
-                  </ul>
-                </div>
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">{product.name}</h1>
+                <p className="text-[10px] font-bold text-wu-red uppercase tracking-[0.2em] italic">// High-Performance Decals</p>
               </div>
 
-              {/* Price Card */}
-              <div className="bg-foreground/[0.03] border border-border rounded-3xl p-7 space-y-6">
-                {/* Price */}
-                <div className="flex items-baseline gap-4">
-                  <span className="font-display font-black text-5xl text-foreground tracking-tighter">{formatPrice(currentPrice)}</span>
-                  {product.originalPrice && (
-                    <div className="flex flex-col">
-                      <span className="font-display font-bold text-xl text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
-                      <span className="font-mono text-[9px] text-green-500 tracking-widest uppercase">
-                        Save {formatPrice(product.originalPrice - currentPrice)}
-                      </span>
-                    </div>
+              {/* Price & Selection Card */}
+              <div className="bg-muted/10 border border-border rounded-3xl p-8 space-y-8 shadow-sm">
+                <div className="flex items-baseline gap-3">
+                  <span className="text-4xl font-bold">{formatPrice(currentPrice)}</span>
+                  {product.originalPrice && product.originalPrice > currentPrice && (
+                    <span className="text-lg text-muted-foreground line-through decoration-wu-red/50">{formatPrice(product.originalPrice)}</span>
                   )}
                 </div>
 
-                {/* Compatible Models Tag */}
-                {product.compatibleModels && product.compatibleModels.length > 0 && (
-                  <div className="flex items-center gap-3 p-4 bg-wu-red/5 border border-wu-red/20 rounded-2xl">
-                    <Bike size={16} className="text-wu-red flex-shrink-0" />
-                    <div>
-                      <p className="font-mono text-[8px] text-wu-red tracking-widest uppercase mb-0.5">Designed For</p>
-                      <p className="font-display font-black text-sm text-foreground uppercase tracking-tight">
-                        {product.compatibleModels.join(' / ').toUpperCase().replace(/-/g, ' ')}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Compatible Brands */}
-                {compatibleBrandData.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {compatibleBrandData.map(b => (
-                      <span key={b.slug} className="font-mono text-[8px] px-3 py-1.5 border border-border text-foreground/50 rounded-full uppercase tracking-widest">
-                        {b.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* ─── NEW DROPDOWN SELECTIONS ─── */}
-                <div className="space-y-4 pt-2">
-                  {/* Model Selection (Only if > 1 model) */}
-                  {product.compatibleModels && product.compatibleModels.length > 1 && (
-                    <div className="space-y-2">
-                      <label className="font-mono text-[10px] text-foreground/50 tracking-widest uppercase block">Select Model</label>
+                <div className="space-y-6">
+                  {/* Model Selector */}
+                  {product.meta_data?.compatible_models && product.meta_data.compatible_models.length > 0 && (
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                        <Bike size={12} /> Select Bike Model
+                      </label>
                       <select 
                         value={selectedModel}
                         onChange={(e) => setSelectedModel(e.target.value)}
-                        className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm font-display font-bold uppercase tracking-wide focus:outline-none focus:border-wu-red transition-all cursor-pointer appearance-none"
+                        className="w-full h-14 px-6 rounded-xl border border-border bg-background font-bold text-sm focus:ring-2 focus:ring-wu-red/20 focus:border-wu-red transition-all appearance-none cursor-pointer"
                       >
-                        {product.compatibleModels.map(model => (
-                          <option key={model} value={model}>{model.toUpperCase().replace(/-/g, ' ')}</option>
+                        {product.meta_data.compatible_models.map((m: string) => (
+                          <option key={m} value={m}>{m}</option>
                         ))}
                       </select>
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Finish Selection */}
-                    <div className="space-y-2">
-                      <label className="font-mono text-[10px] text-foreground/50 tracking-widest uppercase block">Finish Type</label>
-                      <select 
-                        value={selectedFinish}
-                        onChange={(e) => setSelectedFinish(e.target.value)}
-                        className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm font-display font-bold uppercase tracking-wide focus:outline-none focus:border-wu-red transition-all cursor-pointer appearance-none"
-                      >
-                        <option value="Glossy">Glossy</option>
-                        <option value="Matte">Matte</option>
-                      </select>
+                  {/* Options Grid */}
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Finish Type</label>
+                      <div className="flex p-1 bg-muted rounded-xl border border-border">
+                        {['Glossy', 'Matte'].map(f => (
+                          <button
+                            key={f}
+                            onClick={() => setSelectedFinish(f)}
+                            className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition-all ${
+                              selectedFinish === f ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            {f}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-
-                    {/* Quality Selection */}
-                    <div className="space-y-2">
-                      <label className="font-mono text-[10px] text-foreground/50 tracking-widest uppercase block">Material Quality</label>
-                      <select 
-                        value={selectedQuality}
-                        onChange={(e) => setSelectedQuality(e.target.value)}
-                        className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm font-display font-bold uppercase tracking-wide focus:outline-none focus:border-wu-red transition-all cursor-pointer appearance-none"
-                      >
-                        <option value="Standard">Standard</option>
-                        <option value="Premium">Premium</option>
-                      </select>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Material Grade</label>
+                      <div className="flex p-1 bg-muted rounded-xl border border-border">
+                        {['Standard', 'Premium'].map(q => (
+                          <button
+                            key={q}
+                            onClick={() => setSelectedQuality(q)}
+                            className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition-all ${
+                              selectedQuality === q ? 'bg-wu-red text-white shadow-md shadow-wu-red/20' : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            {q}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Quantity + Cart */}
-                <div className="space-y-3 pt-2">
-                  <div className="flex items-center border border-border rounded-xl overflow-hidden bg-background/50">
-                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-14 h-12 text-foreground/40 hover:text-foreground hover:bg-foreground/5 transition-colors text-xl font-bold">−</button>
-                    <span className="flex-1 text-center font-display font-black text-xl text-foreground">{quantity}</span>
-                    <button onClick={() => setQuantity(quantity + 1)} className="w-14 h-12 text-foreground/40 hover:text-foreground hover:bg-foreground/5 transition-colors text-xl font-bold">+</button>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleAddToCart}
-                      className={`flex-1 h-14 flex items-center justify-center gap-2 font-display font-black text-xs tracking-[0.2em] uppercase rounded-xl transition-all duration-500 ${
-                        addedToCart
-                          ? 'bg-green-500 text-white'
-                          : 'bg-wu-red hover:bg-[#C01218] text-white shadow-[0_0_30px_rgba(232,22,27,0.35)]'
-                      }`}
-                    >
-                      {addedToCart
-                        ? <><Check size={17} /> Added!</>
-                        : <><ShoppingCart size={17} /> Add to Cart</>}
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (!user) {
-                          alert("Please log in to manage your wishlist.");
-                          router.push('/login');
-                          return;
-                        }
-                        wishlisted ? removeFromWishlist(product.id) : addToWishlist(product)
-                      }}
-                      className={`w-14 h-14 flex items-center justify-center rounded-xl border transition-all ${
-                        wishlisted ? 'bg-wu-red border-wu-red text-white' : 'border-border text-foreground/40 hover:text-foreground hover:bg-foreground/5'
-                      }`}
-                    >
-                      <Heart size={19} fill={wishlisted ? 'currentColor' : 'none'} />
-                    </button>
-                  </div>
-
-                  <a
-                    href="https://wa.me/919876543210"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full h-12 flex items-center justify-center gap-2 border border-green-500/30 text-green-600 dark:text-green-400 font-display font-bold text-xs tracking-widest uppercase rounded-xl hover:bg-green-500/10 transition-all"
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={handleAddToCart}
+                    className={`h-16 flex items-center justify-center gap-3 font-bold text-sm uppercase tracking-widest rounded-2xl transition-all ${
+                      addedToCart ? 'bg-green-600 text-white shadow-lg shadow-green-600/20' : 'bg-foreground text-background hover:bg-wu-red hover:text-white shadow-lg'
+                    }`}
                   >
-                    <MessageCircle size={14} /> Order via WhatsApp
-                  </a>
+                    {addedToCart ? <><Check size={18} /> In Cart</> : <><ShoppingCart size={18} /> Add to Cart</>}
+                  </button>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => wishlisted ? removeFromWishlist(product.id) : addToWishlist(product)}
+                      className={`h-12 flex items-center justify-center gap-2 border rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${
+                        wishlisted ? 'border-wu-red text-wu-red bg-wu-red/5' : 'border-border text-muted-foreground hover:border-foreground hover:text-foreground'
+                      }`}
+                    >
+                      <Heart size={14} fill={wishlisted ? 'currentColor' : 'none'} />
+                      {wishlisted ? 'Saved' : 'Wishlist'}
+                    </button>
+                    <a
+                      href="https://wa.me/919876543210"
+                      target="_blank"
+                      className="h-12 flex items-center justify-center gap-2 border border-green-500/20 bg-green-500/5 text-green-600 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-green-500 hover:text-white transition-all"
+                    >
+                      <MessageCircle size={14} />
+                      WhatsApp
+                    </a>
+                  </div>
                 </div>
               </div>
 
-              {/* Trust Badges */}
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { icon: Shield, label: '3M Certified' },
-                  { icon: RotateCcw, label: 'No Glue Left' },
-                  { icon: Truck, label: 'Ships Pan-India' },
-                ].map(({ icon: Icon, label }) => (
-                  <div key={label} className="flex flex-col items-center text-center gap-2 p-4 bg-foreground/[0.02] border border-border rounded-2xl">
-                    <Icon size={16} className="text-wu-red" />
-                    <span className="font-mono text-[8px] text-foreground/40 tracking-widest uppercase leading-tight">{label}</span>
-                  </div>
-                ))}
+              {/* Shipping Badges */}
+              <div className="flex items-center justify-center gap-8 py-4 border-y border-border">
+                <div className="flex flex-col items-center gap-1.5 opacity-60">
+                  <Truck size={18} />
+                  <span className="text-[8px] font-bold uppercase tracking-widest">Ships Fast</span>
+                </div>
+                <div className="flex flex-col items-center gap-1.5 opacity-60">
+                  <RotateCcw size={18} />
+                  <span className="text-[8px] font-bold uppercase tracking-widest">Easy Returns</span>
+                </div>
+                <div className="flex flex-col items-center gap-1.5 opacity-60">
+                  <Shield size={18} />
+                  <span className="text-[8px] font-bold uppercase tracking-widest">Secure Payment</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* ─── RED MARKETING BANNER ─── */}
-      {product.marketingTagline && (
-        <div className="bg-wu-red py-5 mt-6">
-          <p className="text-center font-display font-black text-xl sm:text-2xl text-white tracking-tight uppercase">
-            {product.marketingTagline}
-          </p>
-        </div>
-      )}
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-24">
-
-        {/* ─── WHAT'S INCLUDED ─── */}
-        {product.kitIncludes && product.kitIncludes.length > 0 && (
-          <ScrollReveal direction="up">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-              <div>
-                <p className="font-mono text-[10px] text-wu-red tracking-[0.4em] uppercase mb-4 flex items-center gap-3">
-                  <span className="w-6 h-px bg-wu-red" /> In The Box
-                </p>
-                <h2 className="font-display font-black text-4xl sm:text-5xl text-foreground uppercase tracking-tighter leading-none mb-10">
-                  What&apos;s <br /><span className="text-wu-red">Included?</span>
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {product.kitIncludes.map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 p-4 bg-foreground/[0.03] border border-border rounded-xl group hover:border-wu-red/30 transition-all">
-                      <div className="w-6 h-6 rounded-full bg-wu-red/10 border border-wu-red/30 flex items-center justify-center flex-shrink-0">
-                        <Check size={10} className="text-wu-red" />
-                      </div>
-                      <span className="font-body text-sm text-foreground/60 group-hover:text-foreground transition-colors">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="relative aspect-square rounded-3xl overflow-hidden border border-border">
-                <Image
-                  src={product.images[1] || product.images[0]}
-                  alt="Kit Contents"
-                  fill
-                  className="object-cover opacity-70"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
-                <div className="absolute bottom-8 left-8">
-                  <p className="font-mono text-[10px] text-wu-red tracking-widest uppercase mb-2">Visual Mockup Only</p>
-                  <p className="font-display font-black text-2xl text-foreground uppercase">Full Body Kit</p>
-                </div>
-              </div>
-            </div>
-          </ScrollReveal>
-        )}
-
-        {/* ─── WHY WEARUP ─── */}
-        {product.whyChoose && product.whyChoose.length > 0 && (
-          <ScrollReveal direction="up">
-            <div className="border-t border-border pt-16">
-              <p className="font-mono text-[10px] text-wu-red tracking-[0.4em] uppercase mb-4 flex items-center gap-3">
-                <span className="w-6 h-px bg-wu-red" /> Why Us
-              </p>
-              <h2 className="font-display font-black text-4xl sm:text-5xl text-foreground uppercase tracking-tighter mb-14 leading-none">
-                Why <span className="text-wu-red">WearUp?</span>
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {product.whyChoose.map((item, i) => {
-                  const Icon = iconMap[item.icon] || Shield;
-                  return (
-                    <div key={i} className="p-7 bg-foreground/[0.02] border border-border rounded-3xl hover:border-wu-red/30 transition-all group">
-                      <div className="w-12 h-12 rounded-2xl bg-wu-red/10 border border-wu-red/20 flex items-center justify-center mb-5 group-hover:bg-wu-red/20 transition-colors">
-                        <Icon size={20} className="text-wu-red" />
-                      </div>
-                      <h3 className="font-display font-black text-base text-foreground uppercase mb-3 tracking-tight">{item.title}</h3>
-                      <p className="font-body text-sm text-foreground/50 leading-relaxed">{item.desc}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </ScrollReveal>
-        )}
-
-        {/* ─── INSTALLATION GUIDE ─── */}
-        {product.installationSteps && product.installationSteps.length > 0 && (
-          <ScrollReveal direction="up">
-            <div className="border-t border-border pt-16">
-              <p className="font-mono text-[10px] text-wu-red tracking-[0.4em] uppercase mb-4 flex items-center gap-3">
-                <span className="w-6 h-px bg-wu-red" /> DIY Friendly
-              </p>
-              <h2 className="font-display font-black text-4xl sm:text-5xl text-foreground uppercase tracking-tighter mb-14 leading-none">
-                Installation <span className="text-wu-red">Guide</span>
-              </h2>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-20 gap-y-0 relative">
-                {product.installationSteps.map((step, i) => (
-                  <div key={i} className="flex gap-6 relative pb-10">
-                    {/* Vertical connector line */}
-                    {i % 2 === 0 && i < product.installationSteps!.length - 1 && (
-                      <div className="absolute left-6 top-14 bottom-0 w-px bg-gradient-to-b from-wu-red/50 to-transparent" />
-                    )}
-                    <div className="w-12 h-12 bg-wu-red flex items-center justify-center font-mono text-sm font-black text-white flex-shrink-0 rounded-2xl z-10 shadow-[0_0_20px_rgba(232,22,27,0.3)] border border-border/10">
-                      {step.step}
-                    </div>
-                    <div className="flex-1 pt-1">
-                      <h3 className="font-display font-black text-lg text-foreground uppercase mb-2 tracking-tight">{step.title}</h3>
-                      <p className="font-body text-sm text-foreground/50 leading-relaxed">{step.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Pro installation CTA */}
-              <div className="mt-4 p-8 bg-wu-red/5 border border-wu-red/20 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-6">
-                <div>
-                  <p className="font-display font-black text-xl text-foreground uppercase mb-1">Need professional installation?</p>
-                  <p className="font-body text-sm text-foreground/50">Book a professional wrap fitting at our studio. We cover the entire process.</p>
-                </div>
-                <Link
-                  href="/services/bike-wrapping"
-                  className="flex-shrink-0 flex items-center gap-2 px-8 py-4 bg-wu-red text-white font-display font-bold text-xs tracking-widest uppercase rounded-full hover:bg-wu-red/90 transition-all shadow-[0_0_20px_rgba(232,22,27,0.3)] whitespace-nowrap"
-                >
-                  <Phone size={13} /> Book a Service
-                </Link>
-              </div>
-            </div>
-          </ScrollReveal>
-        )}
-
-        {/* ─── SPECS ─── */}
-        <ScrollReveal direction="up">
-          <div className="border-t border-border pt-16">
-            <p className="font-mono text-[10px] text-wu-red tracking-[0.4em] uppercase mb-4 flex items-center gap-3">
-              <span className="w-6 h-px bg-wu-red" /> Specifications
-            </p>
-            <h2 className="font-display font-black text-4xl sm:text-5xl text-foreground uppercase tracking-tighter mb-10 leading-none">
-              Product <span className="text-wu-red">Details</span>
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {product.specs.map((spec, i) => (
-                <div key={i} className="p-6 bg-foreground/[0.02] border border-border rounded-2xl group hover:bg-foreground/[0.04] transition-colors">
-                  <p className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase mb-2">{spec.label}</p>
-                  <p className="font-display font-bold text-foreground text-base tracking-tight">{spec.value}</p>
-                </div>
+        {/* Related Products Section */}
+        {related.length > 0 && (
+          <div className="mt-32 pt-20 border-t border-border">
+            <h2 className="text-2xl font-bold mb-12">More Popular Designs</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
+              {related.map((p) => (
+                <ProductCard key={p.id} product={p} />
               ))}
             </div>
           </div>
-        </ScrollReveal>
+        )}
       </div>
-
-      {/* ─── RELATED PRODUCTS ─── */}
-      {related.length > 0 && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-28 border-t border-border pt-16">
-          <ScrollReveal direction="up">
-            <div className="flex items-end justify-between mb-14">
-              <div>
-                <p className="font-mono text-[10px] text-wu-red tracking-[0.4em] uppercase mb-4">More Kits</p>
-                <h2 className="font-display font-black text-4xl sm:text-5xl text-foreground tracking-tighter uppercase leading-none">You May Also Like</h2>
-              </div>
-              <Link href="/shop/graphic-kits" className="hidden sm:flex items-center gap-2 text-foreground/40 hover:text-foreground font-display font-bold text-xs tracking-[0.2em] uppercase transition-colors group">
-                View All <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </div>
-          </ScrollReveal>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-            {related.map((p, i) => (
-              <ScrollReveal key={p.id} direction="up" delay={i * 0.08}>
-                <ProductCard product={p} />
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
