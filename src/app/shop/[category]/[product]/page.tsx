@@ -98,10 +98,7 @@ export default function ProductPage({ params }: Props) {
       return;
     }
     
-    addToCart({
-      ...product,
-      selectedSize: selectedSize || undefined
-    }, quantity);
+    addToCart(product, quantity, { size: selectedSize || undefined });
     
     setAddedToCart(true);
   };
@@ -114,10 +111,7 @@ export default function ProductPage({ params }: Props) {
     }
     
     if (!addedToCart) {
-      addToCart({
-        ...product,
-        selectedSize: selectedSize || undefined
-      }, quantity);
+      addToCart(product, quantity, { size: selectedSize || undefined });
       setAddedToCart(true);
     }
     router.push('/checkout');

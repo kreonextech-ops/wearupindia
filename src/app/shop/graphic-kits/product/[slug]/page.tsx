@@ -94,13 +94,12 @@ export default function GraphicKitProductPage({ params }: Props) {
 
   const handleAddToCart = () => {
     if (!product) return;
-    addToCart({
-      ...product,
-      price: currentPrice,
-      selectedModel: selectedModel || undefined,
-      selectedFinish: selectedFinish || undefined,
-      selectedQuality: selectedQuality || undefined,
-    } as any, quantity);
+    addToCart(product, quantity, {
+      model: selectedModel || undefined,
+      finish: selectedFinish || undefined,
+      quality: selectedQuality || undefined,
+      price: currentPrice
+    });
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };

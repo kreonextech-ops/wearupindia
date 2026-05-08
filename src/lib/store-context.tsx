@@ -4,12 +4,18 @@ import { Product } from '@/data';
 import { createClient } from './supabase/client';
 import { User } from '@supabase/supabase-js';
 
-type CartItem = Product & { quantity: number; selectedSize?: string };
+type CartItem = Product & { 
+  quantity: number; 
+  selectedSize?: string;
+  selectedModel?: string;
+  selectedFinish?: string;
+  selectedQuality?: string;
+};
 
 type StoreContextType = {
   cart: CartItem[];
   wishlist: Product[];
-  addToCart: (product: Product, quantity?: number, size?: string) => void;
+  addToCart: (product: Product, quantity?: number, options?: { size?: string; model?: string; finish?: string; quality?: string; price?: number }) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   addToWishlist: (product: Product) => void;
@@ -73,13 +79,40 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('wu-wishlist', JSON.stringify(wishlist));
   }, [wishlist]);
 
-  const addToCart = (product: Product, quantity = 1, size?: string) => {
+  const addToCart = (product: Product, quantity = 1, options?: string | { size?: string; model?: string; finish?: string; quality?: string; price?: number }) => {
     setCart(prev => {
-      const existing = prev.find(i => i.id === product.id);
+      // Find if item with SAME options exists
+      const optionsObj = typeof options === 'string' ? { size: options } : options;
+      
+      const existing = prev.find(i => 
+        i.id === product.id && 
+        i.selectedSize === optionsObj?.size && 
+        i.selectedModel === optionsObj?.model &&
+        i.selectedFinish === optionsObj?.finish &&
+        i.selectedQuality === optionsObj?.quality
+      );
+
       if (existing) {
-        return prev.map(i => i.id === product.id ? { ...i, quantity: i.quantity + quantity } : i);
+        return prev.map(i => 
+          (i.id === product.id && 
+           i.selectedSize === optionsObj?.size && 
+           i.selectedModel === optionsObj?.model &&
+           i.selectedFinish === optionsObj?.finish &&
+           i.selectedQuality === optionsObj?.quality) 
+          ? { ...i, quantity: i.quantity + quantity } 
+          : i
+        );
       }
-      return [...prev, { ...product, quantity, selectedSize: size }];
+
+      return [...prev, { 
+        ...product, 
+        quantity, 
+        price: optionsObj?.price ?? product.price,
+        selectedSize: optionsObj?.size,
+        selectedModel: optionsObj?.model,
+        selectedFinish: optionsObj?.finish,
+        selectedQuality: optionsObj?.quality
+      }];
     });
   };
 
