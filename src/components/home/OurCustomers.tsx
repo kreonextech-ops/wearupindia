@@ -12,7 +12,7 @@ const galleryImages = [
   getAssetUrl('/gallery/DSC07421.jpg'),
   getAssetUrl('/gallery/DSC07738.jpg'),
   getAssetUrl('/gallery/DSC_1954.jpg'),
-  getAssetUrl('/gallery/_DSC2605.jpg'),
+  getAssetUrl('/gallery/_DSC6727.jpg'),
   getAssetUrl('/gallery/_DSC6765.jpg'),
   getAssetUrl('/gallery/_DSC6958.jpg'),
   getAssetUrl('/gallery/_DSC8584.jpg'),
