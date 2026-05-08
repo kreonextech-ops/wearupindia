@@ -47,7 +47,7 @@ export default function ProductCard({ product }: { product: Product }) {
               Featured
             </span>
           )}
-          {product.is_new && (
+          {product.isNew && (
             <span className="font-display font-bold text-[9px] px-2.5 py-1 bg-white text-black tracking-widest uppercase rounded-md shadow-lg border border-border">
               New Arrival
             </span>
