@@ -30,7 +30,7 @@ export default function BikeAccessoryProductOrCategoryPage({ params }: Props) {
       return;
     }
     
-    addToCart({ ...product }, quantity);
+    addToCart(product, quantity);
     setAddedToCart(true);
   };
 
@@ -38,7 +38,7 @@ export default function BikeAccessoryProductOrCategoryPage({ params }: Props) {
     if (!product) return;
     
     if (!addedToCart) {
-      addToCart({ ...product }, quantity);
+      addToCart(product, quantity);
       setAddedToCart(true);
     }
     router.push('/checkout');
