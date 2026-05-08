@@ -54,16 +54,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     
     const syncData = async () => {
       // Sync Cart
-      if (cart.length > 0) {
-        const cartItems = cart.map(i => ({ id: i.id, quantity: i.quantity, size: i.selectedSize }));
-        await supabase.from('carts').upsert({ user_id: user.id, items: cartItems }, { onConflict: 'user_id' });
-      }
+      const cartItems = cart.map(i => ({ product_id: i.id, quantity: i.quantity, size: i.selectedSize }));
+      await supabase.from('carts').upsert({ user_id: user.id, items: cartItems }, { onConflict: 'user_id' });
       
       // Sync Wishlist
-      if (wishlist.length > 0) {
-        const wishItems = wishlist.map(p => p.id);
-        await supabase.from('wishlists').upsert({ user_id: user.id, items: wishItems }, { onConflict: 'user_id' });
-      }
+      const wishItems = wishlist.map(p => p.id);
+      await supabase.from('wishlists').upsert({ user_id: user.id, items: wishItems }, { onConflict: 'user_id' });
     };
     
     syncData();

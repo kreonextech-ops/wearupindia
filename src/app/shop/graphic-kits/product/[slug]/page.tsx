@@ -6,8 +6,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { 
   Heart, ShoppingCart, Check, Shield, Truck, 
-  RotateCcw, ChevronRight, Bike, Scissors, Droplets,
-  MessageCircle, Info
+  ChevronRight, Bike, Scissors, Droplets,
+  MessageCircle, Info, Star
 } from 'lucide-react';
 import { formatPrice, Product } from '@/data';
 import { useStore } from '@/lib/store-context';
@@ -313,7 +313,7 @@ export default function GraphicKitProductPage({ params }: Props) {
                       {wishlisted ? 'Saved' : 'Wishlist'}
                     </button>
                     <a
-                      href="https://wa.me/919876543210"
+                      href="https://wa.me/919093543071"
                       target="_blank"
                       className="h-12 flex items-center justify-center gap-2 border border-green-500/20 bg-green-500/5 text-green-600 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-green-500 hover:text-white transition-all"
                     >
@@ -329,10 +329,6 @@ export default function GraphicKitProductPage({ params }: Props) {
                 <div className="flex flex-col items-center gap-1.5 opacity-60">
                   <Truck size={18} />
                   <span className="text-[8px] font-bold uppercase tracking-widest">Ships Fast</span>
-                </div>
-                <div className="flex flex-col items-center gap-1.5 opacity-60">
-                  <RotateCcw size={18} />
-                  <span className="text-[8px] font-bold uppercase tracking-widest">Easy Returns</span>
                 </div>
                 <div className="flex flex-col items-center gap-1.5 opacity-60">
                   <Shield size={18} />

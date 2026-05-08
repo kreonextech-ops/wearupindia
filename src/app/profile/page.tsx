@@ -351,18 +351,6 @@ export default function ProfilePage() {
                         </div>
                       </div>
 
-                      <div className="space-y-4">
-                        <h4 className="font-display font-bold text-xs text-[#555] uppercase tracking-widest border-b border-white/5 pb-2">Communications</h4>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-body font-bold text-sm text-white">Order Updates via SMS</p>
-                            <p className="font-body text-xs text-[#555]">Receive delivery updates directly on your phone</p>
-                          </div>
-                          <div className="w-12 h-6 bg-[#E8161B] rounded-full relative p-1 cursor-pointer">
-                            <div className="w-4 h-4 bg-white rounded-full ml-auto shadow-sm" />
-                          </div>
-                        </div>
-                      </div>
                       
                       <button 
                         type="submit"

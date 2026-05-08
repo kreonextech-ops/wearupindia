@@ -75,11 +75,6 @@ export default function GraphicKitsPage() {
                   />
                   {/* Subtle Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
-                  
-                  {/* Logo Overlay (Top Left) */}
-                  <div className="absolute top-4 left-4 w-12 h-12">
-                    <Image src="/images/logo-icon.png" alt="WearUp" width={48} height={48} className="opacity-40 group-hover:opacity-100 transition-opacity" />
-                  </div>
                 </div>
 
                 {/* Content Bar */}

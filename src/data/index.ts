@@ -25,6 +25,7 @@ export type Product = {
   specs: { label: string; value: string }[];
   inStock: boolean;
   isNew?: boolean;
+  is_featured?: boolean;
   isBestSeller?: boolean;
   compatibleBrands: string[];
   compatibleModels?: string[];
@@ -116,10 +117,20 @@ export type AccessoryCategory = {
   items: string[];
 };
 
+const ACCESSORY_CATEGORY_IMAGES: Record<string, string> = {
+  'performance': '/images/accessory-categories/Performance.png',
+  'luggage-accessories-touring': '/images/accessory-categories/Luggage Accessories Touring.png',
+  'fog-lights': '/images/accessory-categories/Fog lights.png',
+  'bags-and-backpacks': '/images/accessory-categories/Bags and Backpacks.png',
+  'helmet': '/images/accessory-categories/Helmet.png',
+  'accessories': '/images/accessory-categories/Accessories.png',
+  'bike-protection': '/images/accessory-categories/Bike protection.png',
+};
+
 export const accessoryCategories: AccessoryCategory[] = MOTORCYCLE_ACCESSORIES_STRUCTURE.map(cat => ({
   name: cat.category,
   slug: cat.slug,
-  image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=600&q=80', // Placeholder
+  image: ACCESSORY_CATEGORY_IMAGES[cat.slug] || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=600&q=80',
   items: cat.items
 }));
 
@@ -137,7 +148,7 @@ export const categories: Category[] = [
     name: 'Bike Accessories',
     tagline: 'Upgrade your ride',
     description: 'Premium bike accessories that protects, boost performance, comfort, and style engineered to handle every road you take.',
-    image: getAssetUrl('/images/services/wrapping.png'),
+    image: '/images/accessory-categories/Accessories.png',
     accentColor: '#E8161B',
   },
   {
@@ -184,6 +195,61 @@ export const brands: Brand[] = [
   { name: 'Suzuki', slug: 'suzuki', image: '/images/brands/suzuki.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'suzuki')?.models || [] },
   { name: 'Universal', slug: 'universal', image: 'https://images.unsplash.com/photo-1620986794695-171542f0c79d?w=400&q=80', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'universal')?.models || [] },
 ];
+
+export const MODEL_IMAGES: Record<string, string> = {
+  // Ather
+  'ather-450x': '/images/models/ather/ather450x.jpeg',
+  // Bajaj
+  'dominar-250-400': '/images/models/bajaj/dominar 400.jpeg',
+  'pulsar-220': '/images/models/bajaj/pulsar 220.jpeg',
+  'pulsar-ns-125-160-200': '/images/models/bajaj/ns160.jpeg',
+  'pulsar-ns-400': '/images/models/bajaj/n400.jpeg',
+  'pulsar-n160-250': '/images/models/bajaj/n160.jpeg',
+  'pulsar-rs': '/images/models/bajaj/pulsar rs.jpeg',
+  // BMW
+  'g310gs': '/images/models/bmw/g310gs.jpeg',
+  's1000rr-2019-2022': '/images/models/bmw/s1000rr.jpeg',
+  // Hero
+  'xpulse-200': '/images/models/hero/xpulse200.jpeg',
+  // Honda
+  'cbr-150-250': '/images/models/honda/cbr150.jpeg',
+  'cbr650r-2019-2022': '/images/models/honda/cbr650.jpeg',
+  'nx500': '/images/models/honda/nx500.jpeg',
+  // Kawasaki
+  'ninja-300': '/images/models/kawasaki/ninja300.jpeg',
+  'ninja-650': '/images/models/kawasaki/ninja650.jpeg',
+  'z800': '/images/models/kawasaki/z800.jpeg',
+  'z900': '/images/models/kawasaki/z900.jpeg',
+  'zx10r-2016-2020': '/images/models/kawasaki/zx10r-20162020.jpeg',
+  'zx6r-2019-2023': '/images/models/kawasaki/zx6r-20192023.jpeg',
+  'zx6r-2024-2026': '/images/models/kawasaki/zx6r-20242026.jpeg',
+  // KTM
+  'duke-125-200-390-gen1': '/images/models/ktm/duke gen 1.jpeg',
+  'duke-125-200-250-390-gen2': '/images/models/ktm/duke 2nd gen.jpeg',
+  'duke-250-390-gen-3': '/images/models/ktm/duke 3rd gen.jpeg',
+  'adventure-250-390-gen-1': '/images/models/ktm/adventure gen 1.jpeg',
+  'adventure-250-390-gen-2': '/images/models/ktm/adventure gen 2.jpeg',
+  'rc-125-200-390-gen-1': '/images/models/ktm/rc gen 1.jpeg',
+  'rc-125-200-390-gen-2': '/images/models/ktm/rc gen 2.jpeg',
+  // RE
+  'himalayan': '/images/models/royal enfield/himalyan.jpeg',
+  // Suzuki
+  'hayabusa': '/images/models/suzuki/Hayabusa.jpeg',
+  'gixxer-sf-155-250': '/images/models/suzuki/gixxer sf-155250.jpeg',
+  // TVS
+  'ntorq': '/images/models/tvs/ntorq.jpeg',
+  'rtr-160-200-4v': '/images/models/tvs/rtr160.jpeg',
+  'rr310': '/images/models/tvs/rr310.jpeg',
+  'rtx-300': '/images/models/tvs/rtx300.jpeg',
+  // Yamaha
+  'aerox-155': '/images/models/yamaha/aerox155.jpeg',
+  'mt-15': '/images/models/yamaha/mt15.jpeg',
+  'r3': '/images/models/yamaha/r3.jpeg',
+  'v2': '/images/models/yamaha/v2.jpeg',
+  'v3': '/images/models/yamaha/v3.jpeg',
+  'v4': '/images/models/yamaha/v4.jpeg',
+  'fz-25': '/images/models/yamaha/fz25.jpeg',
+};
 
 export const services: Service[] = [
   {

@@ -1,8 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Check, ArrowLeft, ArrowRight, Lock, AlertCircle } from 'lucide-react';
+import { Check, ArrowLeft, ArrowRight, Lock, AlertCircle, MapPin } from 'lucide-react';
 import { useStore } from '@/lib/store-context';
 import { formatPrice } from '@/data';
 import { createClient } from '@/lib/supabase/client';
@@ -18,19 +18,60 @@ export default function CheckoutPage() {
   const [orderId, setOrderId] = useState('');
   const [placing, setPlacing] = useState(false);
   const [placeError, setPlaceError] = useState('');
+  const [savedAddress, setSavedAddress] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadProfile() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+        if (profile?.shipping_address || profile?.full_name || profile?.phone_number) {
+          setSavedAddress({ ...profile, email: user.email });
+        }
+      }
+    }
+    loadProfile();
+  }, []);
+
+  const handleUseSavedAddress = () => {
+    if (!savedAddress) return;
+    const addr = savedAddress.shipping_address || {};
+    const nameParts = (savedAddress.full_name || '').split(' ');
+    setForm(prev => ({
+      ...prev,
+      firstName: nameParts[0] || '',
+      lastName: nameParts.slice(1).join(' ') || '',
+      email: savedAddress.email || '',
+      phone: savedAddress.phone_number || '',
+      address: addr.street || '',
+      city: addr.city || '',
+      state: addr.state || '',
+      pincode: addr.zip || '',
+    }));
+  };
 
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', phone: '',
     address: '', city: '', state: '', pincode: '',
-    paymentMethod: 'upi',
+    paymentMethod: 'whatsapp',
     upiId: '', cardNumber: '', cardExpiry: '', cardCvv: '', cardName: '',
   });
+
+  // Load applied coupon from cart page (stored in localStorage)
+  const [appliedCoupon, setAppliedCoupon] = useState<null | { code: string; discountAmount: number; discountType: string; discountValue: number; couponId: string }>(null);
+  useEffect(() => {
+    const stored = localStorage.getItem('appliedCoupon');
+    if (stored) {
+      try { setAppliedCoupon(JSON.parse(stored)); } catch {}
+    }
+  }, []);
 
   const update = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
 
   const shipping = cartTotal >= 499 ? 0 : 99;
-  const gst = Math.round(cartTotal * 0.18);
-  const total = cartTotal + shipping + gst;
+  const couponDiscount = appliedCoupon?.discountAmount || 0;
+  const total = cartTotal + shipping - couponDiscount;
 
   const handlePlaceOrder = async () => {
     setPlacing(true);
@@ -146,14 +187,44 @@ export default function CheckoutPage() {
         }
       }
 
-      // 6. Clear cart and mark placed
+      // 6. Clear cart and mark placed — also log coupon usage if any
       const finalOrderId = `WU-${order.id.slice(0, 8).toUpperCase()}`;
       setOrderId(finalOrderId);
+
+      if (appliedCoupon) {
+        // Log coupon usage
+        await supabase.from('coupon_usages').insert([{
+          coupon_id: appliedCoupon.couponId,
+          coupon_code: appliedCoupon.code,
+          order_id: order.id,
+          customer_name: `${form.firstName} ${form.lastName}`.trim(),
+          customer_email: form.email,
+          order_total: total,
+          discount_applied: appliedCoupon.discountAmount,
+        }]);
+
+        // Atomically increment times_used: fetch current then update
+        const { data: currentCoupon } = await supabase
+          .from('coupons')
+          .select('times_used')
+          .eq('code', appliedCoupon.code)
+          .single();
+        if (currentCoupon) {
+          await supabase
+            .from('coupons')
+            .update({ times_used: (currentCoupon.times_used || 0) + 1 })
+            .eq('code', appliedCoupon.code);
+        }
+
+        localStorage.removeItem('appliedCoupon');
+      }
+
       clearCart();
       
       // 7. If WhatsApp, redirect to WhatsApp with order details
       if (form.paymentMethod === 'whatsapp') {
-        const adminPhone = "916296103605"; // Replaced with user's actual number
+        const hasGraphicKits = cart.some((item: any) => item.category === 'graphic-kits');
+        const adminPhone = hasGraphicKits ? "916296396462" : "919093543071";
         
         let message = `*New Order: ${finalOrderId}*%0A%0A`;
         message += `*Customer Details:*%0A`;
@@ -265,7 +336,17 @@ export default function CheckoutPage() {
             {/* ADDRESS STEP */}
             {step === 'address' && (
               <div className="space-y-6">
-                <h2 className="font-display font-black text-2xl text-white">DELIVERY ADDRESS</h2>
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="font-display font-black text-2xl text-white">DELIVERY ADDRESS</h2>
+                  {savedAddress && (
+                    <button 
+                      onClick={handleUseSavedAddress}
+                      className="flex items-center gap-2 bg-[#E8161B]/10 text-[#E8161B] hover:bg-[#E8161B]/20 px-3 py-1.5 rounded-lg border border-[#E8161B]/20 font-mono text-[9px] uppercase tracking-widest transition-colors"
+                    >
+                      <MapPin size={12} /> Use Saved Address
+                    </button>
+                  )}
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className={labelClass}>First Name</label>
@@ -317,72 +398,53 @@ export default function CheckoutPage() {
             )}
 
             {/* PAYMENT STEP */}
-            {step === 'payment' && (
-              <div className="space-y-6">
-                <h2 className="font-display font-black text-2xl text-white">PAYMENT METHOD</h2>
-                <div className="space-y-3">
-                  {[
-                    { key: 'upi', label: 'UPI', sub: 'GPay, PhonePe, Paytm' },
-                    { key: 'card', label: 'Credit / Debit Card', sub: 'Visa, Mastercard, RuPay' },
-                    { key: 'whatsapp', label: 'Order via WhatsApp', sub: 'Place order directly with admin' },
-                  ].map(opt => (
-                    <button
-                      key={opt.key}
-                      onClick={() => update('paymentMethod', opt.key)}
-                      className={`w-full flex items-center gap-4 p-4 border text-left transition-all ${
-                        form.paymentMethod === opt.key
-                          ? 'border-[#E8161B] bg-[#E8161B]/5'
-                          : 'border-[#2a2a2a] bg-[#111] hover:border-[#444]'
-                      }`}
-                    >
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${form.paymentMethod === opt.key ? 'border-[#E8161B]' : 'border-[#444]'}`}>
-                        {form.paymentMethod === opt.key && <div className="w-2 h-2 rounded-full bg-[#E8161B]" />}
-                      </div>
-                      <div>
-                        <p className="font-display font-bold text-sm text-white">{opt.label}</p>
-                        <p className="font-mono text-[10px] text-[#555]">{opt.sub}</p>
-                      </div>
+            {step === 'payment' && (() => {
+              const hasBikeAccessories = cart.some((item: any) => item.category === 'bike-accessories');
+              const paymentOptions = [
+                ...(!hasBikeAccessories ? [{ key: 'upi', label: 'UPI Payment', sub: 'Google Pay, PhonePe, Paytm, etc.' }] : []),
+                { key: 'whatsapp', label: 'Order via WhatsApp', sub: 'Place order directly with admin' },
+              ];
+              return (
+                <div className="space-y-6">
+                  <h2 className="font-display font-black text-2xl text-white">PAYMENT METHOD</h2>
+                  <div className="space-y-3">
+                    {paymentOptions.map(opt => (
+                      <button
+                        key={opt.key}
+                        onClick={() => update('paymentMethod', opt.key)}
+                        className={`w-full flex items-center gap-4 p-4 border text-left transition-all ${
+                          form.paymentMethod === opt.key
+                            ? 'border-[#E8161B] bg-[#E8161B]/5'
+                            : 'border-[#2a2a2a] bg-[#111] hover:border-[#444]'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${form.paymentMethod === opt.key ? 'border-[#E8161B]' : 'border-[#444]'}`}>
+                          {form.paymentMethod === opt.key && <div className="w-2 h-2 rounded-full bg-[#E8161B]" />}
+                        </div>
+                        <div>
+                          <p className="font-display font-bold text-sm text-white">{opt.label}</p>
+                          <p className="font-mono text-[10px] text-[#555]">{opt.sub}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  {form.paymentMethod === 'upi' && (
+                    <div>
+                      <label className={labelClass}>UPI ID</label>
+                      <input className={inputClass} placeholder="name@upi" value={form.upiId} onChange={e => update('upiId', e.target.value)} />
+                    </div>
+                  )}
+                  <div className="flex gap-3">
+                    <button onClick={() => setStep('address')} className="flex items-center gap-2 border border-[#2a2a2a] text-[#888] font-display font-bold text-sm tracking-widest uppercase px-6 py-4 hover:text-white hover:border-[#444] transition-colors">
+                      <ArrowLeft size={14} /> Back
                     </button>
-                  ))}
-                </div>
-                {form.paymentMethod === 'upi' && (
-                  <div>
-                    <label className={labelClass}>UPI ID</label>
-                    <input className={inputClass} placeholder="name@upi" value={form.upiId} onChange={e => update('upiId', e.target.value)} />
+                    <button onClick={() => setStep('confirm')} className="flex items-center gap-3 bg-[#E8161B] text-white font-display font-bold text-sm tracking-widest uppercase px-8 py-4 hover:bg-[#B81015] transition-colors">
+                      Review Order <ArrowRight size={14} />
+                    </button>
                   </div>
-                )}
-                {form.paymentMethod === 'card' && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className={labelClass}>Cardholder Name</label>
-                      <input className={inputClass} placeholder="Name as on card" value={form.cardName} onChange={e => update('cardName', e.target.value)} />
-                    </div>
-                    <div>
-                      <label className={labelClass}>Card Number</label>
-                      <input className={inputClass} placeholder="1234 5678 9012 3456" maxLength={19} value={form.cardNumber} onChange={e => update('cardNumber', e.target.value)} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className={labelClass}>Expiry</label>
-                        <input className={inputClass} placeholder="MM/YY" maxLength={5} value={form.cardExpiry} onChange={e => update('cardExpiry', e.target.value)} />
-                      </div>
-                      <div>
-                        <label className={labelClass}>CVV</label>
-                        <input className={inputClass} placeholder="•••" maxLength={3} type="password" value={form.cardCvv} onChange={e => update('cardCvv', e.target.value)} />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div className="flex gap-3">
-                  <button onClick={() => setStep('address')} className="flex items-center gap-2 border border-[#2a2a2a] text-[#888] font-display font-bold text-sm tracking-widest uppercase px-6 py-4 hover:text-white hover:border-[#444] transition-colors">
-                    <ArrowLeft size={14} /> Back
-                  </button>
-                  <button onClick={() => setStep('confirm')} className="flex items-center gap-3 bg-[#E8161B] text-white font-display font-bold text-sm tracking-widest uppercase px-8 py-4 hover:bg-[#B81015] transition-colors">
-                    Review Order <ArrowRight size={14} />
-                  </button>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* CONFIRM STEP */}
             {step === 'confirm' && (
@@ -459,19 +521,21 @@ export default function CheckoutPage() {
                   <span className="font-display font-bold text-white">{formatPrice(cartTotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="font-body text-[#666]">GST (18%)</span>
-                  <span className="font-display font-bold text-white">{formatPrice(gst)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
                   <span className="font-body text-[#666]">Shipping</span>
                   <span className={`font-display font-bold ${shipping === 0 ? 'text-green-500' : 'text-white'}`}>
                     {shipping === 0 ? 'FREE' : formatPrice(shipping)}
                   </span>
                 </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-sm">
+                    <span className="font-mono text-[10px] text-green-400">Coupon: {appliedCoupon.code}</span>
+                    <span className="font-display font-bold text-green-400">−{formatPrice(couponDiscount)}</span>
+                  </div>
+                )}
               </div>
               <div className="flex justify-between items-center border-t border-[#1a1a1a] pt-4 mt-4">
                 <span className="font-display font-black text-base text-white">TOTAL</span>
-                <span className="font-display font-black text-xl text-[#E8161B]">{formatPrice(total)}</span>
+                <span className="font-display font-black text-xl text-[#E8161B]">{formatPrice(Math.max(0, total))}</span>
               </div>
               <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[#1a1a1a]">
                 <Lock size={12} className="text-[#555]" />

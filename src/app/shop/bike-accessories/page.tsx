@@ -1,98 +1,115 @@
-'use client';
-
 import Link from 'next/link';
-import Image from 'next/image';
-import { ChevronRight, ArrowLeft, PackageX } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { formatPrice, Product } from '@/data';
+import { ChevronRight, ArrowLeft } from 'lucide-react';
+import { accessoryCategories } from '@/data';
+import SafeImage from '@/components/ui/SafeImage';
 
 export default function BikeAccessoriesPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      setIsLoading(true);
-      const { getProductsAction } = await import('@/app/admin/products/actions');
-      const res = await getProductsAction('bike-accessories');
-      if (res.success && res.data) setProducts(res.data as unknown as Product[]);
-      setIsLoading(false);
-    }
-    load();
-  }, []);
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* HERO */}
-      <div className="relative pt-32 pb-16 bg-muted/30 border-b border-border overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-wu-red/10 via-background to-background opacity-20" />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-8">
-          <Link href="/shop" className="inline-flex items-center gap-2 text-muted-foreground hover:text-wu-red transition-colors mb-6 font-mono text-[10px] uppercase tracking-widest">
-            <ArrowLeft size={14} /> Back to Shop
+    <div className="min-h-screen bg-[#070707]">
+      
+      {/* ─── HERO SECTION ─── */}
+      <div className="relative min-h-[60vh] sm:min-h-[70vh] flex flex-col bg-[#070707] overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <SafeImage
+            src="https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=1600&q=80"
+            alt="Bike Accessories"
+            fill
+            className="object-cover opacity-20 grayscale"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#070707]/80 via-transparent to-[#070707]" />
+        </div>
+
+        {/* Hero Content */}
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 pt-32 pb-20">
+          <Link 
+            href="/shop" 
+            className="inline-flex items-center gap-2 text-white/30 hover:text-wu-red transition-colors mb-8 font-mono text-[9px] uppercase tracking-[0.5em]"
+          >
+            <ArrowLeft size={14} className="opacity-50" /> BACK TO SHOP
           </Link>
-          <h1 className="font-display font-black text-5xl sm:text-7xl text-foreground uppercase tracking-tighter italic mb-4">Bike Accessories</h1>
-          <p className="font-body text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
-            Premium accessories that protect, boost performance, and upgrade your ride.
+          <h1 className="font-display font-black text-6xl sm:text-[120px] text-white tracking-tighter leading-none uppercase italic mb-8 text-center">
+            Bike Accessories
+          </h1>
+          <p className="font-body text-white/40 max-w-2xl mx-auto text-xs sm:text-[14px] tracking-[0.2em] leading-relaxed uppercase text-center">
+            Premium bike accessories that protect, boost performance, comfort, and style—engineered to handle every road you take.
           </p>
+        </div>
+
+        {/* ─── WHITE CATEGORY STRIP (Anchored to Hero) ─── */}
+        <div className="relative z-20 bg-white py-3 overflow-x-auto no-scrollbar shadow-2xl">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between gap-12 min-w-max">
+              {accessoryCategories.map((cat) => (
+                <Link 
+                  key={cat.slug}
+                  href={`/shop/bike-accessories/${cat.slug}`}
+                  className="flex flex-col items-center text-center group"
+                >
+                  <span className="font-display font-black text-[11px] text-black uppercase tracking-[0.1em] group-hover:text-wu-red transition-colors">
+                    {cat.name}
+                  </span>
+                  <span className="font-mono text-[8px] text-black/30 uppercase tracking-[0.1em] mt-0.5">
+                    {cat.items.length} Items
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex items-center gap-2 text-[10px] font-mono tracking-widest uppercase text-muted-foreground mb-10">
-          <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
-          <ChevronRight size={12} className="text-border" />
-          <Link href="/shop" className="hover:text-foreground transition-colors">Shop</Link>
-          <ChevronRight size={12} className="text-border" />
-          <span className="text-foreground font-bold">Bike Accessories</span>
+        {/* ─── BREADCRUMBS ─── */}
+        <div className="flex items-center gap-4 text-[9px] font-mono tracking-[0.4em] uppercase text-white/30 mb-16">
+          <Link href="/" className="hover:text-white transition-colors">Home</Link>
+          <span>{'>'}</span>
+          <Link href="/shop" className="hover:text-white transition-colors">Shop</Link>
+          <span>{'>'}</span>
+          <span className="text-white font-bold tracking-[0.4em]">Bike Accessories</span>
         </div>
 
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-40">
-            <div className="w-10 h-10 border-4 border-muted border-t-wu-red rounded-full animate-spin mb-6" />
-            <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">Loading Accessories...</p>
-          </div>
-        ) : products.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-40 border border-dashed border-border rounded-[3rem]">
-            <PackageX className="text-wu-red mb-6" size={48} />
-            <h3 className="font-display font-black text-3xl text-foreground uppercase italic tracking-tighter mb-2">No Accessories Yet</h3>
-            <p className="font-body text-muted-foreground text-sm text-center max-w-xs">
-              We are stocking up new accessories. Check back shortly!
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-            {products.map((product) => (
-              <Link
-                key={product.id}
-                href={`/shop/bike-accessories/${product.slug}`}
-                className="group relative flex flex-col bg-muted/10 border border-border overflow-hidden hover:border-wu-red/50 transition-all duration-300 rounded-2xl"
-              >
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted/20">
-                  {product.images?.[0] ? (
-                    <Image src={product.images[0]} alt={product.name} fill className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" unoptimized />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-wu-red/5">
-                      <span className="font-display font-black text-5xl text-wu-red/20 uppercase">{product.name.charAt(0)}</span>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-70 group-hover:opacity-30 transition-opacity pointer-events-none" />
+        {/* ─── CATEGORIES GRID ─── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+          {accessoryCategories.map((cat) => (
+            <Link 
+              key={cat.slug}
+              href={`/shop/bike-accessories/${cat.slug}`}
+              className="group relative flex flex-col bg-[#0A0A0A] border border-white/5 overflow-hidden transition-all duration-500 hover:border-wu-red/30 hover:shadow-[0_20px_50px_rgba(232,22,27,0.1)]"
+            >
+              {/* Image Container */}
+              <div className="relative aspect-[4/3] w-full overflow-hidden">
+                <SafeImage 
+                  src={cat.image}
+                  alt={cat.name}
+                  fill
+                  className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-transparent opacity-80" />
+              </div>
+              
+              {/* Content */}
+              <div className="relative z-10 p-6 flex flex-col">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className={`font-display font-black text-2xl uppercase tracking-tighter transition-colors duration-300 ${cat.slug === 'fog-lights' || cat.slug === 'bike-protection' ? 'text-wu-red' : 'text-white group-hover:text-wu-red'}`}>
+                    {cat.name}
+                  </h3>
+                  <ChevronRight size={18} className="text-white/20 group-hover:text-wu-red transform group-hover:translate-x-1 transition-all" />
                 </div>
-                <div className="p-4 bg-background border-t border-border">
-                  <h2 className="font-display font-black text-sm text-foreground uppercase tracking-wider mb-1 group-hover:text-wu-red transition-colors line-clamp-1">{product.name}</h2>
-                  {product.meta_data?.sub_category && (
-                    <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest mb-2">
-                      {product.meta_data.sub_category.replace(/-/g, ' ')}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <span className="font-display font-black text-wu-red text-sm">{formatPrice(product.price)}</span>
-                    <ChevronRight size={14} className="text-muted-foreground group-hover:text-wu-red transform group-hover:translate-x-1 transition-all" />
-                  </div>
+                
+                <div className="flex items-center gap-2">
+                   <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-white/40 group-hover:text-white/60 transition-colors">
+                     {cat.items.length} Subcategories
+                   </span>
                 </div>
-              </Link>
-            ))}
-          </div>
-        )}
+              </div>
+
+              {/* Hover Glow */}
+              <div className="absolute inset-0 border-2 border-wu-red/0 group-hover:border-wu-red/20 transition-all duration-500 pointer-events-none" />
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

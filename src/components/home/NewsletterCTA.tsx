@@ -1,16 +1,27 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowRight, MessageCircle, Check } from 'lucide-react';
+import { ArrowRight, MessageCircle, Check, Loader2 } from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
+import { submitFormAction } from '@/lib/actions/forms';
 
 export default function NewsletterCTA() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email && email.includes('@')) {
+      setIsSubmitting(true);
+      await submitFormAction({
+        name: 'Subscriber',
+        email: email,
+        message: 'Subscribed to newsletter via Standalone CTA',
+        type: 'contact',
+        metadata: { source: 'newsletter' }
+      });
+      setIsSubmitting(false);
       setSubscribed(true);
       setEmail('');
     }
@@ -74,7 +85,7 @@ export default function NewsletterCTA() {
                 )}
 
                 <a
-                  href="https://wa.me/919999999999?text=Hey! I'm interested in WearUp products."
+                  href="https://wa.me/916296396462?text=Hey! I'm interested in WearUp products."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex items-center justify-center gap-3 border border-border bg-background/50 rounded-2xl px-6 py-4 text-muted-foreground hover:text-foreground hover:border-green-500/30 hover:bg-green-500/5 transition-all duration-300"

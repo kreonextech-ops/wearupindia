@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { ShoppingCart, Heart, Search, Menu, X, User, ArrowRight, LogOut, ChevronDown, Facebook, Instagram } from 'lucide-react';
 import { useStore } from '@/lib/store-context';
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion';
-import { products, categories, services } from '@/data';
+import { categories, services } from '@/data';
 import { createClient } from '@/lib/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import ThemeToggle from '@/components/ui/ThemeToggle';
@@ -64,13 +64,24 @@ export default function Navbar() {
     setIsTop(latest < 50);
   });
 
-  // Search Logic
-  const searchResults = searchQuery.trim() === '' 
-    ? [] 
-    : products.filter(p => 
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        p.category.toLowerCase().includes(searchQuery.toLowerCase())
-      ).slice(0, 4);
+  // Live DB Search
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) { setSearchResults([]); return; }
+    const t = setTimeout(async () => {
+      setSearchLoading(true);
+      const { data } = await supabase
+        .from('products')
+        .select('id, name, slug, price, images, categories(slug)')
+        .or(`name.ilike.%${searchQuery}%`)
+        .limit(5);
+      setSearchResults(data ?? []);
+      setSearchLoading(false);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -252,9 +263,6 @@ export default function Navbar() {
                         <Link href="/profile" className="flex items-center px-3 py-2.5 text-sm text-foreground/80 hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors font-display font-medium">
                           Profile Details
                         </Link>
-                        <Link href="/admin" className="flex items-center px-3 py-2.5 text-sm text-wu-red hover:text-white hover:bg-wu-red/10 rounded-xl transition-colors font-display font-medium">
-                          Admin Panel
-                        </Link>
                         <Link href="/profile" className="flex items-center px-3 py-2.5 text-sm text-foreground/80 hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors font-display font-medium">
                           My Orders
                         </Link>
@@ -326,25 +334,33 @@ export default function Navbar() {
                 {searchResults.length > 0 ? (
                   <>
                     <div className="flex flex-col">
-                      {searchResults.map(p => (
-                        <Link 
-                          key={p.id} 
-                          href={`/shop/${p.category}/${p.id}`}
-                          onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
-                          className="flex items-center gap-4 p-4 border-b border-white/5 hover:bg-white/5 transition-colors group"
-                        >
-                          <div className="relative w-12 h-12 rounded bg-white/5 overflow-hidden shrink-0">
-                            <Image src={p.images[0]} alt={p.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-white font-display font-bold text-sm truncate">{p.name}</h4>
-                            <p className="text-[#888] font-mono text-[10px] uppercase tracking-wider">{p.category.replace('-', ' ')}</p>
-                          </div>
-                          <div className="text-white font-mono text-sm">
-                            ₹{p.price.toLocaleString('en-IN')}
-                          </div>
-                        </Link>
-                      ))}
+                      {searchResults.map(p => {
+                        const catSlug = (p.categories as any)?.slug ?? 'graphic-kits';
+                        const img = Array.isArray(p.images) ? p.images[0] : null;
+                        return (
+                          <Link
+                            key={p.id}
+                            href={`/shop/${catSlug}/${p.slug}`}
+                            onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+                            className="flex items-center gap-4 p-4 border-b border-white/5 hover:bg-white/5 transition-colors group"
+                          >
+                            <div className="relative w-12 h-12 rounded bg-white/5 overflow-hidden shrink-0">
+                              {img ? (
+                                <Image src={img} alt={p.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-[#444] text-xs">IMG</div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-white font-display font-bold text-sm truncate">{p.name}</h4>
+                              <p className="text-[#888] font-mono text-[10px] uppercase tracking-wider">{catSlug.replace(/-/g, ' ')}</p>
+                            </div>
+                            <div className="text-white font-mono text-sm">
+                              ₹{p.price.toLocaleString('en-IN')}
+                            </div>
+                          </Link>
+                        );
+                      })}
                     </div>
                     <button 
                       onClick={handleSearchSubmit}
@@ -355,7 +371,7 @@ export default function Navbar() {
                   </>
                 ) : (
                   <div className="p-8 text-center text-[#888] font-body text-sm">
-                    No gear found for "{searchQuery}".
+                    {searchLoading ? 'Searching...' : `No gear found for "${searchQuery}".`}
                   </div>
                 )}
               </div>

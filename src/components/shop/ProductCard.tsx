@@ -42,6 +42,16 @@ export default function ProductCard({ product }: { product: Product }) {
 
         {/* Badges */}
         <div className="absolute top-6 left-6 flex flex-col gap-2 z-20">
+          {product.is_featured && (
+            <span className="font-display font-bold text-[9px] px-2.5 py-1 bg-wu-red text-white tracking-widest uppercase rounded-md shadow-lg shadow-wu-red/20 border border-white/10">
+              Featured
+            </span>
+          )}
+          {product.is_new && (
+            <span className="font-display font-bold text-[9px] px-2.5 py-1 bg-white text-black tracking-widest uppercase rounded-md shadow-lg border border-border">
+              New Arrival
+            </span>
+          )}
           {product.badge && (
             <span className="font-display font-bold text-[10px] px-3 py-1 bg-wu-red text-white tracking-widest uppercase rounded-full shadow-lg shadow-wu-red/20">
               {product.badge}

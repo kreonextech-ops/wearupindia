@@ -36,6 +36,6 @@ next-env.d.ts
 video and photo/
 /public/videos/
 /public/gallery/
-/public/images/
+# /public/images/ (Enabling UI assets for git)
 test-*.mjs
 scripts/make-me-admin.sql

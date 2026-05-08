@@ -43,6 +43,7 @@ export interface DashboardStats {
   prevCustomers: number;
   totalProducts: number;
   pendingOrders: number;
+  completedOrders: number;
 }
 
 export interface CategorySales {
@@ -79,8 +80,8 @@ export async function fetchDashboardStats(supabase: SupabaseClient, range: TimeR
   const dateRange = getDateRange(range);
 
   // Orders query
-  let ordersQuery = supabase.from('orders').select('total_amount, created_at, status', { count: 'exact' }).eq('payment_status', 'paid');
-  let prevOrdersQuery = supabase.from('orders').select('total_amount', { count: 'exact' }).eq('payment_status', 'paid');
+  let ordersQuery = supabase.from('orders').select('total_amount, created_at, status', { count: 'exact' }).neq('status', 'cancelled');
+  let prevOrdersQuery = supabase.from('orders').select('total_amount', { count: 'exact' }).neq('status', 'cancelled');
 
   if (dateRange) {
     ordersQuery = ordersQuery.gte('created_at', dateRange.from);
@@ -107,6 +108,7 @@ export async function fetchDashboardStats(supabase: SupabaseClient, range: TimeR
   // Products & pending
   const { count: productCount } = await supabase.from('products').select('*', { count: 'exact', head: true });
   const { count: pendingCount } = await supabase.from('orders').select('*', { count: 'exact', head: true }).in('status', ['pending', 'processing']);
+  const { count: completedCount } = await supabase.from('orders').select('*', { count: 'exact', head: true }).in('status', ['delivered', 'shipped']);
 
   return {
     totalRevenue,
@@ -117,6 +119,7 @@ export async function fetchDashboardStats(supabase: SupabaseClient, range: TimeR
     prevCustomers: prevCustomerCount ?? 0,
     totalProducts: productCount ?? 0,
     pendingOrders: pendingCount ?? 0,
+    completedOrders: completedCount ?? 0,
   };
 }
 
@@ -148,7 +151,7 @@ export async function fetchCategorySales(supabase: SupabaseClient, range: TimeRa
       .from('order_items')
       .select('quantity, price_at_purchase, order_id, orders!inner(created_at, payment_status)')
       .in('product_id', productIds)
-      .eq('orders.payment_status', 'paid');
+      .neq('orders.status', 'cancelled');
 
     // Apply date filter via join
     if (dateRange) {
@@ -180,7 +183,7 @@ export async function fetchSalesTrend(supabase: SupabaseClient, range: TimeRange
   const { data: orders } = await supabase
     .from('orders')
     .select('total_amount, created_at')
-    .eq('payment_status', 'paid')
+    .neq('status', 'cancelled')
     .gte('created_at', from.toISOString())
     .order('created_at', { ascending: true });
 
@@ -222,8 +225,8 @@ export async function fetchTopProducts(supabase: SupabaseClient, range: TimeRang
 
   let query = supabase
     .from('order_items')
-    .select('quantity, price_at_purchase, products(name, slug, categories(name)), orders!inner(created_at, payment_status)')
-    .eq('orders.payment_status', 'paid');
+    .select('quantity, price_at_purchase, products(name, slug, categories(name)), orders!inner(created_at, status)')
+    .neq('orders.status', 'cancelled');
 
   if (dateRange) query = query.gte('orders.created_at', dateRange.from);
 

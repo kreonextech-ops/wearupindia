@@ -19,7 +19,7 @@ export default function ShopCategorySection({ category, products }: ShopCategory
   if (featured.length === 0) return null;
 
   return (
-    <section className="py-24 relative overflow-hidden border-t border-border group">
+    <section className="py-12 relative overflow-hidden border-t border-border group">
       {/* ─── CINEMATIC BACKGROUND ─── */}
       <div className="absolute inset-0 z-0">
         <Image 
@@ -49,9 +49,11 @@ export default function ShopCategorySection({ category, products }: ShopCategory
                 {category.name}
               </h2>
               
-              <p className="font-body text-muted-foreground text-sm sm:text-lg max-w-none leading-relaxed opacity-80">
-                {category.description}
-              </p>
+              {category.slug !== 'graphic-kits' && category.slug !== 'bike-accessories' && (
+                <p className="font-body text-muted-foreground text-sm sm:text-lg max-w-none leading-relaxed opacity-80">
+                  {category.description}
+                </p>
+              )}
             </div>
             
             <Link 

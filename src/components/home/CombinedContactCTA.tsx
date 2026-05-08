@@ -1,16 +1,27 @@
 'use client';
 
 import { useState } from 'react';
-import { MapPin, Phone, MessageCircle, ArrowRight, Navigation, Check } from 'lucide-react';
+import { MapPin, Phone, MessageCircle, ArrowRight, Navigation, Check, Loader2 } from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
+import { submitFormAction } from '@/lib/actions/forms';
 
 export default function CombinedContactCTA() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email && email.includes('@')) {
+      setIsSubmitting(true);
+      await submitFormAction({
+        name: 'Subscriber',
+        email: email,
+        message: 'Subscribed to newsletter via Combined Contact CTA',
+        type: 'contact',
+        metadata: { source: 'newsletter' }
+      });
+      setIsSubmitting(false);
       setSubscribed(true);
       setEmail('');
     }

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react';
 import { 
   ArrowLeft, Heart, ShoppingCart, Check, Shield, Truck, 
-  RotateCcw, Info, Zap, ChevronRight, Share2, Bike
+  Info, Zap, ChevronRight, Share2, Bike, MessageCircle
 } from 'lucide-react';
 import { categories, brands, formatPrice, Product } from '@/data';
 import { useStore } from '@/lib/store-context';
@@ -35,9 +35,8 @@ export default function ProductPage({ params }: Props) {
       try {
         const { getProductBySlugAction, getProductsAction } = await import('@/app/admin/products/actions');
         
-        // Normalize category slug (handle tshirts vs t-shirts)
-        let catSlug = params.category;
-        if (catSlug === 'tshirts') catSlug = 't-shirts';
+        // Use the exact category slug from URL first (no forced conversion)
+        const catSlug = params.category;
         
         const res = await getProductBySlugAction(catSlug, params.product);
         if (res.success && res.data) {
@@ -49,9 +48,12 @@ export default function ProductPage({ params }: Props) {
              setRelated((relatedRes.data as unknown as Product[]).filter((p: any) => p.id !== res.data.id).slice(0, 4));
           }
         } else {
-          // Try alternative slug if first attempt failed
-          if (params.category === 't-shirts' || params.category === 'tshirts') {
-             const altSlug = params.category === 't-shirts' ? 'tshirts' : 't-shirts';
+          // Try alternative slug if first attempt failed (handles tshirts <-> t-shirts mismatch)
+          let altSlug: string | null = null;
+          if (params.category === 't-shirts') altSlug = 'tshirts';
+          else if (params.category === 'tshirts') altSlug = 't-shirts';
+
+          if (altSlug) {
              const altRes = await getProductBySlugAction(altSlug, params.product);
              if (altRes.success && altRes.data) {
                 setProduct(altRes.data as unknown as Product);
@@ -76,6 +78,7 @@ export default function ProductPage({ params }: Props) {
   const wishlisted = product ? isInWishlist(product.id) : false;
   const category = categories.find(c => c.slug === params.category);
   const isTShirt = params.category === 'tshirts' || product?.category === 'tshirts';
+  const isBikeAccessory = params.category === 'bike-accessories' || product?.category === 'bike-accessories';
   
   // Cross-reference compatible brands from the updated data
   const compatibleBrandData = useMemo(() => 
@@ -90,13 +93,34 @@ export default function ProductPage({ params }: Props) {
       return;
     }
     
+    if (addedToCart) {
+      router.push('/cart');
+      return;
+    }
+    
     addToCart({
       ...product,
       selectedSize: selectedSize || undefined
     }, quantity);
     
     setAddedToCart(true);
-    setTimeout(() => setAddedToCart(false), 2000);
+  };
+
+  const handleBuyNow = () => {
+    if (!product) return;
+    if (isTShirt && !selectedSize) {
+      alert("Please select a size first.");
+      return;
+    }
+    
+    if (!addedToCart) {
+      addToCart({
+        ...product,
+        selectedSize: selectedSize || undefined
+      }, quantity);
+      setAddedToCart(true);
+    }
+    router.push('/checkout');
   };
 
   if (isLoading) {
@@ -399,35 +423,63 @@ export default function ProductPage({ params }: Props) {
                     >+</button>
                   </div>
 
-                  <div className="flex gap-3 h-16">
-                    <button
-                      onClick={handleAddToCart}
-                      disabled={isTShirt && !selectedSize}
-                      className={`flex-1 flex items-center justify-center gap-3 font-display font-black text-xs tracking-[0.2em] uppercase transition-all duration-500 rounded-xl shadow-[0_10px_30px_rgba(232,22,27,0.2)] ${
-                        addedToCart
-                          ? 'bg-green-500 text-white shadow-green-500/20'
-                          : (isTShirt && !selectedSize)
-                            ? 'bg-foreground/10 text-foreground/20 cursor-not-allowed border border-white/5'
-                            : 'bg-wu-red hover:bg-[#B81015] text-white'
-                      }`}
-                    >
-                      {addedToCart ? <Check size={18} /> : <><ShoppingCart size={18} /> Add to Cart</>}
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (!user) {
-                          alert("Please log in to manage your wishlist.");
-                          router.push('/login');
-                          return;
-                        }
-                        wishlisted ? removeFromWishlist(product.id) : addToWishlist(product)
-                      }}
-                      className={`w-16 flex items-center justify-center rounded-xl border transition-all ${
-                        wishlisted ? 'bg-wu-red border-wu-red text-white shadow-[0_0_15px_rgba(232,22,27,0.4)]' : 'border-border text-foreground/40 hover:text-foreground hover:bg-foreground/5'
-                      }`}
-                    >
-                      <Heart size={20} fill={wishlisted ? 'currentColor' : 'none'} />
-                    </button>
+                  <div className="flex flex-col gap-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={handleAddToCart}
+                        disabled={isTShirt && !selectedSize}
+                        className={`h-16 flex items-center justify-center gap-2 font-display font-black text-[10px] sm:text-xs tracking-[0.2em] uppercase transition-all duration-500 rounded-xl shadow-[0_10px_30px_rgba(232,22,27,0.2)] ${
+                          addedToCart
+                            ? 'bg-green-500 text-white shadow-green-500/20'
+                            : (isTShirt && !selectedSize)
+                              ? 'bg-foreground/10 text-foreground/20 cursor-not-allowed border border-white/5'
+                              : 'bg-wu-red hover:bg-[#B81015] text-white'
+                        }`}
+                      >
+                        {addedToCart ? <><Check size={16} /> Go to Cart</> : <><ShoppingCart size={16} /> Add to Cart</>}
+                      </button>
+
+                      <button
+                        onClick={handleBuyNow}
+                        disabled={isTShirt && !selectedSize}
+                        className={`h-16 flex items-center justify-center gap-2 font-display font-black text-[10px] sm:text-xs tracking-[0.2em] uppercase transition-all duration-500 rounded-xl border-2 ${
+                          (isTShirt && !selectedSize)
+                            ? 'border-white/5 text-foreground/20 cursor-not-allowed'
+                            : 'border-wu-red text-wu-red hover:bg-wu-red hover:text-white shadow-[0_10px_30px_rgba(232,22,27,0.1)]'
+                        }`}
+                      >
+                        <Zap size={16} /> Buy Now
+                      </button>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => {
+                          if (!user) {
+                            alert("Please log in to manage your wishlist.");
+                            router.push('/login');
+                            return;
+                          }
+                          wishlisted ? removeFromWishlist(product.id) : addToWishlist(product)
+                        }}
+                        className={`h-12 flex items-center justify-center rounded-xl border transition-all font-display font-bold text-[10px] uppercase tracking-widest ${
+                          wishlisted ? 'bg-wu-red border-wu-red text-white shadow-[0_0_15px_rgba(232,22,27,0.4)]' : 'border-border text-foreground/40 hover:text-foreground hover:bg-foreground/5'
+                        }`}
+                      >
+                        <Heart size={14} fill={wishlisted ? 'currentColor' : 'none'} className="mr-2" />
+                        {wishlisted ? 'Saved' : 'Wishlist'}
+                      </button>
+                      
+                      {isBikeAccessory && (
+                        <a
+                          href={`https://wa.me/919093543071?text=${encodeURIComponent(`Hi WearUp! I'd like to order ${quantity}x ${product.name} (Total: ${formatPrice(product.price * quantity)}). Please let me know the availability.`)}`}
+                          target="_blank"
+                          className="h-12 flex items-center justify-center gap-2 border border-green-500/20 bg-green-500/5 text-green-600 rounded-xl font-display font-bold text-[10px] uppercase tracking-widest hover:bg-green-500 hover:text-white transition-all"
+                        >
+                          <MessageCircle size={14} /> WhatsApp Us
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
               </ScrollReveal>
@@ -437,10 +489,10 @@ export default function ProductPage({ params }: Props) {
                 {(isTShirt ? [
                   { icon: Zap, label: 'Super-Combed Cotton', sub: 'Extra soft & highly breathable' },
                   { icon: Shield, label: 'Durable Print', sub: 'Non-cracking, high-definition ink' },
-                  { icon: RotateCcw, label: 'Pre-Shrunk', sub: 'Guaranteed fit after multiple washes' }
+                  { icon: Truck, label: 'Pan-India Shipping', sub: 'Express delivery available' }
                 ] : [
                   { icon: Shield, label: '3M Certified', sub: 'UV Proof & Monsoon Durable' },
-                  { icon: RotateCcw, label: 'No Glue Left', sub: 'Hassle-free paint preservation' },
+                  { icon: Truck, label: 'Pan-India Shipping', sub: 'Express delivery available' },
                   { icon: Info, label: 'Installation Support', sub: 'Installation guide included' }
                 ]).map(({ icon: Icon, label, sub }, i) => (
                   <div key={i} className="flex items-center gap-5 group">

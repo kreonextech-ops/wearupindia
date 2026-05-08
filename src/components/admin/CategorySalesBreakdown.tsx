@@ -90,13 +90,14 @@ export default function CategorySalesBreakdown() {
           // Get matching order items (via inner join with orders table)
           let q = supabase
             .from('order_items')
-            .select('quantity, price_at_purchase, order_id, orders!inner(created_at, payment_status)')
+            .select('quantity, price_at_purchase, order_id, orders!inner(created_at, status)')
             .in('product_id', productIds)
-            .eq('orders.payment_status', 'paid');
+            .neq('orders.status', 'cancelled');
 
           if (fromDate) q = q.gte('orders.created_at', fromDate);
 
-          const { data: items } = await q;
+          const { data: items, error } = await q;
+          if (error) console.error('Category sales query error:', error.message, error.details);
 
           const revenue = items?.reduce((s, i) => s + i.price_at_purchase * i.quantity, 0) ?? 0;
           const units = items?.reduce((s, i) => s + i.quantity, 0) ?? 0;

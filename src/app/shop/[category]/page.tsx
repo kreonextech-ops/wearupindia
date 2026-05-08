@@ -27,6 +27,8 @@ export default function CategoryPage({ params }: Props) {
     priceRange: [0, 1000000],
     brands: [],
     bikeBrand: 'all',
+    sizes: [],
+    fits: [],
   });
 
   const [categoryProducts, setCategoryProducts] = useState<Product[]>([]);
@@ -53,21 +55,37 @@ export default function CategoryPage({ params }: Props) {
       // Price
       if (product.price > filters.priceRange[1]) return false;
 
-      // Manufacturer (Brand)
+      // Manufacturer (Brand) / Collection
       if (filters.brands.length > 0) {
         const brandMatch = filters.brands.some(b => product.name.toLowerCase().includes(b.toLowerCase()));
         if (!brandMatch) return false;
       }
 
-      // Bike Compatibility
-      if (filters.bikeBrand !== 'all') {
+      // Bike Compatibility (only for non-apparel)
+      const isApparel = params.category === 'tshirts' || params.category === 'hoodies' || params.category === 't-shirts';
+      if (!isApparel && filters.bikeBrand !== 'all') {
         const bikeMatch = product.compatibleBrands.includes(filters.bikeBrand);
         if (!bikeMatch) return false;
       }
 
+      // Sizes (for apparel)
+      if (isApparel && filters.sizes.length > 0) {
+        // If product has sizes in meta_data or variants
+        const productSizes = (product as any).sizes ? Object.keys((product as any).sizes) : [];
+        const hasSize = filters.sizes.some(s => productSizes.includes(s));
+        if (!hasSize) return false;
+      }
+
+      // Fit (for apparel)
+      if (isApparel && filters.fits.length > 0) {
+        const productFit = (product as any).meta_data?.fit;
+        const hasFit = filters.fits.some(f => productFit?.toLowerCase() === f.toLowerCase());
+        if (!hasFit) return false;
+      }
+
       return true;
     });
-  }, [categoryProducts, filters]);
+  }, [categoryProducts, filters, params.category]);
 
   const brandOptions = useMemo(() => {
     const names = ['KTM', 'YAMAHA', 'ROYAL ENFIELD', '3M', 'AVERY', 'PHANTOM', 'MACH-1'];
@@ -138,6 +156,7 @@ export default function CategoryPage({ params }: Props) {
                 onFilterChange={setFilters} 
                 brandOptions={brandOptions} 
                 maxPrice={categoryProducts.length > 0 ? Math.max(...categoryProducts.map(p => p.price), 50000) : 50000}
+                categorySlug={params.category}
               />
             </div>
           </aside>
@@ -204,7 +223,7 @@ export default function CategoryPage({ params }: Props) {
                   We couldn&apos;t find any items matching your current filters. Try resetting or adjusting your selection.
                 </p>
                 <button 
-                  onClick={() => setFilters({ search: '', priceRange: [0, 50000], brands: [], bikeBrand: 'all' })}
+                  onClick={() => setFilters({ search: '', priceRange: [0, 1000000], brands: [], bikeBrand: 'all', sizes: [], fits: [] })}
                   className="mt-10 group flex items-center gap-3 font-display font-bold text-[11px] text-wu-red tracking-[0.3em] uppercase hover:gap-5 transition-all outline-none"
                 >
                   Reset All Filters <ArrowRight size={14} />
@@ -245,6 +264,7 @@ export default function CategoryPage({ params }: Props) {
                   onFilterChange={(f) => setFilters(f)} 
                   brandOptions={brandOptions} 
                   maxPrice={categoryProducts.length > 0 ? Math.max(...categoryProducts.map(p => p.price), 50000) : 50000}
+                  categorySlug={params.category}
                 />
               </div>
 

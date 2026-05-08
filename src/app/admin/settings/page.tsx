@@ -119,10 +119,6 @@ export default function AdminSettingsPage() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className={labelClass}>Tax Rate (GST %)</label>
-                    <input type="number" className={inputClass} value={settings.taxRate} onChange={e => update('taxRate', e.target.value)} />
-                  </div>
-                  <div>
                     <label className={labelClass}>Free Shipping Threshold (INR)</label>
                     <input type="number" className={inputClass} value={settings.freeShippingThreshold} onChange={e => update('freeShippingThreshold', e.target.value)} />
                   </div>

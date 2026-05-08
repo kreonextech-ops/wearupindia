@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { ChevronRight, ArrowLeft, Bike } from 'lucide-react';
-import { brands } from '@/data';
+import { brands, MODEL_IMAGES } from '@/data';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 
 type Props = { params: { brand: string } };
@@ -44,7 +44,7 @@ export default function BrandModelsPage({ params }: Props) {
               <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Brands
             </Link>
           </ScrollReveal>
-
+ 
           <ScrollReveal direction="up" delay={0.2}>
             <p className="font-mono text-[10px] sm:text-[12px] text-wu-red tracking-[0.6em] uppercase mb-4 flex items-center gap-4 font-bold">
               <span className="w-8 sm:w-12 h-px bg-wu-red" /> {brand.name} Decal Division
@@ -58,7 +58,7 @@ export default function BrandModelsPage({ params }: Props) {
           </ScrollReveal>
         </div>
       </div>
-
+ 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
         {/* ─── BREADCRUMBS ─── */}
         <div className="flex items-center gap-2 text-[10px] font-mono tracking-widest uppercase text-muted-foreground mb-16">
@@ -70,7 +70,7 @@ export default function BrandModelsPage({ params }: Props) {
           <ChevronRight size={12} className="text-border" />
           <span className="text-foreground font-bold">{brand.name}</span>
         </div>
-
+ 
         {/* ─── MODELS GRID ─── */}
         <div className="mb-8">
           <h2 className="font-display font-black text-2xl uppercase tracking-[0.2em] text-white/40 mb-12 flex items-center gap-6">
@@ -81,24 +81,25 @@ export default function BrandModelsPage({ params }: Props) {
             {brand.models && brand.models.length > 0 ? (
               brand.models.map((model, i) => {
                 const modelSlug = model.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+                const modelImage = MODEL_IMAGES[modelSlug] || "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800&q=80";
                 
                 return (
                   <ScrollReveal key={model} direction="up" delay={i * 0.05}>
                     <Link 
                       href={`/shop/graphic-kits/${brand.slug}/${modelSlug}`}
-                      className="group relative flex flex-col bg-muted/5 border border-white/5 rounded-[2rem] overflow-hidden hover:bg-muted/10 hover:border-wu-red/30 transition-all duration-500"
+                      className="group relative flex flex-col bg-muted/5 border border-white/5 overflow-hidden hover:bg-muted/10 hover:border-wu-red/30 transition-all duration-500"
                     >
                       {/* Image/Silhouette */}
                       <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted/10 flex items-center justify-center p-8">
-                        <div className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <div className="absolute inset-0 opacity-80 group-hover:opacity-100 transition-opacity">
                           <Image 
-                            src="https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800&q=80"
-                            alt=""
+                            src={modelImage}
+                            alt={model}
                             fill
-                            className="object-cover grayscale"
+                            className="object-cover group-hover:scale-110 transition-all duration-700"
                           />
                         </div>
-                        <Bike className="text-white/5 group-hover:text-wu-red/20 transition-colors duration-500 scale-[2]" size={80} strokeWidth={1} />
+                        <Bike className="relative z-10 text-white/5 group-hover:text-wu-red/20 transition-colors duration-500 scale-[2]" size={80} strokeWidth={1} />
                         
                         <div className="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-background to-transparent">
                           <h3 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-tighter italic group-hover:text-wu-red transition-colors">
@@ -119,7 +120,7 @@ export default function BrandModelsPage({ params }: Props) {
                 );
               })
             ) : (
-              <div className="col-span-full py-32 flex flex-col items-center justify-center border border-dashed border-white/10 bg-muted/5 rounded-[3rem]">
+              <div className="col-span-full py-32 flex flex-col items-center justify-center border border-dashed border-white/10 bg-muted/5">
                 <Bike className="text-white/5 mb-8" size={64} strokeWidth={1} />
                 <span className="font-display font-bold text-xl uppercase tracking-widest text-white/60 mb-2 italic">Models Coming Soon</span>
                 <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/20">Check back for {brand.name} specific kits</span>

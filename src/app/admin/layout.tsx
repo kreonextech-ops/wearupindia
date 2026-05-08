@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, ShoppingBag, Users, 
   Settings, Bell, Search, LogOut, ChevronRight, Menu,
-  Layers, Wrench, Shirt
+  Layers, Wrench, Shirt, Package, Tag, MessageSquare
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -18,6 +19,9 @@ const adminLinks = [
   { label: 'Graphic Kits', href: '/admin/graphic-kits', icon: Layers },
   { label: 'Bike Acc.', href: '/admin/bike-accessories', icon: Wrench },
   { label: 'T-Shirts', href: '/admin/t-shirts', icon: Shirt },
+  { label: 'Inventory', href: '/admin/inventory', icon: Package },
+  { label: 'Coupons', href: '/admin/coupons', icon: Tag },
+  { label: 'Form Requests', href: '/admin/form-requests', icon: MessageSquare },
   { label: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
@@ -31,16 +35,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-[#070707] flex text-white font-body selection:bg-[#E8161B] selection:text-white">
       {/* ─── SIDEBAR ─── */}
       <aside className={`fixed inset-y-0 left-0 z-50 bg-[#0A0A0A] border-r border-white/5 transition-all duration-500 ${sidebarOpen ? 'w-72' : 'w-20'} hidden md:flex flex-col`}>
-        <div className="p-8 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 rounded-full bg-[#E8161B] flex items-center justify-center transform group-hover:rotate-90 transition-transform duration-500 shadow-[0_0_15px_rgba(232,22,27,0.4)]">
-              <span className="text-white font-display font-black text-xs">W</span>
+        <div className="px-5 py-6 flex items-center">
+          <Link href="/" className="flex items-center gap-2 group overflow-hidden">
+            {/* Icon logo — always visible */}
+            <div className="relative w-10 h-10 flex-shrink-0 transition-transform duration-500 group-hover:scale-105">
+              <Image
+                src="/logo-011.png"
+                alt="WearUp Logo"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
-            {sidebarOpen && <span className="font-display font-black text-lg tracking-[0.2em] uppercase">WearUp Admin</span>}
+            {/* Text logo — only when expanded */}
+            {sidebarOpen && (
+              <div className="relative h-9 w-36 flex-shrink-0 transition-transform duration-500 group-hover:scale-105">
+                <Image
+                  src="/lgo.png"
+                  alt="WearUp"
+                  fill
+                  className="object-contain object-left"
+                  priority
+                />
+              </div>
+            )}
           </Link>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 mt-8">
+        <nav className="flex-1 px-4 space-y-2 mt-8 overflow-y-auto scrollbar-hide pb-4">
           {adminLinks.map(link => {
             const Icon = link.icon;
             const active = pathname === link.href;

@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, CheckCircle2, MessageSquare, User, Mail, Tag } from 'lucide-react';
+import { X, Send, CheckCircle2, MessageSquare, User, Mail, Tag, Loader2 } from 'lucide-react';
+import { submitFormAction } from '@/lib/actions/forms';
 
 interface BulkOrderModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface BulkOrderModalProps {
 export default function BulkOrderModal({ isOpen, onClose, categoryName }: BulkOrderModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -23,21 +25,28 @@ export default function BulkOrderModal({ isOpen, onClose, categoryName }: BulkOr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    const res = await submitFormAction({
+      name: formData.name,
+      email: formData.email,
+      message: `Quantity: ${formData.quantity}\nRequirements: ${formData.requirements}`,
+      type: 'bulk_order',
+      metadata: { category: categoryName, quantity: formData.quantity }
+    });
     
     setIsSubmitting(false);
-    setIsSuccess(true);
-    
-    // Auto close after showing success for a bit
-    setTimeout(() => {
-      if (isSuccess) {
+    if (res.success) {
+      setIsSuccess(true);
+      // Auto close after showing success for a bit
+      setTimeout(() => {
         onClose();
         setIsSuccess(false);
         setFormData({ name: '', email: '', quantity: '', requirements: '' });
-      }
-    }, 5000);
+      }, 5000);
+    } else {
+      setError(res.error || 'Failed to send inquiry. Please try again.');
+    }
   };
 
   return (
@@ -141,6 +150,12 @@ export default function BulkOrderModal({ isOpen, onClose, categoryName }: BulkOr
                       />
                     </div>
                   </div>
+
+                  {error && (
+                    <div className="text-wu-red text-sm font-body text-center bg-wu-red/10 border border-wu-red/20 py-2 rounded-lg">
+                      {error}
+                    </div>
+                  )}
 
                   <button
                     disabled={isSubmitting}

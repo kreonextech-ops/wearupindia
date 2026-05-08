@@ -128,7 +128,7 @@ export default function ServiceDetailPage({ params }: Props) {
                 Book This Service <ArrowRight size={14} />
               </Link>
               <a
-                href="https://wa.me/919876543210"
+                href="https://wa.me/916296396462"
                 className="w-full flex items-center justify-center gap-3 border border-[#2a2a2a] text-[#888] font-display font-bold text-sm tracking-widest uppercase py-4 hover:text-white hover:border-[#444] transition-colors mt-3"
               >
                 WhatsApp Us

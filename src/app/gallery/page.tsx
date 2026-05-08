@@ -10,6 +10,7 @@ export default async function GalleryPage() {
 
   try {
     const rawFiles = await listGalleryFiles();
+    console.log('DEBUG: rawFiles.length =', rawFiles.length);
 
     const videos = rawFiles.filter(f => f.toLowerCase().endsWith('.mp4'));
     const photos = rawFiles.filter(f => !f.toLowerCase().endsWith('.mp4'));

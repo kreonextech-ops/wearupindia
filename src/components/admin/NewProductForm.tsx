@@ -5,7 +5,7 @@ import { useFormStatus } from 'react-dom';
 import { Upload, X, Package, Tag, IndianRupee, Database, AlignLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { createProductAction, updateProductAction } from '@/app/admin/products/actions';
-import { GRAPHIC_KITS_STRUCTURE } from '@/data';
+import { GRAPHIC_KITS_STRUCTURE, MOTORCYCLE_ACCESSORIES_STRUCTURE } from '@/data';
 import Image from 'next/image';
 
 interface NewProductFormProps {
@@ -18,6 +18,7 @@ export default function NewProductForm({ product, onSuccess }: NewProductFormPro
   const [error, setError] = React.useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = React.useState<string>(product?.category || '');
   const [selectedBrand, setSelectedBrand] = React.useState<string>(product?.meta_data?.brand || '');
+  const [selectedSubCategory, setSelectedSubCategory] = React.useState<string>(product?.meta_data?.sub_category || '');
   const formRef = React.useRef<HTMLFormElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,17 +29,13 @@ export default function NewProductForm({ product, onSuccess }: NewProductFormPro
   };
 
   const currentBrandData = GRAPHIC_KITS_STRUCTURE.find(b => b.slug === selectedBrand);
+  const currentSubCategoryData = MOTORCYCLE_ACCESSORIES_STRUCTURE.find(sc => sc.slug === selectedSubCategory);
 
   const clientAction = async (formData: FormData) => {
     setError(null);
     let result;
     
     if (product) {
-      // Update Mode - we don't have a generic updateProductAction yet that handles everything
-      // but we can use the same pattern or create one.
-      // Actually, looking at actions.ts, there is updateTShirtAction and updateGraphicKitAction.
-      // Let's check if there's a generic one.
-      // If not, I'll implement a simple one in actions.ts.
       result = await updateProductAction(product.id, formData);
     } else {
       result = await createProductAction(formData);
@@ -49,6 +46,7 @@ export default function NewProductForm({ product, onSuccess }: NewProductFormPro
       setPreview(null);
       setSelectedCategory('');
       setSelectedBrand('');
+      setSelectedSubCategory('');
       onSuccess();
     } else {
       setError(result.error || 'Failed to process request.');
@@ -153,7 +151,11 @@ export default function NewProductForm({ product, onSuccess }: NewProductFormPro
              <select 
               name="category_slug"
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setSelectedBrand('');
+                setSelectedSubCategory('');
+              }}
               className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#E8161B]/50 focus:bg-white/10 transition-all font-body text-sm appearance-none cursor-pointer"
               required
             >
@@ -200,6 +202,46 @@ export default function NewProductForm({ product, onSuccess }: NewProductFormPro
                 <option value="" className="bg-[#0A0A0A]">Select Model...</option>
                 {currentBrandData?.models.map(m => (
                   <option key={m} value={m} className="bg-[#0A0A0A]">{m}</option>
+                ))}
+              </select>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ─── CONDITIONAL HIERARCHY FOR BIKE ACCESSORIES ─── */}
+        {selectedCategory === 'bike-accessories' && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="col-span-2 grid grid-cols-2 gap-4 pt-2"
+          >
+            <div className="space-y-2">
+              <label className="font-mono text-[10px] text-[#E8161B] tracking-[0.2em] uppercase font-bold">Main Category</label>
+              <select 
+                name="sub_category"
+                value={selectedSubCategory}
+                onChange={(e) => setSelectedSubCategory(e.target.value)}
+                className="w-full bg-[#E8161B]/5 border border-[#E8161B]/20 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-[#E8161B] transition-all font-body text-sm appearance-none cursor-pointer"
+                required
+              >
+                <option value="" className="bg-[#0A0A0A]">Select Main Category...</option>
+                {MOTORCYCLE_ACCESSORIES_STRUCTURE.map(sc => (
+                  <option key={sc.slug} value={sc.slug} className="bg-[#0A0A0A]">{sc.category}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="font-mono text-[10px] text-[#E8161B] tracking-[0.2em] uppercase font-bold">Item Type</label>
+              <select 
+                name="sub_item"
+                className="w-full bg-[#E8161B]/5 border border-[#E8161B]/20 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-[#E8161B] transition-all font-body text-sm appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                required
+                disabled={!selectedSubCategory}
+              >
+                <option value="" className="bg-[#0A0A0A]">Select Item Type...</option>
+                {currentSubCategoryData?.items.map(item => (
+                  <option key={item} value={item.toLowerCase().replace(/[^a-z0-9]+/g, '-')} className="bg-[#0A0A0A]">{item}</option>
                 ))}
               </select>
             </div>

@@ -41,62 +41,65 @@ export default function ShopPage() {
     <div className="min-h-screen bg-background">
       
       {/* ─── SHOP HERO ─── */}
-      <section className="relative min-h-[480px] sm:min-h-[55vh] flex flex-col items-center border-b border-border overflow-hidden">
+      <section className="relative min-h-[350px] sm:min-h-[40vh] flex flex-col items-center justify-center border-b border-border overflow-hidden pt-28 pb-16">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?w=1600&q=80"
-            alt="WearUp Shop – Carbon Fiber"
+            src="/images/shop-hero.png"
+            alt="WearUp Shop"
             fill
-            className="object-cover opacity-20 scale-105 pointer-events-none"
+            className="object-cover opacity-20 pointer-events-none"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/40 to-background" />
           {/* Red glow orb backdrop */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-wu-red/5 blur-[120px] rounded-full pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[150px] bg-wu-red/10 blur-[80px] rounded-full pointer-events-none" />
         </div>
 
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-40 sm:pt-48">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal direction="down">
-            <p className="font-mono text-[10px] text-wu-red tracking-[0.4em] uppercase mb-6 flex items-center justify-center gap-3">
-              <span className="w-8 h-px bg-wu-red" /> Official Collection
+            <p className="font-mono text-[9px] text-wu-red tracking-[0.4em] uppercase mb-3 flex items-center justify-center gap-3">
+              <span className="w-6 h-px bg-wu-red" /> Official Collection
             </p>
           </ScrollReveal>
 
           <ScrollReveal direction="up" delay={0.2}>
-            <h1 className="font-display font-black text-5xl sm:text-7xl lg:text-9xl text-foreground tracking-tighter leading-[0.85] mb-8 uppercase">
+            <h1 className="font-display font-black text-4xl sm:text-6xl lg:text-7xl text-foreground tracking-tighter leading-none mb-4 uppercase">
               Elite <span className="text-wu-red">Gear.</span>
             </h1>
           </ScrollReveal>
 
-          <ScrollReveal direction="up" delay={0.4} className="max-w-2xl mx-auto mb-12">
-            <p className="font-body text-muted-foreground text-base sm:text-lg leading-relaxed">
-              From precision-cut graphic kits to track-tested protection. We engineer the aesthetics and performance of India&apos;s most aggressive machines.
+          <ScrollReveal direction="up" delay={0.4} className="max-w-xl mx-auto">
+            <p className="font-body text-muted-foreground text-[10px] sm:text-xs leading-relaxed opacity-80 uppercase tracking-widest">
+              Performance engineered aesthetics for India&apos;s most aggressive machines.
             </p>
           </ScrollReveal>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto mb-20">
-            {[
-              { label: 'PAN-INDIA', sub: 'SHIPPING', icon: Zap },
-              { label: 'CERTIFIED', sub: 'QUALITY', icon: ShieldCheck },
-              { label: 'PREMIUM', sub: 'MATERIALS', icon: Sparkles },
-              { label: 'EXPERT', sub: 'SUPPORT', icon: ShoppingBag },
-            ].map((item, i) => (
-              <ScrollReveal key={item.label} direction="up" delay={0.6 + i * 0.1}>
-                <div className="flex flex-col items-center gap-2 p-5 border border-border bg-muted/30 backdrop-blur-sm group hover:border-wu-red/30 transition-all rounded-2xl">
-                  <item.icon size={18} className="text-wu-red group-hover:scale-110 transition-transform" />
-                  <div className="text-center">
-                    <p className="font-display font-bold text-[10px] text-foreground tracking-widest">{item.label}</p>
-                    <p className="font-mono text-[8px] text-muted-foreground tracking-widest">{item.sub}</p>
-                  </div>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
         </div>
       </section>
 
+      {/* ─── FEATURES GRID ─── */}
+      <div className="relative z-10 -mt-8 mb-2 px-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          {[
+            { label: 'PAN-INDIA', sub: 'SHIPPING', icon: Zap },
+            { label: 'CERTIFIED', sub: 'QUALITY', icon: ShieldCheck },
+            { label: 'PREMIUM', sub: 'MATERIALS', icon: Sparkles },
+            { label: 'EXPERT', sub: 'SUPPORT', icon: ShoppingBag },
+          ].map((item, i) => (
+            <ScrollReveal key={item.label} direction="up" delay={0.5 + i * 0.1}>
+              <div className="flex flex-col items-center gap-2 p-4 border border-border bg-background/80 backdrop-blur-md group hover:border-wu-red/30 transition-all rounded-xl shadow-2xl shadow-black/20">
+                <item.icon size={16} className="text-wu-red group-hover:scale-110 transition-transform" />
+                <div className="text-center">
+                  <p className="font-display font-bold text-[9px] text-foreground tracking-widest">{item.label}</p>
+                  <p className="font-mono text-[7px] text-muted-foreground tracking-widest">{item.sub}</p>
+                </div>
+              </div>
+            </ScrollReveal>
+          ))}
+        </div>
+      </div>
+
       {/* ─── CATEGORY ROWS ─── */}
-      <div className="pb-24 space-y-12">
+      <div className="pb-12 space-y-0">
         {isLoading ? (
           <div className="py-20 flex flex-col items-center justify-center">
             <div className="w-10 h-10 border-4 border-muted border-t-wu-red rounded-full animate-spin mb-4" />

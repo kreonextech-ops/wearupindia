@@ -26,7 +26,7 @@ export default function PrivacyPage() {
     },
     {
       title: '7. Contact',
-      content: 'For privacy concerns: hello@wearup.in | WearUp Kinetic Precision, 14/2 Industrial Area, Bengaluru 560068, Karnataka, India.',
+      content: 'For privacy concerns: hello@wearup.in | WearUp India, Medical More, Shibmandir, Siliguri 734011, West Bengal, India.',
     },
   ];
 

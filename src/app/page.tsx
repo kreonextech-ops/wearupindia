@@ -14,9 +14,16 @@ import InstagramReels from '@/components/home/InstagramReels';
 import CombinedContactCTA from '@/components/home/CombinedContactCTA';
 import OurCustomers from '@/components/home/OurCustomers';
 
-export default function Home() {
-  const newArrivals = products.filter(p => p.isNew).reverse().slice(0, 5);
-  const featuredKits = products.filter(p => !p.isNew).slice(0, 5);
+import HeroVideo from '@/components/home/HeroVideo';
+import { getAllProductsAction } from '@/app/admin/products/actions';
+
+export default async function Home() {
+  const res = await getAllProductsAction();
+  const dbProducts = res.success && res.data ? res.data : [];
+  
+  const newArrivals = dbProducts.filter(p => p.is_new).reverse().slice(0, 5);
+  const featuredKits = dbProducts.filter(p => p.is_featured).slice(0, 5);
+  
   const wrappingService = services.find(s => s.slug === 'bike-wrapping');
   const washService = services.find(s => s.slug === 'premium-wash');
   const ppfService = services.find(s => s.slug === 'ppf-protection');
@@ -30,16 +37,19 @@ export default function Home() {
           {
             id: 'wrap-3',
             src: getAssetUrl('/videos/hero-video-3.mp4'),
+            poster: '/hero/1.jpg',
             title: 'Premium Finish'
           },
           {
             id: 'wrap-untitled',
             src: getAssetUrl('/videos/hero-video-untitled.mp4'),
+            poster: '/hero/2.jpg',
             title: 'Rider Style'
           },
           {
             id: 'wrap-1',
             src: getAssetUrl('/videos/hero-video-1.mp4'),
+            poster: '/hero/3.jpg',
             title: 'Precision Wraps'
           }
         ].map((panel, idx) => (
@@ -47,10 +57,10 @@ export default function Home() {
             key={panel.id}
             className={`group relative flex-1 border-b md:border-b-0 md:border-r border-white/5 overflow-hidden transition-all duration-700 ${idx === 0 ? 'min-h-[40vh] md:min-h-[60vh]' : 'hidden md:block md:min-h-[60vh]'}`}
           >
-            {/* Video Background */}
+            {/* Video Background with Poster Crossfade */}
             {idx === 0 ? (
               <>
-                {/* Mobile: Sequential playback (3 -> untitled -> 1) */}
+                {/* Mobile: Sequential playback */}
                 <div className="md:hidden absolute inset-0">
                   <SequentialVideoPlayer 
                     sources={[
@@ -61,29 +71,24 @@ export default function Home() {
                     className="w-full h-full object-cover opacity-60"
                   />
                 </div>
-                {/* Desktop: Continuous loop */}
-                <video 
-                  autoPlay 
-                  muted 
-                  loop 
-                  playsInline 
+                {/* Desktop: Continuous loop with Poster */}
+                <HeroVideo 
                   src={panel.src}
-                  className="hidden md:block absolute inset-0 w-full h-full object-cover opacity-60"
+                  poster={panel.poster}
+                  className="hidden md:block absolute inset-0 w-full h-full"
                 />
               </>
             ) : (
-              <video 
-                autoPlay 
-                muted 
-                loop 
-                playsInline 
+              <HeroVideo 
                 src={panel.src}
-                className="absolute inset-0 w-full h-full object-cover opacity-60"
+                poster={panel.poster}
+                className="absolute inset-0 w-full h-full"
               />
             )}
 
             {/* Premium Overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 pointer-events-none" />
+
             
             {/* Minimal Brand Overlay - Only on first panel */}
             {idx === 0 && (
@@ -138,11 +143,11 @@ export default function Home() {
           {categories.map((cat, i) => {
             const isComingSoon = cat.isComingSoon;
             const cardSpans = [
-              'md:col-span-8 md:row-span-2', // Graphic Kits
-              'md:col-span-4 md:row-span-1', // Bike Accessories
+              'md:col-span-7 md:row-span-2', // Graphic Kits
+              'md:col-span-5 md:row-span-2', // Bike Accessories
               'md:col-span-4 md:row-span-1', // Keychains
-              'md:col-span-6 md:row-span-1', // T-Shirts
-              'md:col-span-6 md:row-span-1', // Hoodies
+              'md:col-span-4 md:row-span-1', // T-Shirts
+              'md:col-span-4 md:row-span-1', // Hoodies
             ];
 
             return (
@@ -251,7 +256,7 @@ export default function Home() {
               <p className="font-mono text-[11px] text-wu-red tracking-[0.4em] uppercase mb-3">// Just In</p>
               <h2 className="font-display font-black text-4xl sm:text-6xl text-foreground uppercase tracking-tighter italic">New Products</h2>
             </div>
-            <Link href="/shop" className="flex items-center gap-2 group text-muted-foreground hover:text-wu-red transition-colors">
+            <Link href="/shop/new-arrivals" className="flex items-center gap-2 group text-muted-foreground hover:text-wu-red transition-colors">
               <span className="font-display font-bold text-[11px] tracking-widest uppercase">Explore All</span>
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
@@ -280,8 +285,8 @@ export default function Home() {
               <p className="font-mono text-[11px] text-wu-red tracking-[0.4em] uppercase mb-3">// Curated Gear</p>
               <h2 className="font-display font-black text-4xl sm:text-6xl text-foreground uppercase tracking-tighter italic">Featured Kits</h2>
             </div>
-            <Link href="/shop" className="hidden sm:flex items-center gap-2 group text-muted-foreground hover:text-wu-red transition-colors">
-              <span className="font-display font-bold text-[11px] tracking-widest uppercase">View All Shop</span>
+            <Link href="/shop/featured" className="hidden sm:flex items-center gap-2 group text-muted-foreground hover:text-wu-red transition-colors">
+              <span className="font-display font-bold text-[11px] tracking-widest uppercase">View All Featured</span>
               <ArrowUpRight size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </Link>
           </ScrollReveal>

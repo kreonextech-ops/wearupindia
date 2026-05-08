@@ -1,17 +1,33 @@
 'use client';
 import { useState } from 'react';
-import { Phone, Mail, MapPin, Clock, Check } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Check, Loader2 } from 'lucide-react';
+import { submitFormAction } from '@/lib/actions/forms';
 
 const services = ['Bike Wrapping', 'Detail Wash', 'Custom Decals', 'Product Query', 'Bulk Order', 'Other'];
 
 export default function ContactPage() {
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', email: '', phone: '', service: '', message: '' });
 
   const update = (k: string, v: string) => setForm(prev => ({ ...prev, [k]: v }));
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSent(true);
+    setLoading(true);
+    setError(null);
+
+    const res = await submitFormAction({
+      ...form,
+      type: 'contact'
+    });
+
+    setLoading(false);
+    if (res.success) {
+      setSent(true);
+    } else {
+      setError(res.error || 'Something went wrong. Please try again.');
+    }
   };
 
   const inputClass = "w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white placeholder-[#444] px-4 py-3 font-body text-sm focus:outline-none focus:border-[#E8161B] transition-colors";
@@ -37,9 +53,9 @@ export default function ContactPage() {
               <h2 className="font-display font-black text-xl text-white mb-6 red-line">REACH US</h2>
               <div className="space-y-5">
                 {[
-                  { icon: Phone, label: 'Call / WhatsApp', value: '+91 98765 43210', href: 'tel:+919876543210' },
+                  { icon: Phone, label: 'Call / WhatsApp', value: '+91 62963 96462', href: 'tel:+916296396462' },
                   { icon: Mail, label: 'Email', value: 'hello@wearup.in', href: 'mailto:hello@wearup.in' },
-                  { icon: MapPin, label: 'Workshop', value: '14/2, Industrial Area\nBengaluru, Karnataka 560068', href: '#' },
+                  { icon: MapPin, label: 'Workshop', value: 'Medical More, Shibmandir\nOpp. Mukta Nursing Home\nSiliguri, WB 734011', href: 'https://maps.google.com/?q=Wearup+India+Siliguri' },
                   { icon: Clock, label: 'Hours', value: 'Mon–Sat: 9 AM – 7 PM\nSunday: 10 AM – 4 PM', href: '#' },
                 ].map(({ icon: Icon, label, value, href }) => (
                   <div key={label} className="flex gap-4">
@@ -65,7 +81,7 @@ export default function ContactPage() {
               }} />
               <div className="relative z-10 text-center">
                 <MapPin size={32} className="text-[#E8161B] mx-auto mb-2" />
-                <p className="font-mono text-[11px] text-[#555] tracking-widest">BENGALURU, KARNATAKA</p>
+                <p className="font-mono text-[11px] text-[#555] tracking-widest">SILIGURI, WEST BENGAL</p>
               </div>
             </div>
           </div>
@@ -120,15 +136,24 @@ export default function ContactPage() {
                   />
                 </div>
 
-                <div className="flex gap-3">
-                  <button
-                    type="submit"
-                    className="flex items-center gap-3 bg-[#E8161B] text-white font-display font-bold text-sm tracking-widest uppercase px-8 py-4 hover:bg-[#B81015] transition-colors"
-                  >
-                    Send Message
-                  </button>
+                  {error && (
+                    <p className="text-wu-red font-mono text-[10px] uppercase tracking-widest">{error}</p>
+                  )}
+
+                  <div className="flex gap-3">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="flex items-center gap-3 bg-[#E8161B] text-white font-display font-bold text-sm tracking-widest uppercase px-8 py-4 hover:bg-[#B81015] transition-colors disabled:opacity-50"
+                    >
+                      {loading ? (
+                        <>Sending... <Loader2 size={16} className="animate-spin" /></>
+                      ) : (
+                        <>Send Message</>
+                      )}
+                    </button>
                   <a
-                    href="https://wa.me/919876543210"
+                    href="https://wa.me/916296396462"
                     className="flex items-center gap-3 border border-[#2a2a2a] text-[#888] font-display font-bold text-sm tracking-widest uppercase px-8 py-4 hover:text-white hover:border-[#444] transition-colors"
                   >
                     WhatsApp Instead

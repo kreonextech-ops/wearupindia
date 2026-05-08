@@ -34,7 +34,7 @@ export default function BikeSelector() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <ScrollReveal direction="down" className="text-center mb-8 md:mb-10">
           <h2 className="font-display font-black text-5xl sm:text-7xl text-foreground tracking-tighter leading-[0.9] uppercase">
-            Find Products For <span className="text-transparent bg-clip-text bg-gradient-to-r from-wu-red to-[#ff4b4f]">Your Bike</span>
+            Find Graphic For <span className="text-transparent bg-clip-text bg-gradient-to-r from-wu-red to-[#ff4b4f]">Your Bike</span>
           </h2>
         </ScrollReveal>
 

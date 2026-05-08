@@ -45,6 +45,8 @@ export async function createTShirtAction(formData: FormData) {
         description,
         stock: totalStock,
         images: [publicUrl],
+        is_new: true,
+        is_featured: false,
         meta_data: { fit, material, sku, type: 'tshirt' }
       }])
       .select()
@@ -103,6 +105,18 @@ export async function createProductAction(formData: FormData) {
       imageUrls = [url];
     }
 
+    const subCategory = formData.get('sub_category') as string | null;
+    const subItem = formData.get('sub_item') as string | null;
+
+    // Extract dynamic specs
+    const standardFields = ['name', 'category_slug', 'price', 'description', 'stock', 'image', 'sub_category', 'sub_item'];
+    const specs: Record<string, string> = {};
+    for (const [key, value] of Array.from(formData.entries())) {
+      if (!standardFields.includes(key) && value && typeof value === 'string') {
+        specs[key] = value;
+      }
+    }
+
     const { data, error } = await supabase
       .from('products')
       .insert([{
@@ -113,7 +127,9 @@ export async function createProductAction(formData: FormData) {
         description,
         stock,
         images: imageUrls,
-        meta_data: {}
+        is_new: true,
+        is_featured: false,
+        meta_data: { sub_category: subCategory, sub_item: subItem, specs }
       }])
       .select()
       .single();
@@ -153,6 +169,19 @@ export async function updateProductAction(productId: string, formData: FormData)
       imageUrls = [url];
     }
 
+    // Extract dynamic specs
+    const standardFields = ['id', 'name', 'price', 'description', 'stock', 'image', 'sub_category', 'sub_item'];
+    const specs: Record<string, string> = {};
+    for (const [key, value] of Array.from(formData.entries())) {
+      if (!standardFields.includes(key) && value && typeof value === 'string') {
+        specs[key] = value;
+      }
+    }
+    
+    // Merge existing meta_data with updated specs
+    const meta_data = existing.meta_data || {};
+    meta_data.specs = specs;
+
     const { error } = await supabase
       .from('products')
       .update({
@@ -161,6 +190,7 @@ export async function updateProductAction(productId: string, formData: FormData)
         description,
         stock,
         images: imageUrls,
+        meta_data,
         updated_at: new Date().toISOString()
       })
       .eq('id', productId);
@@ -314,12 +344,48 @@ export async function getAllProductsAction() {
         category: p.categories?.slug || 'uncategorized',
         categoryName: p.categories?.name || 'Uncategorized',
         inStock: p.stock > 0,
+        is_featured: p.is_featured,
+        is_new: p.is_new,
         rating: 5,
         reviews: 0
       }))
     };
   } catch (error: any) {
     return { success: false, error: error.message, data: [] };
+  }
+}
+
+export async function toggleFeaturedAction(productId: string, isFeatured: boolean) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+  try {
+    const { error } = await supabase
+      .from('products')
+      .update({ is_featured: isFeatured })
+      .eq('id', productId);
+    if (error) throw error;
+    revalidatePath('/admin/inventory');
+    revalidatePath('/');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function updateStockAction(productId: string, stock: number) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+  try {
+    const { error } = await supabase
+      .from('products')
+      .update({ stock })
+      .eq('id', productId);
+    if (error) throw error;
+    revalidatePath('/admin/inventory');
+    revalidatePath('/admin/products');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
   }
 }
 
@@ -368,7 +434,7 @@ export async function getProductsAction(categorySlug: string) {
   try {
     const { data, error } = await supabase
       .from('products')
-      .select(`*, categories!inner(slug)`)
+      .select(`*, categories!inner(slug), variants(*)`)
       .eq('categories.slug', categorySlug)
       .order('created_at', { ascending: false });
 
@@ -380,7 +446,11 @@ export async function getProductsAction(categorySlug: string) {
       inStock: p.stock > 0,
       rating: 5,
       reviews: 0,
-      compatibleBrands: p.meta_data?.brand ? [p.meta_data.brand] : []
+      compatibleBrands: p.meta_data?.brand ? [p.meta_data.brand] : [],
+      sizes: p.variants?.reduce((acc: any, v: any) => {
+        acc[v.value] = v.stock;
+        return acc;
+      }, {}) || {}
     }));
 
     return { success: true, data: mappedData };
@@ -438,6 +508,7 @@ export async function createGraphicKitAction(formData: FormData) {
     const brand = formData.get('brand') as string;
     const model = formData.get('model') as string;
     const description = formData.get('description') as string;
+    const stock = parseInt(formData.get('stock') as string) || 0;
     const imageFile = formData.get('image') as File | null;
     const compatibleModelsRaw = formData.get('compatibleModels') as string;
     const pricingMatrixRaw = formData.get('pricingMatrix') as string;
@@ -472,8 +543,10 @@ export async function createGraphicKitAction(formData: FormData) {
         category_id: cat.id,
         price: basePrice,
         description,
-        stock: 999,
+        stock,
         images: [publicUrl],
+        is_new: true,
+        is_featured: false,
         meta_data: { brand, model, compatible_models: compatibleModels, pricing_matrix: pricingMatrix, type: 'graphic-kit' }
       }])
       .select()
@@ -519,6 +592,7 @@ export async function updateGraphicKitAction(productId: string, formData: FormDa
     const description = formData.get('description') as string;
     const imageFile = formData.get('image') as File | null;
     const basePrice = parseFloat(formData.get('price') as string);
+    const stock = parseInt(formData.get('stock') as string) || 0;
 
     const { data: existing } = await supabase.from('products').select('*').eq('id', productId).single();
     if (!existing) throw new Error('Product not found');
@@ -533,12 +607,20 @@ export async function updateGraphicKitAction(productId: string, formData: FormDa
 
     const { error: pError } = await supabase
       .from('products')
-      .update({ name, price: basePrice, description, images: imageUrls, updated_at: new Date().toISOString() })
+      .update({ 
+        name, 
+        price: basePrice, 
+        description, 
+        stock,
+        images: imageUrls, 
+        updated_at: new Date().toISOString() 
+      })
       .eq('id', productId);
 
     if (pError) throw pError;
 
     revalidatePath('/admin/graphic-kits');
+    revalidatePath('/admin/inventory');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };

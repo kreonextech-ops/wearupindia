@@ -210,6 +210,14 @@ function EditGraphicKitForm({ kit, onSuccess }: any) {
       </div>
 
       <div className="space-y-2">
+        <label className="font-mono text-[10px] text-white/30 uppercase tracking-widest">Quantity (Pieces)</label>
+        <div className="relative">
+          <Package className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={14} />
+          <input name="stock" type="number" defaultValue={kit.stock} className="w-full bg-white/5 border border-white/5 rounded-xl py-4 pl-12 pr-6 text-white text-sm focus:border-wu-red/50 transition-all" required />
+        </div>
+      </div>
+
+      <div className="space-y-2">
         <label className="font-mono text-[10px] text-white/30 uppercase tracking-widest">Description</label>
         <textarea name="description" defaultValue={kit.description} rows={4} className="w-full bg-white/5 border border-white/5 rounded-xl py-4 px-6 text-white text-sm focus:border-wu-red/50 transition-all" />
       </div>

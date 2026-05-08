@@ -7,17 +7,15 @@ import { getAssetUrl } from '@/lib/assets';
 
 // Using 9 images total to match the new layout
 const galleryImages = [
-  getAssetUrl('/gallery/DSC04131.jpg'), // img 1: Top left 1
-  getAssetUrl('/gallery/DSC04132.jpg'), // img 2: Top left 2
-  getAssetUrl('/gallery/_DSC6811.jpg'), // img 3: Bottom left (Tall)
-  
-  getAssetUrl('/gallery/DSC07517.jpg'), // img 4: Center top (Tall HERO)
-  getAssetUrl('/gallery/_DSC0514.jpg'), // img 5: Center bottom 1
-  getAssetUrl('/gallery/DSC07576.jpg'), // img 6: Center bottom 2
-  
-  getAssetUrl('/gallery/DSC04090.jpg'), // img 7: Top right 1
-  getAssetUrl('/gallery/DSC04091.jpg'), // img 8: Top right 2
-  getAssetUrl('/gallery/_DSC9835.jpg'), // img 9: Bottom right (Tall)
+  getAssetUrl('/gallery/DSC00256.jpg'),
+  getAssetUrl('/gallery/DSC00684.jpg'),
+  getAssetUrl('/gallery/DSC07421.jpg'),
+  getAssetUrl('/gallery/DSC07738.jpg'),
+  getAssetUrl('/gallery/DSC_1954.jpg'),
+  getAssetUrl('/gallery/_DSC2605.jpg'),
+  getAssetUrl('/gallery/_DSC6765.jpg'),
+  getAssetUrl('/gallery/_DSC6958.jpg'),
+  getAssetUrl('/gallery/_DSC8584.jpg'),
 ];
 
 function Cell({
@@ -35,6 +33,7 @@ function Cell({
         src={src}
         alt={alt}
         fill
+        unoptimized
         sizes="(max-width: 768px) 100vw, 33vw"
         className="w-full h-full object-cover block hover:scale-[1.03] transition-transform duration-500 ease-out"
       />
