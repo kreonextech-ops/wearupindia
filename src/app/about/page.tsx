@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { getAssetUrl } from '@/lib/assets';
 
 const team = [
   { name: 'Arjun Mehta', role: 'Founder & Head Wrapper', city: 'Siliguri' },
@@ -67,7 +68,7 @@ export default function AboutPage() {
 
           <div className="relative h-96 overflow-hidden">
             <Image
-              src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80"
+              src={getAssetUrl('/gallery/IMG_5273.PNG')}
               alt="WearUp Workshop"
               fill
               className="object-cover"
@@ -99,28 +100,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="mb-12">
-          <p className="font-mono text-[11px] text-[#E8161B] tracking-[0.3em] uppercase mb-3">// The Team</p>
-          <h2 className="font-display font-black text-4xl sm:text-5xl text-white">THE CREW</h2>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {team.map(member => (
-            <div key={member.name} className="group">
-              <div className="relative aspect-square bg-[#181818] border border-[#1a1a1a] overflow-hidden mb-4">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#E8161B]/10 to-transparent" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="font-display font-black text-6xl text-[#2a2a2a]">{member.name[0]}</span>
-                </div>
-              </div>
-              <h3 className="font-display font-bold text-base text-white">{member.name}</h3>
-              <p className="font-mono text-[10px] text-[#E8161B] tracking-widest uppercase mb-0.5">{member.role}</p>
-              <p className="font-mono text-[10px] text-[#444]">{member.city}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+
 
       {/* CTA */}
       <section className="bg-[#E8161B] py-16">
