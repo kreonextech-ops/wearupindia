@@ -3,8 +3,18 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Package, TrendingUp, Settings, IndianRupee, Plus, X, Search, Filter, Shield } from 'lucide-react';
 import NewAccessoryForm from '@/components/admin/NewAccessoryForm';
+import EditAccessoryForm from '@/components/admin/EditAccessoryForm';
 import { getProductsAction } from '@/app/admin/products/actions';
-import { Product } from '@/data';
+
+interface AccessoryProduct {
+  id: string;
+  name: string;
+  price: number;
+  description?: string;
+  stock?: number;
+  images: string[];
+  meta_data?: Record<string, any>;
+}
 
 const metrics = {
   totalItems: 0,
@@ -15,40 +25,48 @@ const metrics = {
 
 export default function AdminBikeAccessoriesPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<AccessoryProduct | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
-  const [baseAccessories, setBaseAccessories] = useState<Product[]>([]);
+  const [baseAccessories, setBaseAccessories] = useState<AccessoryProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      const res = await getProductsAction('bike-accessories');
-      if (res.success && res.data) {
-        setBaseAccessories(res.data as unknown as Product[]);
-      }
-      setIsLoading(false);
+  const loadData = async () => {
+    setIsLoading(true);
+    const res = await getProductsAction('bike-accessories');
+    if (res.success && res.data) {
+      setBaseAccessories(res.data as unknown as AccessoryProduct[]);
     }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
     loadData();
   }, []);
 
-  // Filtered and searched accessories
   const filteredAccessories = useMemo(() => {
     return baseAccessories.filter((product) => {
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             product.meta_data?.sub_category?.toLowerCase().includes(searchQuery.toLowerCase());
-      
       const matchesFilter = filterType === 'all' || product.meta_data?.sub_category === filterType;
-
       return matchesSearch && matchesFilter;
     });
   }, [baseAccessories, searchQuery, filterType]);
 
-  // Extract unique sub_categories for the filter dropdown
   const uniqueSubCategories = useMemo(() => {
     const subs = new Set(baseAccessories.map(p => p.meta_data?.sub_category).filter(Boolean));
     return Array.from(subs);
   }, [baseAccessories]);
+
+  const handleAddSuccess = () => {
+    setIsAddModalOpen(false);
+    loadData();
+  };
+
+  const handleEditSuccess = () => {
+    setEditingProduct(null);
+    loadData();
+  };
 
   return (
     <div className="space-y-10">
@@ -159,9 +177,14 @@ export default function AdminBikeAccessoriesPage() {
               <div className="flex items-center gap-4 border-t sm:border-t-0 border-white/5 pt-4 sm:pt-0">
                 <div className="text-right">
                   <p className="font-mono text-[9px] text-white/40 tracking-widest uppercase mb-1">Status</p>
-                  <p className="font-display font-bold text-xs text-green-500 uppercase">In Stock</p>
+                  <p className={`font-display font-bold text-xs uppercase ${(product.stock ?? 0) > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {(product.stock ?? 0) > 0 ? 'In Stock' : 'Out of Stock'}
+                  </p>
                 </div>
-                <button className="h-10 px-4 rounded-lg border border-white/10 text-white hover:bg-white/5 font-display font-bold text-xs uppercase transition-colors">
+                <button
+                  onClick={() => setEditingProduct(product)}
+                  className="h-10 px-4 rounded-lg border border-white/10 text-white hover:bg-white/5 hover:border-[#E8161B]/40 hover:text-[#E8161B] font-display font-bold text-xs uppercase transition-all"
+                >
                   Edit
                 </button>
               </div>
@@ -170,7 +193,7 @@ export default function AdminBikeAccessoriesPage() {
         </div>
       )}
 
-      {/* SLIDE OUT MODAL */}
+      {/* ADD MODAL */}
       <div 
         className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity duration-300 ${isAddModalOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setIsAddModalOpen(false)}
@@ -191,9 +214,39 @@ export default function AdminBikeAccessoriesPage() {
               <X size={18} />
             </button>
           </div>
-
           <div className="flex-1 overflow-hidden">
-             <NewAccessoryForm onSuccess={() => setIsAddModalOpen(false)} />
+             <NewAccessoryForm onSuccess={handleAddSuccess} />
+          </div>
+        </div>
+      </div>
+
+      {/* EDIT MODAL */}
+      <div 
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity duration-300 ${editingProduct ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setEditingProduct(null)}
+      >
+        <div 
+          className={`absolute top-0 right-0 bottom-0 w-full max-w-xl bg-[#0A0A0A] border-l border-white/10 p-8 shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] overflow-hidden flex flex-col ${editingProduct ? 'translate-x-0' : 'translate-x-full'}`}
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between pb-6 border-b border-white/5 mb-6 shrink-0">
+            <div>
+              <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">Edit Accessory</h2>
+              <p className="font-mono text-[9px] text-white/40 tracking-widest uppercase mt-1">
+                {editingProduct?.name || 'Update product details'}
+              </p>
+            </div>
+            <button 
+              onClick={() => setEditingProduct(null)}
+              className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            {editingProduct && (
+              <EditAccessoryForm product={editingProduct} onSuccess={handleEditSuccess} />
+            )}
           </div>
         </div>
       </div>
