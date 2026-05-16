@@ -78,7 +78,7 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
                 <label className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase">Secret Code</label>
-                <Link href="#" className="font-mono text-[9px] text-wu-red tracking-widest uppercase hover:underline">Forgot Key?</Link>
+                <Link href="/forgot-password" className="font-mono text-[9px] text-wu-red tracking-widest uppercase hover:underline">Forgot Key?</Link>
               </div>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />

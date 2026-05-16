@@ -376,7 +376,44 @@ export const services: Service[] = [
   },
 ];
 
-export const testimonials: any[] = [];
+export const testimonials = [
+  {
+    name: 'Fariz',
+    role: 'Local Guide',
+    stars: 5,
+    text: 'I recently purchased a decal kit from WearUp India. The owner was very helpful throughout the process. I received the kit within 4 days via India Post.',
+  },
+  {
+    name: 'Sushant Adhikari',
+    role: 'Bike Enthusiast',
+    stars: 5,
+    text: "Great experience at Wearup India. The team did an amazing job with the ceramic coating on my bike (Ninja 1000SX). The price was reasonable, and the quality of work is exceptional. My bike looks stunning!",
+  },
+  {
+    name: 'Saikat Nath',
+    role: 'Adventure Rider',
+    stars: 5,
+    text: 'I recently had the pleasure of entrusting my 390 Adventure to WEARUP INDIA, and I couldn\'t be more thrilled with the results. From start to finish, the experience was nothing short of exceptional.',
+  },
+  {
+    name: 'Ritwick Lama',
+    role: 'Verified Customer',
+    stars: 5,
+    text: 'The product is absolutely amazing, without any residual glues and it did not take off the original paint of the motorbike which is the best part.',
+  },
+  {
+    name: 'Suman Das',
+    role: 'Auto Enthusiast',
+    stars: 5,
+    text: 'One of the best places in the city to make your bikes and cars look crazy awesome. Love their work. ❤️',
+  },
+  {
+    name: 'Jayanta Arya',
+    role: 'Local Resident',
+    stars: 5,
+    text: 'Trained professionals are here to wrap your vehicle. Best in Siliguri. Highly Recommended!',
+  }
+];
 
 export const brandMarquee = ['YAMAHA', 'KAWASAKI', 'HONDA', 'ROYAL ENFIELD', 'BAJAJ', 'KTM', 'DUCATI', 'TRIUMPH', 'BMW', 'SUZUKI', 'ATHER', 'TVS', 'HERO'];
 

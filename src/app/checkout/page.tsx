@@ -248,6 +248,28 @@ export default function CheckoutPage() {
         window.open(whatsappUrl, '_blank');
       }
 
+      // 8. Send Order Confirmation Email
+      try {
+        await fetch('/api/emails/order-confirmation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: form.email,
+            customerName: form.firstName,
+            orderId: finalOrderId,
+            totalAmount: total,
+            items: cart.map(item => ({
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+            })),
+          }),
+        });
+      } catch (emailErr) {
+        console.error('Failed to trigger order confirmation email:', emailErr);
+        // We don't block the user if the email fails, they still successfully ordered
+      }
+
       setOrderPlaced(true);
     } catch (err: any) {
       setPlaceError(err.message ?? 'Something went wrong. Please try again.');
