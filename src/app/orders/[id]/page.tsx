@@ -208,7 +208,7 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
                     <Link href={`/shop/${item.products?.slug}`} className="font-display font-bold text-sm text-white uppercase tracking-wider hover:text-[#E8161B] transition-colors line-clamp-1">
                       {item.products?.name || 'Unknown Product'}
                     </Link>
-                    <p className="font-mono text-[10px] text-[#888] mt-1">QTY: {item.quantity} × {formatINR(item.price_at_time)}</p>
+                    <p className="font-mono text-[10px] text-[#888] mt-1">QTY: {item.quantity} × {formatINR(item.price_at_purchase)}</p>
                     
                     {/* Render Variants if exists */}
                     {item.variant_options && Object.keys(item.variant_options).length > 0 && (
@@ -222,7 +222,7 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
                     )}
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-display font-black text-lg text-white">{formatINR(item.quantity * item.price_at_time)}</p>
+                    <p className="font-display font-black text-lg text-white">{formatINR(item.quantity * item.price_at_purchase)}</p>
                   </div>
                 </div>
               ))}
