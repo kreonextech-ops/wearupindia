@@ -204,6 +204,19 @@ export default function CategoryPage({ params }: Props) {
                 <div className="w-10 h-10 border-4 border-muted border-t-wu-red rounded-full animate-spin mb-8" />
                 <h3 className="font-display font-black text-xl text-foreground uppercase italic tracking-tighter">Loading...</h3>
               </div>
+            ) : categoryProducts.length === 0 ? (
+              /* No products in the DB at all — Coming Soon */
+              <div className="flex flex-col items-center justify-center py-40 border border-dashed border-white/10 rounded-[3rem] bg-white/[0.01] mx-4">
+                <div className="w-20 h-20 bg-wu-red/5 rounded-full flex items-center justify-center mb-8 relative">
+                   <div className="absolute inset-0 bg-wu-red/10 blur-2xl rounded-full animate-pulse" />
+                  <PackageX className="text-white/20 relative z-10" size={36} />
+                </div>
+                <p className="font-mono text-[10px] text-wu-red tracking-[0.4em] uppercase mb-3">// Dropping Soon</p>
+                <h3 className="font-display font-black text-3xl text-white mb-3 uppercase italic tracking-tighter">Products Coming Soon</h3>
+                <p className="font-body text-white/30 text-sm text-center max-w-xs px-6 leading-relaxed">
+                  Our team is working on bringing the best products to this category. Check back soon!
+                </p>
+              </div>
             ) : filteredProducts.length > 0 ? (
               <div className={`grid grid-cols-2 gap-6 sm:gap-8 ${isSidebarOpen ? 'lg:grid-cols-2 xl:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
                 {filteredProducts.map((product, i) => (

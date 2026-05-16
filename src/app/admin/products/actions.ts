@@ -314,7 +314,12 @@ export async function deleteProductAction(productId: string) {
 
     revalidatePath('/admin/t-shirts');
     revalidatePath('/admin/graphic-kits');
+    revalidatePath('/admin/bike-accessories');
     revalidatePath('/admin/products');
+    revalidatePath('/admin/inventory');
+    revalidatePath('/shop');
+    revalidatePath('/shop/graphic-kits');
+    revalidatePath('/shop/bike-accessories');
     return { success: true };
   } catch (error: any) {
     console.error('Delete Error:', error);

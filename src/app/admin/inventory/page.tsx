@@ -4,16 +4,17 @@ import React, { useState, useEffect } from 'react';
 import { formatPrice } from '@/data';
 import { 
   Package, Search, Filter, Box, ShieldCheck, 
-  Star, StarOff, Save, RefreshCw, AlertTriangle
+  Star, StarOff, Save, RefreshCw, AlertTriangle, Trash2
 } from 'lucide-react';
 import Image from 'next/image';
-import { getAllProductsAction, toggleFeaturedAction, updateStockAction } from '@/app/admin/products/actions';
+import { getAllProductsAction, toggleFeaturedAction, updateStockAction, deleteProductAction } from '@/app/admin/products/actions';
 
 export default function AdminInventoryPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const loadProducts = async () => {
     setIsLoading(true);
@@ -48,6 +49,18 @@ export default function AdminInventoryPage() {
       alert('Failed to update stock: ' + res.error);
     }
     setUpdatingId(null);
+  };
+
+  const handleDelete = async (product: any) => {
+    if (!confirm(`Delete "${product.name}"? This cannot be undone.`)) return;
+    setDeletingId(product.id);
+    const res = await deleteProductAction(product.id);
+    if (res.success) {
+      setProducts(prev => prev.filter(p => p.id !== product.id));
+    } else {
+      alert('Failed to delete: ' + res.error);
+    }
+    setDeletingId(null);
   };
 
   const filteredProducts = products.filter(p => 
@@ -154,11 +167,18 @@ export default function AdminInventoryPage() {
                      </div>
                   </td>
                   <td className="px-6 py-5 text-right">
-                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="font-mono text-[9px] text-white/20 uppercase tracking-widest italic">Auto-saving changes</span>
-                        <div className="w-2 h-2 rounded-full bg-green-500/50 animate-pulse" />
-                     </div>
-                  </td>
+                      <div className="flex items-center justify-end gap-3">
+                         <button
+                           onClick={() => handleDelete(product)}
+                           disabled={deletingId === product.id}
+                           className="h-8 w-8 flex items-center justify-center rounded-lg border border-white/10 text-white/30 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-500 transition-all disabled:opacity-50"
+                         >
+                           {deletingId === product.id
+                             ? <div className="w-3.5 h-3.5 border-2 border-red-500/50 border-t-red-500 rounded-full animate-spin" />
+                             : <Trash2 size={14} />}
+                         </button>
+                      </div>
+                   </td>
                 </tr>
               ))}
             </tbody>
@@ -187,3 +207,4 @@ export default function AdminInventoryPage() {
     </div>
   );
 }
+

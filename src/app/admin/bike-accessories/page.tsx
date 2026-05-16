@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Package, TrendingUp, Settings, IndianRupee, Plus, X, Search, Filter, Shield } from 'lucide-react';
+import { Package, TrendingUp, Settings, IndianRupee, Plus, X, Search, Filter, Shield, Trash2 } from 'lucide-react';
 import NewAccessoryForm from '@/components/admin/NewAccessoryForm';
 import EditAccessoryForm from '@/components/admin/EditAccessoryForm';
-import { getProductsAction } from '@/app/admin/products/actions';
+import { getProductsAction, deleteProductAction } from '@/app/admin/products/actions';
 
 interface AccessoryProduct {
   id: string;
@@ -30,6 +30,7 @@ export default function AdminBikeAccessoriesPage() {
   const [filterType, setFilterType] = useState('all');
   const [baseAccessories, setBaseAccessories] = useState<AccessoryProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -66,6 +67,18 @@ export default function AdminBikeAccessoriesPage() {
   const handleEditSuccess = () => {
     setEditingProduct(null);
     loadData();
+  };
+
+  const handleDelete = async (product: AccessoryProduct) => {
+    if (!confirm(`Are you sure you want to delete "${product.name}"? This action cannot be undone.`)) return;
+    setDeletingId(product.id);
+    const res = await deleteProductAction(product.id);
+    if (res.success) {
+      setBaseAccessories(prev => prev.filter(p => p.id !== product.id));
+    } else {
+      alert('Failed to delete: ' + res.error);
+    }
+    setDeletingId(null);
   };
 
   return (
@@ -170,11 +183,11 @@ export default function AdminBikeAccessoriesPage() {
                   <div className="flex items-center gap-2">
                      <span className="font-mono text-[9px] text-[#E8161B] tracking-widest uppercase">{product.meta_data?.sub_category?.replace(/-/g, ' ')}</span>
                      <span className="text-white/20">•</span>
-                     <span className="font-mono text-[9px] text-white/40 tracking-widest uppercase">{product.price} INR</span>
+                     <span className="font-mono text-[9px] text-white/40 tracking-widest uppercase">₹{product.price}</span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-4 border-t sm:border-t-0 border-white/5 pt-4 sm:pt-0">
+              <div className="flex items-center gap-3 border-t sm:border-t-0 border-white/5 pt-4 sm:pt-0">
                 <div className="text-right">
                   <p className="font-mono text-[9px] text-white/40 tracking-widest uppercase mb-1">Status</p>
                   <p className={`font-display font-bold text-xs uppercase ${(product.stock ?? 0) > 0 ? 'text-green-500' : 'text-red-500'}`}>
@@ -186,6 +199,16 @@ export default function AdminBikeAccessoriesPage() {
                   className="h-10 px-4 rounded-lg border border-white/10 text-white hover:bg-white/5 hover:border-[#E8161B]/40 hover:text-[#E8161B] font-display font-bold text-xs uppercase transition-all"
                 >
                   Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(product)}
+                  disabled={deletingId === product.id}
+                  className="h-10 w-10 flex items-center justify-center rounded-lg border border-white/10 text-white/40 hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-500 transition-all disabled:opacity-50"
+                >
+                  {deletingId === product.id
+                    ? <div className="w-4 h-4 border-2 border-red-500/50 border-t-red-500 rounded-full animate-spin" />
+                    : <Trash2 size={16} />
+                  }
                 </button>
               </div>
             </div>
