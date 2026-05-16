@@ -19,21 +19,30 @@ export async function POST(request: Request) {
 
     // Send the email using Resend
     console.log(`Attempting to send email to ${email} for order ${orderId}`);
-    const { data, error } = await resend.emails.send({
-      from: 'WearUp <info@wearupindia.com>',
-      to: email,
-      bcc: 'info@wearupindia.com',
-      subject: `Order Confirmed: ${orderId}`,
-      react: OrderConfirmationEmail({
-        customerName,
-        orderId,
-        totalAmount,
-        items,
-      }),
-    });
+    
+    let emailResult;
+    try {
+      emailResult = await resend.emails.send({
+        from: 'WearUp <info@wearupindia.com>',
+        to: email,
+        bcc: 'info@wearupindia.com',
+        subject: `Order Confirmed: ${orderId}`,
+        react: OrderConfirmationEmail({
+          customerName,
+          orderId,
+          totalAmount,
+          items,
+        }),
+      });
+    } catch (renderError: any) {
+      console.error('React Email Render Error:', renderError);
+      return NextResponse.json({ error: `Render Error: ${renderError.message}` }, { status: 500 });
+    }
+
+    const { data, error } = emailResult;
 
     if (error) {
-      console.error('Resend error:', error);
+      console.error('Resend API error:', error);
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 

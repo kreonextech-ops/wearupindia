@@ -161,6 +161,13 @@ export default function CheckoutPage() {
       window.open(whatsappUrl, '_blank');
 
       try {
+        console.log('Sending email payload:', {
+          email: form.email,
+          customerName: form.firstName,
+          orderId: finalOrderId,
+          totalAmount: total,
+          items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
+        });
         const emailRes = await fetch('/api/emails/order-confirmation', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
