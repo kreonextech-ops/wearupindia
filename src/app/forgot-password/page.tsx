@@ -155,16 +155,16 @@ export default function ForgotPasswordPage() {
                 className="space-y-6"
               >
                 <div className="space-y-2">
-                  <label className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase ml-1">6-Digit Code</label>
+                  <label className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase ml-1">8-Digit Code</label>
                   <div className="relative">
                     <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                     <input 
                       type="text" 
                       required
-                      maxLength={6}
+                      maxLength={8}
                       value={otp}
                       onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                      placeholder="000000"
+                      placeholder="00000000"
                       className="w-full bg-background border border-border rounded-xl py-4 pl-12 pr-4 text-foreground placeholder-muted-foreground focus:outline-none focus:border-wu-red/50 focus:ring-1 focus:ring-wu-red/50 transition-all font-mono text-center tracking-[0.5em] text-lg"
                     />
                   </div>
@@ -172,7 +172,7 @@ export default function ForgotPasswordPage() {
                 </div>
                 <button 
                   type="submit"
-                  disabled={loading || otp.length !== 6}
+                  disabled={loading || otp.length !== 8}
                   className="w-full bg-foreground hover:bg-white text-background font-display font-black text-xs tracking-[0.3em] uppercase py-5 rounded-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
