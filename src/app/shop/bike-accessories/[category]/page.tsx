@@ -247,27 +247,18 @@ export default function BikeAccessoryProductOrCategoryPage({ params }: Props) {
                       </button>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-3">
                       <button
                         onClick={() => {
                           if (!user) { alert('Please log in to manage your wishlist.'); return; }
                           wishlisted ? removeFromWishlist(product.id) : addToWishlist(product);
                         }}
-                        className={`h-12 flex items-center justify-center gap-2 border rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${
+                        className={`h-12 w-full flex items-center justify-center gap-2 border rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${
                           wishlisted ? 'border-wu-red text-wu-red bg-wu-red/5' : 'border-border text-muted-foreground hover:border-foreground hover:text-foreground'
                         }`}
                       >
                         <Heart size={14} fill={wishlisted ? 'currentColor' : 'none'} />
                         {wishlisted ? 'Saved' : 'Wishlist'}
                       </button>
-                      <a
-                        href={`https://wa.me/919093543071?text=${encodeURIComponent(`Hi WearUp! I'd like to order the ${product.name} (Price: ${formatPrice(product.price)}). Please let me know the availability.`)}`}
-                        target="_blank"
-                        className="h-12 flex items-center justify-center gap-2 border border-green-500/20 bg-green-500/5 text-green-600 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-green-500 hover:text-white transition-all"
-                      >
-                        <MessageCircle size={14} /> WhatsApp Us
-                      </a>
-                    </div>
                   </div>
                 </div>
               </div>

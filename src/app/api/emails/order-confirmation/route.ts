@@ -18,10 +18,11 @@ export async function POST(request: Request) {
     }
 
     // Send the email using Resend
-    const data = await resend.emails.send({
+    console.log(`Attempting to send email to ${email} for order ${orderId}`);
+    const { data, error } = await resend.emails.send({
       from: 'WearUp <info@wearupindia.com>',
       to: email,
-      bcc: 'info@wearupindia.com', // Sends a copy to the admin so you know an order came in
+      bcc: 'info@wearupindia.com',
       subject: `Order Confirmed: ${orderId}`,
       react: OrderConfirmationEmail({
         customerName,
@@ -31,6 +32,12 @@ export async function POST(request: Request) {
       }),
     });
 
+    if (error) {
+      console.error('Resend error:', error);
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    console.log('Email sent successfully:', data);
     return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error('Failed to send email:', error);

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { 
   Heart, ShoppingCart, Check, Shield, Truck, 
   ChevronRight, Bike, Scissors, Droplets,
-  MessageCircle, Info, Star
+  MessageCircle, Info, Star, Zap
 } from 'lucide-react';
 import { formatPrice, Product } from '@/data';
 import { useStore } from '@/lib/store-context';
@@ -102,6 +102,19 @@ export default function GraphicKitProductPage({ params }: Props) {
     });
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
+  };
+
+  const handleBuyNow = () => {
+    if (!product) return;
+    if (!addedToCart) {
+      addToCart(product, quantity, {
+        model: selectedModel || undefined,
+        finish: selectedFinish || undefined,
+        quality: selectedQuality || undefined,
+        price: currentPrice
+      });
+    }
+    router.push('/checkout');
   };
 
   if (isLoading) {
@@ -311,14 +324,13 @@ export default function GraphicKitProductPage({ params }: Props) {
                       <Heart size={14} fill={wishlisted ? 'currentColor' : 'none'} />
                       {wishlisted ? 'Saved' : 'Wishlist'}
                     </button>
-                    <a
-                      href="https://wa.me/919093543071"
-                      target="_blank"
-                      className="h-12 flex items-center justify-center gap-2 border border-green-500/20 bg-green-500/5 text-green-600 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-green-500 hover:text-white transition-all"
+                    <button
+                      onClick={handleBuyNow}
+                      className="h-12 flex items-center justify-center gap-2 border border-wu-red/20 bg-wu-red/5 text-wu-red rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-wu-red hover:text-white transition-all"
                     >
-                      <MessageCircle size={14} />
-                      WhatsApp
-                    </a>
+                      <Zap size={14} />
+                      Buy Now
+                    </button>
                   </div>
                 </div>
               </div>

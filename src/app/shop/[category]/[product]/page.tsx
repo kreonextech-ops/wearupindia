@@ -446,7 +446,6 @@ export default function ProductPage({ params }: Props) {
                       </button>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-3">
                       <button
                         onClick={() => {
                           if (!user) {
@@ -456,24 +455,13 @@ export default function ProductPage({ params }: Props) {
                           }
                           wishlisted ? removeFromWishlist(product.id) : addToWishlist(product)
                         }}
-                        className={`h-12 flex items-center justify-center rounded-xl border transition-all font-display font-bold text-[10px] uppercase tracking-widest ${
+                        className={`h-12 w-full flex items-center justify-center rounded-xl border transition-all font-display font-bold text-[10px] uppercase tracking-widest ${
                           wishlisted ? 'bg-wu-red border-wu-red text-white shadow-[0_0_15px_rgba(232,22,27,0.4)]' : 'border-border text-foreground/40 hover:text-foreground hover:bg-foreground/5'
                         }`}
                       >
                         <Heart size={14} fill={wishlisted ? 'currentColor' : 'none'} className="mr-2" />
                         {wishlisted ? 'Saved' : 'Wishlist'}
                       </button>
-                      
-                      {isBikeAccessory && (
-                        <a
-                          href={`https://wa.me/919093543071?text=${encodeURIComponent(`Hi WearUp! I'd like to order ${quantity}x ${product.name} (Total: ${formatPrice(product.price * quantity)}). Please let me know the availability.`)}`}
-                          target="_blank"
-                          className="h-12 flex items-center justify-center gap-2 border border-green-500/20 bg-green-500/5 text-green-600 rounded-xl font-display font-bold text-[10px] uppercase tracking-widest hover:bg-green-500 hover:text-white transition-all"
-                        >
-                          <MessageCircle size={14} /> WhatsApp Us
-                        </a>
-                      )}
-                    </div>
                   </div>
                 </div>
               </ScrollReveal>
