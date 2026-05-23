@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       );
       const { error } = await supabase
         .from('orders')
-        .update({ payment_status: 'paid', status: 'confirmed' })
+        .update({ payment_status: 'paid', status: 'processing' })
         .eq('payment_intent_id', orderId);
       if (error) console.error('[Cashfree Verify] Supabase update error:', error);
       else console.log('[Cashfree Verify] Supabase updated successfully');

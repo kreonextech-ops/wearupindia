@@ -46,7 +46,7 @@ function CheckoutInner() {
         const supabase = createClient();
         const { error: updateError } = await supabase
           .from('orders')
-          .update({ payment_status: 'paid', status: 'confirmed' })
+          .update({ payment_status: 'paid', status: 'processing' })
           .eq('payment_intent_id', id);
         if (updateError) {
           console.error('Supabase update error:', updateError);
