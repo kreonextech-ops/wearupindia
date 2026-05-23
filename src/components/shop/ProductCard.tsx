@@ -28,13 +28,13 @@ export default function ProductCard({ product }: { product: Product }) {
       <div className="absolute inset-0 bg-gradient-to-b from-wu-red/0 to-wu-red/0 group-hover:to-wu-red/5 transition-colors duration-500 delay-100 z-0" />
 
       {/* Image Container */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-muted z-10 p-4">
+      <div className="relative aspect-[4/3] overflow-hidden bg-muted z-10">
         <Link href={product.category === 'graphic-kits' ? `/shop/graphic-kits/product/${product.slug}` : `/shop/${product.category}/${product.slug}`} className="block relative w-full h-full">
           <SafeImage
             src={product.images[0]}
             alt={product.name}
             fill
-            className="object-cover rounded-xl transition-transform duration-700 ease-[0.25,0.46,0.45,0.94] group-hover:scale-110"
+            className="object-cover transition-transform duration-700 ease-[0.25,0.46,0.45,0.94] group-hover:scale-110"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         </Link>

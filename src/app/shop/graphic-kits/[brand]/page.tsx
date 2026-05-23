@@ -77,7 +77,7 @@ export default function BrandModelsPage({ params }: Props) {
             Select {brand.name} Model <div className="h-px flex-1 bg-white/5" />
           </h2>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {brand.models && brand.models.length > 0 ? (
               brand.models.map((model, i) => {
                 const modelSlug = model.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -87,34 +87,34 @@ export default function BrandModelsPage({ params }: Props) {
                   <ScrollReveal key={model} direction="up" delay={i * 0.05}>
                     <Link 
                       href={`/shop/graphic-kits/${brand.slug}/${modelSlug}`}
-                      className="group relative flex flex-col bg-muted/5 border border-white/5 overflow-hidden hover:bg-muted/10 hover:border-wu-red/30 transition-all duration-500"
+                      className="group relative block bg-[#141414] border border-white/5 overflow-hidden transition-all duration-500 hover:border-wu-red hover:shadow-[0_0_30px_rgba(232,22,27,0.2)]"
                     >
-                      {/* Image/Silhouette */}
-                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted/10 flex items-center justify-center p-8">
-                        <div className="absolute inset-0 opacity-80 group-hover:opacity-100 transition-opacity">
-                          <Image 
-                            src={modelImage}
-                            alt={model}
-                            fill
-                            className="object-cover group-hover:scale-110 transition-all duration-700"
-                          />
-                        </div>
-                        <Bike className="relative z-10 text-white/5 group-hover:text-wu-red/20 transition-colors duration-500 scale-[2]" size={80} strokeWidth={1} />
-                        
-                        <div className="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-background to-transparent">
-                          <h3 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-tighter italic group-hover:text-wu-red transition-colors">
-                            {model}
-                          </h3>
-                        </div>
+                      {/* Image Container */}
+                      <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#1A1A1A]">
+                        <Image 
+                          src={modelImage}
+                          alt={model}
+                          fill
+                          className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
                       </div>
                       
-                      {/* Interaction Footer */}
-                      <div className="px-8 py-5 flex items-center justify-between bg-white/[0.02]">
-                        <span className="font-mono text-[9px] tracking-[0.3em] uppercase text-white/40 group-hover:text-white transition-colors">
-                          Explore Designs
-                        </span>
-                        <ChevronRight size={14} className="text-white/20 group-hover:text-wu-red transform group-hover:translate-x-1 transition-all" />
+                      {/* Content Bar */}
+                      <div className="p-6 flex flex-col gap-1 bg-[#111111] group-hover:bg-[#1A1A1A] transition-colors">
+                        <h3 className="font-display font-black text-2xl text-white uppercase tracking-tighter group-hover:text-wu-red transition-colors line-clamp-1">
+                          {model}
+                        </h3>
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-[9px] tracking-[0.3em] uppercase text-white/40 group-hover:text-white transition-colors">
+                            Explore Designs
+                          </span>
+                          <ChevronRight size={14} className="text-white/20 group-hover:text-wu-red transform group-hover:translate-x-1 transition-all" />
+                        </div>
                       </div>
+
+                      {/* Bottom Red Accent Line */}
+                      <div className="absolute bottom-0 left-0 h-[2px] bg-wu-red transition-all duration-500 w-0 group-hover:w-full" />
                     </Link>
                   </ScrollReveal>
                 );
