@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { Cashfree } from 'cashfree-pg';
 import { createClient } from '@supabase/supabase-js';
 
-Cashfree.XClientId = process.env.NEXT_PUBLIC_CASHFREE_APP_ID || '';
-Cashfree.XClientSecret = process.env.CASHFREE_SECRET_KEY || '';
+Cashfree.XAppId = process.env.NEXT_PUBLIC_CASHFREE_APP_ID || '';
+Cashfree.XSecretKey = process.env.CASHFREE_SECRET_KEY || '';
 Cashfree.XEnvironment = process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'PRODUCTION' 
   ? Cashfree.Environment.PRODUCTION 
   : Cashfree.Environment.SANDBOX;
