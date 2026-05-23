@@ -42,15 +42,55 @@ function CheckoutInner() {
       });
       const data = await res.json();
       if (data.isPaid) {
-        // Update Supabase from client using authenticated session (respects RLS)
+        // Fetch order details to send the email
         const supabase = createClient();
-        const { error: updateError } = await supabase
+        const { data: orderData } = await supabase
           .from('orders')
-          .update({ payment_status: 'paid', status: 'processing' })
-          .eq('payment_intent_id', id);
-        if (updateError) {
-          console.error('Supabase update error:', updateError);
+          .select(`
+            *,
+            order_items (
+              quantity,
+              price_at_purchase,
+              products ( name )
+            )
+          `)
+          .eq('payment_intent_id', id)
+          .single();
+
+        // Check if we need to update status (to prevent sending double emails if refreshed)
+        if (orderData && orderData.payment_status !== 'paid') {
+          const { error: updateError } = await supabase
+            .from('orders')
+            .update({ payment_status: 'paid', status: 'processing' })
+            .eq('payment_intent_id', id);
+          if (updateError) {
+            console.error('Supabase update error:', updateError);
+          }
+
+          // Send confirmation email
+          try {
+            const items = orderData.order_items?.map((item: any) => ({
+              name: item.products?.name || 'Product',
+              quantity: item.quantity,
+              price: item.price_at_purchase
+            })) || [];
+
+            await fetch('/api/emails/order-confirmation', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: orderData.shipping_address?.email,
+                customerName: orderData.shipping_address?.full_name,
+                orderId: id,
+                totalAmount: orderData.total_amount,
+                items: items
+              }),
+            });
+          } catch (err) {
+            console.error('Failed to send confirmation email:', err);
+          }
         }
+
         setOrderId(id);
         setOrderPlaced(true);
         clearCart();
@@ -61,7 +101,7 @@ function CheckoutInner() {
       setPlaceError('Failed to verify payment.');
     } finally {
       setPlacing(false);
-      router.replace('/checkout');
+      router.replace('/checkout', { scroll: false });
     }
   };
 
