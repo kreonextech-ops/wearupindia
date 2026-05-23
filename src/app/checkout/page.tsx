@@ -1,4 +1,5 @@
 'use client';
+import { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -13,7 +14,7 @@ type Step = 'address' | 'payment' | 'confirm';
 
 const STATES = ['Andhra Pradesh','Assam','Bihar','Delhi','Goa','Gujarat','Haryana','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Odisha','Punjab','Rajasthan','Tamil Nadu','Telangana','Uttar Pradesh','West Bengal'];
 
-export default function CheckoutPage() {
+function CheckoutInner() {
   const { cart, cartTotal, clearCart } = useStore();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -472,5 +473,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen pt-16 flex items-center justify-center"><span className="text-white font-mono text-sm">Loading checkout...</span></div>}>
+      <CheckoutInner />
+    </Suspense>
   );
 }
