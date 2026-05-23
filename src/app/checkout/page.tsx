@@ -4,6 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Check, ArrowLeft, ArrowRight, Lock, AlertCircle, MapPin } from 'lucide-react';
 import { useStore } from '@/lib/store-context';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { load } from '@cashfreepayments/cashfree-js';
 import { formatPrice } from '@/data';
 import { createClient } from '@/lib/supabase/client';
 
@@ -13,12 +15,45 @@ const STATES = ['Andhra Pradesh','Assam','Bihar','Delhi','Goa','Gujarat','Haryan
 
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart } = useStore();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [step, setStep] = useState<Step>('address');
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [placing, setPlacing] = useState(false);
   const [placeError, setPlaceError] = useState('');
   const [savedAddress, setSavedAddress] = useState<any>(null);
+
+  useEffect(() => {
+    const orderIdParam = searchParams?.get('order_id');
+    if (orderIdParam) {
+      verifyPayment(orderIdParam);
+    }
+  }, [searchParams]);
+
+  const verifyPayment = async (id: string) => {
+    setPlacing(true);
+    try {
+      const res = await fetch('/api/payment/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: id })
+      });
+      const data = await res.json();
+      if (data.isPaid) {
+        setOrderId(id);
+        setOrderPlaced(true);
+        clearCart();
+      } else {
+        setPlaceError('Payment verification failed or payment is pending.');
+      }
+    } catch (err) {
+      setPlaceError('Failed to verify payment.');
+    } finally {
+      setPlacing(false);
+      router.replace('/checkout');
+    }
+  };
 
   useEffect(() => {
     async function loadProfile() {
@@ -54,7 +89,7 @@ export default function CheckoutPage() {
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', phone: '',
     address: '', city: '', state: '', pincode: '',
-    paymentMethod: 'whatsapp',
+    paymentMethod: 'online',
   });
 
   const [appliedCoupon, setAppliedCoupon] = useState<null | { code: string; discountAmount: number; discountType: string; discountValue: number; couponId: string }>(null);
@@ -70,6 +105,7 @@ export default function CheckoutPage() {
   const shipping = cartTotal >= 499 ? 0 : 99;
   const couponDiscount = appliedCoupon?.discountAmount || 0;
   const total = cartTotal + shipping - couponDiscount;
+  const hasGraphicKits = cart.some((item: any) => item.category === 'graphic-kits' || item.slug?.includes('graphic-kit'));
 
   const handlePlaceOrder = async () => {
     setPlacing(true);
@@ -107,7 +143,7 @@ export default function CheckoutPage() {
           status: 'pending',
           payment_status: 'unpaid',
           shipping_address: shippingAddress,
-          payment_intent_id: 'whatsapp',
+          payment_intent_id: form.paymentMethod === 'online' ? 'cashfree' : 'whatsapp',
         }])
         .select()
         .single();
@@ -127,6 +163,8 @@ export default function CheckoutPage() {
       }
 
       const finalOrderId = `WU-${order.id.slice(0, 8).toUpperCase()}`;
+      // Save actual intent id for verification
+      if(form.paymentMethod === 'online') { await supabase.from('orders').update({ payment_intent_id: finalOrderId }).eq('id', order.id); }
       setOrderId(finalOrderId);
 
       if (appliedCoupon) {
@@ -145,6 +183,30 @@ export default function CheckoutPage() {
       clearCart();
       
       const hasGraphicKits = cart.some((item: any) => item.category === 'graphic-kits');
+      if (form.paymentMethod === 'online') {
+        const res = await fetch('/api/payment/create-order', {
+           method: 'POST',
+           body: JSON.stringify({
+             orderId: finalOrderId,
+             orderAmount: total,
+             customerDetails: {
+               id: user?.id || 'guest',
+               name: `${form.firstName} ${form.lastName}`.trim(),
+               email: form.email,
+               phone: form.phone
+             }
+           })
+        });
+        const cfData = await res.json();
+        if (cfData.payment_session_id) {
+           const cashfree = await load({ mode: process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'PRODUCTION' ? 'production' : 'sandbox' });
+           cashfree.checkout({ paymentSessionId: cfData.payment_session_id, redirectTarget: '_self' });
+           return;
+        } else {
+           throw new Error(cfData.error || 'Failed to initialize payment');
+        }
+      }
+
       const adminPhone = hasGraphicKits ? "916296396462" : "919093543071";
       
       let message = `*New Order: ${finalOrderId}*%0A%0A`;
@@ -320,8 +382,23 @@ export default function CheckoutPage() {
                   </div>
                   <div className="p-5 bg-[#111] border border-[#1a1a1a]">
                     <h3 className={labelClass}>Payment Mode</h3>
-                    <p className="font-display font-bold text-white text-sm uppercase">WhatsApp Order</p>
-                    <p className="font-body text-[#666] text-xs mt-1">Order will be processed via WhatsApp</p>
+                    {hasGraphicKits ? (
+                       <div className="flex flex-col gap-2 mt-2">
+                         <label className="flex items-center gap-2 text-white text-sm cursor-pointer">
+                           <input type="radio" name="paymentMethod" value="online" checked={form.paymentMethod === 'online'} onChange={e => update('paymentMethod', e.target.value)} className="accent-[#E8161B]" />
+                           Pay Online (Cashfree)
+                         </label>
+                         <label className="flex items-center gap-2 text-white text-sm cursor-pointer">
+                           <input type="radio" name="paymentMethod" value="whatsapp" checked={form.paymentMethod === 'whatsapp'} onChange={e => update('paymentMethod', e.target.value)} className="accent-[#E8161B]" />
+                           WhatsApp Order (Manual/COD)
+                         </label>
+                       </div>
+                    ) : (
+                      <>
+                        <p className="font-display font-bold text-white text-sm uppercase">WhatsApp Order</p>
+                        <p className="font-body text-[#666] text-xs mt-1">Order will be processed via WhatsApp</p>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -345,7 +422,7 @@ export default function CheckoutPage() {
                 <div className="flex gap-4">
                   <button onClick={() => setStep('address')} className="px-6 py-5 border border-[#2a2a2a] text-[#555] font-display font-bold text-[10px] tracking-widest uppercase hover:text-white transition-colors">Edit</button>
                   <button onClick={handlePlaceOrder} disabled={placing} className="flex-1 bg-[#E8161B] text-white font-display font-black text-sm tracking-[0.2em] uppercase py-5 hover:bg-[#B81015] transition-all disabled:opacity-50">
-                    {placing ? 'Placing Order...' : `Place Order via WhatsApp · ${formatPrice(total)}`}
+                    {placing ? 'Placing Order...' : `Place Order ${form.paymentMethod === 'online' ? 'Online' : 'via WhatsApp'} · ${formatPrice(total)}`}
                   </button>
                 </div>
               </div>

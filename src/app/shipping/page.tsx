@@ -6,25 +6,23 @@ export default function ShippingPage() {
         { q: 'Metro Cities (Delhi, Mumbai, Bengaluru, etc.)', a: '2–4 business days' },
         { q: 'Tier-2 Cities', a: '4–6 business days' },
         { q: 'Tier-3 & Remote Areas', a: '6–10 business days' },
-        { q: 'Physical Services (Wrapping, Wash, Detailing)', a: 'Workshop only — Bengaluru pickup/drop' },
+        { q: 'Physical Services (Wrapping, Wash, Detailing)', a: 'Workshop only — Siliguri pickup/drop' },
       ],
     },
     {
       title: 'Shipping Charges',
       items: [
-        { q: 'Orders above ₹499', a: 'FREE' },
-        { q: 'Orders below ₹499', a: '₹99 flat' },
-        { q: 'Cash on Delivery', a: 'Additional ₹50 COD charge' },
-        { q: 'Express Delivery', a: 'Available for ₹199 extra (metro only)' },
+        { q: 'Graphic Kits', a: 'FREE' },
+        { q: 'Other Products', a: 'Depends on the product' },
       ],
     },
     {
       title: 'Tracking & Support',
       items: [
-        { q: 'Order Tracking', a: 'Tracking link sent via email and WhatsApp' },
-        { q: 'Courier Partners', a: 'Delhivery, Blue Dart, Shiprocket' },
+        { q: 'Order Tracking', a: 'Tracking ID and shipping company will be provided to track orders' },
+        { q: 'Courier Partners', a: 'Delhivery, Blue Dart, India Post' },
         { q: 'Damaged in Transit', a: 'Contact us within 24 hours with photos' },
-        { q: 'Support', a: 'WhatsApp: +91 98765 43210 | hello@wearup.in' },
+        { q: 'Support', a: 'WhatsApp: +91 62963 96462 | info@wearupindia.com' },
       ],
     },
   ];

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Instagram, Youtube, Twitter } from 'lucide-react';
+import { Instagram, Facebook, Phone } from 'lucide-react';
 
 const footerLinks = {
   Shop: [
@@ -41,15 +41,18 @@ export default function Footer() {
               Premium motorcycle wraps, accessories, and professional services across India.
             </p>
             <div className="flex gap-3">
-              {[
-                { icon: Instagram, href: '#' },
-                { icon: Youtube, href: '#' },
-                { icon: Twitter, href: '#' },
-              ].map(({ icon: Icon, href }) => (
-                <a key={href} href={href} className="w-9 h-9 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-wu-red transition-all">
-                  <Icon size={16} />
-                </a>
-              ))}
+              <a href="https://instagram.com/wearup_ind" target="_blank" rel="noopener noreferrer" className="w-9 h-9 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-wu-red transition-all">
+                <Instagram size={16} />
+              </a>
+              <a href="https://facebook.com/wearupstore/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-wu-red transition-all">
+                <Facebook size={16} />
+              </a>
+              <a href="https://wa.me/916296396462" target="_blank" rel="noopener noreferrer" className="w-9 h-9 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-wu-red transition-all">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"></path>
+                  <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"></path>
+                </svg>
+              </a>
             </div>
           </div>
 
@@ -73,7 +76,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-muted-foreground/50 text-xs font-mono">
-            © 2024 WEARUP. ALL RIGHTS RESERVED.
+            © 2026 WEARUP. ALL RIGHTS RESERVED.
           </p>
           <p className="text-muted-foreground/30 text-xs font-mono">
             RIDE BOLD. STAY TRUE.

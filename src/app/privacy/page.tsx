@@ -14,7 +14,7 @@ export default function PrivacyPage() {
     },
     {
       title: '4. Data Security',
-      content: 'All transactions are secured with 256-bit SSL encryption. Payment information is never stored on our servers — processed directly via Razorpay/UPI gateways.',
+      content: 'All transactions are secured with 256-bit SSL encryption. Payment information is never stored on our servers — processed directly via Cashfree/UPI gateways.',
     },
     {
       title: '5. Cookies',
@@ -22,11 +22,11 @@ export default function PrivacyPage() {
     },
     {
       title: '6. Your Rights',
-      content: 'You can request access, correction, or deletion of your personal data by contacting us at hello@wearup.in. We will respond within 30 days.',
+      content: 'You can request access, correction, or deletion of your personal data by contacting us at info@wearupindia.com. We will respond within 30 days.',
     },
     {
       title: '7. Contact',
-      content: 'For privacy concerns: hello@wearup.in | WearUp India, Medical More, Shibmandir, Siliguri 734011, West Bengal, India.',
+      content: 'For privacy concerns: info@wearupindia.com | WearUp India, Medical More, Shibmandir, Opp. Mukta Nursing Home, Siliguri, WB 734011.',
     },
   ];
 

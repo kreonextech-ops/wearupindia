@@ -10,15 +10,11 @@ export default function TermsPage() {
     },
     {
       title: '3. Pricing & Payment',
-      content: 'All prices are in Indian Rupees (₹) and inclusive of applicable GST. Payment must be completed before order dispatch. We accept UPI, credit/debit cards, and cash on delivery.',
-    },
-    {
-      title: '4. Warranty',
-      content: 'Wrapping services carry a 2-year workmanship warranty. Product warranties vary by item and are specified on individual product pages. Warranty is void for damage caused by improper use.',
+      content: 'All prices are in Indian Rupees (₹) and inclusive of applicable GST. Payment must be completed before order dispatch. We accept UPI and credit/debit cards.',
     },
     {
       title: '5. Intellectual Property',
-      content: 'All content on wearup.in including logos, images, and designs are the property of WearUp Kinetic Precision and may not be reproduced without written permission.',
+      content: 'All content on wearup.in including logos, images, and designs are the property of WearUp India and may not be reproduced without written permission.',
     },
     {
       title: '6. Limitation of Liability',
@@ -26,7 +22,7 @@ export default function TermsPage() {
     },
     {
       title: '7. Governing Law',
-      content: 'These terms are governed by the laws of India. Disputes shall be subject to the exclusive jurisdiction of courts in Bengaluru, Karnataka.',
+      content: 'These terms are governed by the laws of India. Disputes shall be subject to the exclusive jurisdiction of courts in Siliguri, West Bengal.',
     },
   ];
 

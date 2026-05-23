@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ShoppingCart, Heart, Search, Menu, X, User, ArrowRight, LogOut, ChevronDown, Facebook, Instagram } from 'lucide-react';
 import { useStore } from '@/lib/store-context';
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion';
@@ -20,29 +20,12 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-  const { cartCount, wishlist } = useStore();
+  const { cartCount, wishlist, user } = useStore();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const supabase = createClient();
-
-  useEffect(() => {
-    // Check initial session
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    checkUser();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [supabase]);
+  const supabase = useMemo(() => createClient(), []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
