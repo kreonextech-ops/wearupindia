@@ -2,10 +2,15 @@ import { NextResponse } from 'next/server';
 import { Cashfree } from 'cashfree-pg';
 import { createClient } from '@supabase/supabase-js';
 
-Cashfree.XAppId = process.env.NEXT_PUBLIC_CASHFREE_APP_ID || '';
-Cashfree.XSecretKey = process.env.CASHFREE_SECRET_KEY || '';
+// @ts-ignore
+Cashfree.XClientId = process.env.NEXT_PUBLIC_CASHFREE_APP_ID || '';
+// @ts-ignore
+Cashfree.XClientSecret = process.env.CASHFREE_SECRET_KEY || '';
+// @ts-ignore
 Cashfree.XEnvironment = process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'PRODUCTION' 
+// @ts-ignore
   ? Cashfree.Environment.PRODUCTION 
+// @ts-ignore
   : Cashfree.Environment.SANDBOX;
 
 export async function POST(req: Request) {
