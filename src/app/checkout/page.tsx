@@ -42,6 +42,15 @@ function CheckoutInner() {
       });
       const data = await res.json();
       if (data.isPaid) {
+        // Update Supabase from client using authenticated session (respects RLS)
+        const supabase = createClient();
+        const { error: updateError } = await supabase
+          .from('orders')
+          .update({ payment_status: 'paid', status: 'confirmed' })
+          .eq('payment_intent_id', id);
+        if (updateError) {
+          console.error('Supabase update error:', updateError);
+        }
         setOrderId(id);
         setOrderPlaced(true);
         clearCart();
@@ -187,6 +196,7 @@ function CheckoutInner() {
       if (form.paymentMethod === 'online') {
         const res = await fetch('/api/payment/create-order', {
            method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
            body: JSON.stringify({
              orderId: finalOrderId,
              orderAmount: total,

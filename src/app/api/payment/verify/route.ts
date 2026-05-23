@@ -12,6 +12,8 @@ export async function POST(req: Request) {
   try {
     const { orderId } = await req.json();
 
+    console.log('[Cashfree Verify] Checking order:', orderId);
+
     // Fetch order payments from Cashfree REST API
     const response = await fetch(`${CASHFREE_BASE_URL}/orders/${orderId}/payments`, {
       method: 'GET',
@@ -23,31 +25,26 @@ export async function POST(req: Request) {
     });
 
     const payments = await response.json();
+    console.log('[Cashfree Verify] Payments:', JSON.stringify(payments));
 
     const isPaid = Array.isArray(payments) && payments.some((p: any) => p.payment_status === 'SUCCESS');
+    console.log('[Cashfree Verify] isPaid:', isPaid);
 
-    // Update Supabase if paid
-    if (isPaid) {
+    // Update Supabase using service role key (bypasses RLS, works for guest orders too)
+    if (isPaid && process.env.SUPABASE_SERVICE_ROLE_KEY) {
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+        process.env.SUPABASE_SERVICE_ROLE_KEY
       );
-
-      const { data: order } = await supabase
+      const { error } = await supabase
         .from('orders')
-        .select('id')
-        .eq('payment_intent_id', orderId)
-        .maybeSingle();
-
-      if (order) {
-        await supabase
-          .from('orders')
-          .update({ payment_status: 'paid' })
-          .eq('id', order.id);
-      }
+        .update({ payment_status: 'paid', status: 'confirmed' })
+        .eq('payment_intent_id', orderId);
+      if (error) console.error('[Cashfree Verify] Supabase update error:', error);
+      else console.log('[Cashfree Verify] Supabase updated successfully');
     }
 
-    return NextResponse.json({ isPaid, payments });
+    return NextResponse.json({ isPaid, payments, orderId });
   } catch (error: any) {
     console.error('Cashfree Verify Error:', error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
