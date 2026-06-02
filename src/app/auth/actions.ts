@@ -62,48 +62,54 @@ export async function signOutAction() {
 }
 
 export async function signInWithGoogle() {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  try {
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
 
-  const getBaseURL = () => {
-    // Use dynamic request headers to determine the exact origin of the user
-    // This fixes the issue where local testing gets hijacked by .env prod variables
-    try {
-      const headersList = headers();
-      const host = headersList.get('host');
-      const protocol = headersList.get('x-forwarded-proto') ?? (host?.includes('localhost') ? 'http' : 'https');
-      if (host) return `${protocol}://${host}`;
-    } catch (e) {
-      // Ignore if headers() is unavailable
+    const getBaseURL = () => {
+      try {
+        const headersList = headers();
+        const host = headersList.get('host');
+        const protocol = headersList.get('x-forwarded-proto') ?? (host?.includes('localhost') ? 'http' : 'https');
+        if (host) return `${protocol}://${host}`;
+      } catch (e) {
+        // Ignore
+      }
+
+      let url = process.env.NEXT_PUBLIC_SITE_URL 
+        ?? process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL 
+        ?? process.env.NEXT_PUBLIC_VERCEL_URL 
+        ?? process.env.VERCEL_URL 
+        ?? 'http://localhost:3000';
+        
+      url = url.startsWith('http') ? url : `https://${url}`;
+      url = url.endsWith('/') ? url.slice(0, -1) : url;
+      return url;
+    };
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${getBaseURL()}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      console.error('OAuth error:', error);
+      return { success: false, error: error.message };
     }
 
-    // Fallback logic
-    let url = process.env.NEXT_PUBLIC_SITE_URL 
-      ?? process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL 
-      ?? process.env.NEXT_PUBLIC_VERCEL_URL 
-      ?? process.env.VERCEL_URL 
-      ?? 'http://localhost:3000';
-      
-    url = url.startsWith('http') ? url : `https://${url}`;
-    url = url.endsWith('/') ? url.slice(0, -1) : url;
-    return url;
-  };
+    if (data?.url) {
+      redirect(data.url);
+    }
 
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${getBaseURL()}/auth/callback`,
-    },
-  });
-
-  if (error) {
-    console.error('OAuth error:', error);
-    return { success: false, error: error.message };
+    return { success: true };
+  } catch (err: any) {
+    console.error('Fatal signInWithGoogle error:', err);
+    // Important: if err is a NEXT_REDIRECT error, we must rethrow it so Next.js handles the redirect!
+    if (err?.message === 'NEXT_REDIRECT') {
+      throw err;
+    }
+    return { success: false, error: `Fatal crash: ${err.message}` };
   }
-
-  if (data?.url) {
-    redirect(data.url); // Use the URL provided by Supabase
-  }
-
-  return { success: true };
 }
