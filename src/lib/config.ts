@@ -15,7 +15,7 @@ export const config = {
     anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
   },
   site: {
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://wearupindia.com',
     name: 'WearUp',
     description: 'Ride Bold. Wrap Louder. Premium motorcycle wraps and customization.',
   },

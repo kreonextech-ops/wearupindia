@@ -80,7 +80,7 @@ export async function signInWithGoogle() {
         ?? process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL 
         ?? process.env.NEXT_PUBLIC_VERCEL_URL 
         ?? process.env.VERCEL_URL 
-        ?? 'http://localhost:3000';
+        ?? 'https://wearupindia.com';
         
       url = url.startsWith('http') ? url : `https://${url}`;
       url = url.endsWith('/') ? url.slice(0, -1) : url;

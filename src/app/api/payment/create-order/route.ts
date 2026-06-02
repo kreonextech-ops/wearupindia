@@ -23,7 +23,7 @@ export async function POST(req: Request) {
         customer_name: customerDetails.name || 'Guest',
       },
       order_meta: {
-        return_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/checkout?order_id={order_id}`,
+        return_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://wearupindia.com'}/checkout?order_id={order_id}`,
       },
     };
 
