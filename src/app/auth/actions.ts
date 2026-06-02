@@ -69,13 +69,23 @@ export async function signInWithGoogle() {
     const getBaseURL = () => {
       try {
         const headersList = headers();
+        // x-forwarded-host is the most reliable header on Vercel for the public hostname.
+        // It correctly reflects preview URLs like wearupindia.vercel.app.
+        const forwardedHost = headersList.get('x-forwarded-host');
+        const forwardedProto = headersList.get('x-forwarded-proto') ?? 'https';
+        if (forwardedHost) return `${forwardedProto}://${forwardedHost}`;
+
+        // Fallback: try host header (works on localhost)
         const host = headersList.get('host');
-        const protocol = headersList.get('x-forwarded-proto') ?? (host?.includes('localhost') ? 'http' : 'https');
-        if (host) return `${protocol}://${host}`;
+        if (host) {
+          const protocol = host.includes('localhost') ? 'http' : 'https';
+          return `${protocol}://${host}`;
+        }
       } catch (e) {
-        // Ignore
+        // Ignore header read errors
       }
 
+      // Last resort: use the configured site URL env var
       let url = process.env.NEXT_PUBLIC_SITE_URL 
         ?? process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL 
         ?? process.env.NEXT_PUBLIC_VERCEL_URL 
