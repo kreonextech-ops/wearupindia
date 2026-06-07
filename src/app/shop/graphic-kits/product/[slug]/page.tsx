@@ -149,7 +149,7 @@ export default function GraphicKitProductPage({ params }: Props) {
           
           {/* Gallery Section */}
           <div className="lg:col-span-7 space-y-6">
-            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-muted/50 border border-border group shadow-sm">
+            <div className="relative aspect-square rounded-3xl overflow-hidden bg-muted/30 border border-border group shadow-sm">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={selectedImage}
@@ -162,7 +162,7 @@ export default function GraphicKitProductPage({ params }: Props) {
                     src={product.images[selectedImage] || product.images[0]}
                     alt={product.name}
                     fill
-                    className="object-cover"
+                    className="object-contain"
                     priority
                   />
                 </motion.div>
@@ -190,11 +190,11 @@ export default function GraphicKitProductPage({ params }: Props) {
                   <button
                     key={i}
                     onClick={() => setSelectedImage(i)}
-                    className={`relative w-24 h-20 rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all ${
+                    className={`relative w-20 aspect-square rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all ${
                       selectedImage === i ? 'border-wu-red' : 'border-transparent opacity-60 hover:opacity-100'
                     }`}
                   >
-                    <Image src={img} alt="" fill className="object-cover" />
+                    <Image src={img} alt="" fill className="object-contain" />
                   </button>
                 ))}
               </div>

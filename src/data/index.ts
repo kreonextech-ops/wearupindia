@@ -66,7 +66,8 @@ export const GRAPHIC_KITS_STRUCTURE = [
   { brand: 'TVS', slug: 'tvs', models: ['Ntorq', 'RTR-160/200 4V', 'RR310', 'RTX-300'] },
   { brand: 'Yamaha', slug: 'yamaha', models: ['Aerox-155', 'MT-15', 'R3', 'V2', 'V3', 'V4', 'FZ-25'] },
   { brand: 'BMW', slug: 'bmw', models: ['G310GS', 'S1000RR-(2019-2022)'] },
-  { brand: 'Hero', slug: 'hero', models: ['Xpulse 200'] },
+  { brand: 'Hero', slug: 'hero', models: ['Xpulse 200', 'Xpulse 210'] },
+  { brand: 'Triumph', slug: 'triumph', models: ['Street Triple 765 RS'] },
   { brand: 'Kawasaki', slug: 'kawasaki', models: ['Ninja 300', 'Ninja 650', 'Z800', 'Z900', 'ZX10R-2016/2020', 'ZX6R-2019/2023', 'ZX6R-2024/2026'] },
   { brand: 'Honda', slug: 'honda', models: ['CBR-150/250', 'CBR650R-2019/2022', 'NX500'] },
   { brand: 'Suzuki', slug: 'suzuki', models: ['Hayabusa', 'Gixxer SF-155/250'] },
@@ -190,10 +191,10 @@ export const brands: Brand[] = [
   { name: 'Yamaha', slug: 'yamaha', image: '/images/brands/yamaha.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'yamaha')?.models || [] },
   { name: 'BMW', slug: 'bmw', image: '/images/brands/bmw.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'bmw')?.models || [] },
   { name: 'Hero', slug: 'hero', image: '/images/brands/hero.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'hero')?.models || [] },
+  { name: 'Triumph', slug: 'triumph', image: 'https://pub-31f370b9c507419ebf40c697be9f14c7.r2.dev/images/brands/triumph.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'triumph')?.models || [] },
   { name: 'Kawasaki', slug: 'kawasaki', image: '/images/brands/kawasaki.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'kawasaki')?.models || [] },
   { name: 'Honda', slug: 'honda', image: '/images/brands/honda.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'honda')?.models || [] },
   { name: 'Suzuki', slug: 'suzuki', image: '/images/brands/suzuki.jpeg', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'suzuki')?.models || [] },
-  { name: 'Universal', slug: 'universal', image: 'https://images.unsplash.com/photo-1620986794695-171542f0c79d?w=400&q=80', models: GRAPHIC_KITS_STRUCTURE.find(b => b.slug === 'universal')?.models || [] },
 ];
 
 export const MODEL_IMAGES: Record<string, string> = {
@@ -211,6 +212,9 @@ export const MODEL_IMAGES: Record<string, string> = {
   's1000rr-2019-2022': '/images/models/bmw/s1000rr.jpeg',
   // Hero
   'xpulse-200': '/images/models/hero/xpulse200.jpeg',
+  'xpulse-210': 'https://pub-31f370b9c507419ebf40c697be9f14c7.r2.dev/images/models/hero/xpulse210.jpeg',
+  // Triumph
+  'street-triple-765-rs': 'https://pub-31f370b9c507419ebf40c697be9f14c7.r2.dev/images/models/triumph/street-triple-765-rs.jpeg',
   // Honda
   'cbr-150-250': '/images/models/honda/cbr150.jpeg',
   'cbr650r-2019-2022': '/images/models/honda/cbr650.jpeg',
