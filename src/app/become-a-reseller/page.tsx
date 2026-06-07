@@ -32,7 +32,7 @@ export default function ResellerPage() {
       {/* Hero Section */}
       <div className="relative min-h-[50vh] flex items-center overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=1600&q=80"
+          src="/images/reseller-hero.png"
           alt="Reseller Program"
           fill
           className="object-cover opacity-20"
@@ -121,7 +121,7 @@ export default function ResellerPage() {
             
             <div className="relative h-[600px] rounded-3xl overflow-hidden border border-white/10 hidden lg:block">
               <Image 
-                src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80" 
+                src="/images/reseller-portfolio.png" 
                 alt="Products" 
                 fill 
                 className="object-cover"
