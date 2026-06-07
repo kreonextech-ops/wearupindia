@@ -21,6 +21,11 @@ const footerLinks = {
     { label: 'Shipping Info', href: '/shipping' },
     { label: 'Return Policy', href: '/return-policy' },
   ],
+  Company: [
+    { label: 'About Us', href: '/about' },
+    { label: 'Become a Reseller', href: '/become-a-reseller' },
+    { label: 'Contact', href: '/contact' },
+  ],
 };
 
 export default function Footer() {
@@ -28,7 +33,7 @@ export default function Footer() {
     <footer className="bg-background border-t border-border pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-10 pb-12 border-b border-border">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-10 pb-12 border-b border-border">
           {/* Brand */}
           <div className="col-span-2">
             <div className="flex items-center gap-2 mb-4">
