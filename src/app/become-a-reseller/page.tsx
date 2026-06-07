@@ -12,7 +12,7 @@ const benefits = [
   {
     icon: ShieldCheck,
     title: 'Premium Quality',
-    desc: 'Our graphic kits, keychains, and apparel are built to last. Resell products you can truly stand behind.'
+    desc: 'Our keychains, apparel, and bike accessories are built to last. Resell products you can truly stand behind.'
   },
   {
     icon: TrendingUp,
@@ -50,7 +50,7 @@ export default function ResellerPage() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-wu-red to-wu-red-dark italic">Reseller</span>
             </h1>
             <p className="font-body text-zinc-400 max-w-xl text-base sm:text-lg leading-relaxed mb-8">
-              Join the WearUp network. Sell our premium bike accessories, keychains, graphic kits, and rider merchandise. Earn high margins with a brand riders trust.
+              Join the WearUp network. Sell our premium bike accessories, keychains, and rider merchandise. Earn high margins with a brand riders trust.
             </p>
             <Link
               href="/contact"
@@ -101,7 +101,7 @@ export default function ResellerPage() {
               </h2>
               <div className="space-y-6">
                 {[
-                  { title: 'Graphic Kits', desc: 'Precision-cut, weather-proof decals for popular motorcycles.' },
+
                   { title: 'Bike Accessories', desc: 'High-performance upgrades, luggage, and protection gear.' },
                   { title: 'Rider Merchandise', desc: 'Premium t-shirts, hoodies, and lifestyle apparel.' },
                   { title: 'Keychains & Extras', desc: 'High-quality metal & leather keychains perfect for impulse buys.' }
