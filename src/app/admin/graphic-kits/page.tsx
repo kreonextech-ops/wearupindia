@@ -6,6 +6,29 @@ import NewGraphicKitForm from '@/components/admin/NewGraphicKitForm';
 import { getProductsWithVariantsAction, deleteProductAction, updateGraphicKitAction, duplicateProductAction } from '@/app/admin/products/actions';
 import Image from 'next/image';
 import Sheet from '@/components/ui/Sheet';
+import { GRAPHIC_KITS_STRUCTURE } from '@/data';
+
+function parseModels(modelStr: string): string[] {
+  if (!modelStr.includes('/')) return [modelStr];
+  const parts = modelStr.split(' ');
+  const slashPartIndex = parts.findIndex(p => p.includes('/'));
+  if (slashPartIndex === -1) return [modelStr];
+  const slashPart = parts[slashPartIndex];
+  const dashSplit = slashPart.split('-');
+  let prefix = dashSplit.length > 1 ? dashSplit.slice(0, -1).join('-') + '-' : '';
+  const varsStr = dashSplit[dashSplit.length - 1];
+  const vars = varsStr.split('/');
+  return vars.map(v => {
+    const newParts = [...parts];
+    newParts[slashPartIndex] = `${prefix}${v}`;
+    return newParts.join(' ');
+  });
+}
+
+const defaultPricing = {
+  Standard: { Matte: '1499', Glossy: '1499' },
+  Premium: { Matte: '2499', Glossy: '2499' }
+};
 
 export default function AdminGraphicKitsPage() {
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
@@ -188,7 +211,24 @@ function EditGraphicKitForm({ kit, onSuccess }: any) {
   const [preview, setPreview] = useState(kit.images?.[0]);
 
   const [pricingMatrix, setPricingMatrix] = useState<any>(kit.meta_data?.pricing_matrix || {});
-  const parsedModels = kit.meta_data?.compatible_models || [];
+  
+  const [selectedBrand, setSelectedBrand] = useState(kit.meta_data?.brand || '');
+  const [selectedModel, setSelectedModel] = useState(kit.meta_data?.model || '');
+  const [parsedModels, setParsedModels] = useState<string[]>(kit.meta_data?.compatible_models || []);
+
+  useEffect(() => {
+    if (!selectedModel) { setParsedModels([]); return; }
+    // Only parse models if it doesn't match the initial one to preserve initial load state
+    if (selectedModel === kit.meta_data?.model && parsedModels.length > 0) return;
+    
+    const models = parseModels(selectedModel);
+    setParsedModels(models);
+    setPricingMatrix((prev: any) => {
+      const newMatrix: any = {};
+      models.forEach(m => { newMatrix[m] = prev[m] || JSON.parse(JSON.stringify(defaultPricing)); });
+      return newMatrix;
+    });
+  }, [selectedModel]);
 
   const updatePrice = (model: string, quality: string, finish: string, value: string) => {
     setPricingMatrix((prev: any) => ({
@@ -201,6 +241,9 @@ function EditGraphicKitForm({ kit, onSuccess }: any) {
     setError(null);
     setPending(true);
     if (parsedModels.length > 0) {
+      formData.append('brand', selectedBrand);
+      formData.append('model', selectedModel);
+      formData.append('compatibleModels', JSON.stringify(parsedModels));
       formData.append('pricingMatrix', JSON.stringify(pricingMatrix));
     }
     const res = await updateGraphicKitAction(kit.id, formData);
@@ -223,6 +266,24 @@ function EditGraphicKitForm({ kit, onSuccess }: any) {
       <div className="space-y-2">
         <label className="font-mono text-[10px] text-white/30 uppercase tracking-widest">Design Name</label>
         <input name="name" defaultValue={kit.name} className="w-full bg-white/5 border border-white/5 rounded-xl py-4 px-6 text-white text-sm focus:border-wu-red/50 transition-all" required />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Bike Brand</label>
+          <select value={selectedBrand} onChange={(e) => { setSelectedBrand(e.target.value); setSelectedModel(''); }} className="w-full bg-white/5 border border-white/5 rounded-xl py-4 px-6 text-white focus:border-wu-red/50 transition-all text-sm appearance-none cursor-pointer" required>
+            <option value="" disabled className="bg-[#0A0A0A]">Select Brand</option>
+            {GRAPHIC_KITS_STRUCTURE.map(b => <option key={b.brand} value={b.brand} className="bg-[#0A0A0A]">{b.brand}</option>)}
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Bike Model</label>
+          <select value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} disabled={!selectedBrand} className="w-full bg-white/5 border border-white/5 rounded-xl py-4 px-6 text-white focus:border-wu-red/50 transition-all text-sm appearance-none cursor-pointer disabled:opacity-30" required>
+            <option value="" disabled className="bg-[#0A0A0A]">Select Model</option>
+            {(GRAPHIC_KITS_STRUCTURE.find(b => b.brand === selectedBrand)?.models || []).map(m => <option key={m} value={m} className="bg-[#0A0A0A]">{m}</option>)}
+          </select>
+        </div>
       </div>
 
       {parsedModels.length > 0 ? (

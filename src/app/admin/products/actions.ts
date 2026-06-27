@@ -615,6 +615,10 @@ export async function updateGraphicKitAction(productId: string, formData: FormDa
     const imageFile = formData.get('image') as File | null;
     const stock = parseInt(formData.get('stock') as string) || 0;
 
+    const brand = formData.get('brand') as string;
+    const model = formData.get('model') as string;
+    const compatibleModelsRaw = formData.get('compatibleModels') as string;
+
     const pricingMatrixRaw = formData.get('pricingMatrix') as string;
     let pricingMatrix: any = null;
     let basePrice = parseFloat(formData.get('price') as string) || 0;
@@ -645,6 +649,9 @@ export async function updateGraphicKitAction(productId: string, formData: FormDa
     if (pricingMatrix) {
       meta_data.pricing_matrix = pricingMatrix;
     }
+    if (brand) meta_data.brand = brand;
+    if (model) meta_data.model = model;
+    if (compatibleModelsRaw) meta_data.compatible_models = JSON.parse(compatibleModelsRaw);
 
     const { error: pError } = await supabase
       .from('products')
