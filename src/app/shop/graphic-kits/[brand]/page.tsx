@@ -102,7 +102,7 @@ export default function BrandModelsPage({ params }: Props) {
                       
                       {/* Content Bar */}
                       <div className="p-6 flex flex-col gap-1 bg-[#111111] group-hover:bg-[#1A1A1A] transition-colors">
-                        <h3 className="font-display font-black text-2xl text-white uppercase tracking-tighter group-hover:text-wu-red transition-colors line-clamp-1">
+                        <h3 className="font-display font-black text-2xl text-white uppercase tracking-tighter group-hover:text-wu-red transition-colors line-clamp-2 break-words">
                           {model}
                         </h3>
                         <div className="flex items-center justify-between">
