@@ -377,6 +377,23 @@ export async function toggleFeaturedAction(productId: string, isFeatured: boolea
   }
 }
 
+export async function toggleNewAction(productId: string, isNew: boolean) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+  try {
+    const { error } = await supabase
+      .from('products')
+      .update({ is_new: isNew })
+      .eq('id', productId);
+    if (error) throw error;
+    revalidatePath('/admin/inventory');
+    revalidatePath('/');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
 export async function updateStockAction(productId: string, stock: number) {
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
@@ -596,8 +613,22 @@ export async function updateGraphicKitAction(productId: string, formData: FormDa
     const name = formData.get('name') as string;
     const description = formData.get('description') as string;
     const imageFile = formData.get('image') as File | null;
-    const basePrice = parseFloat(formData.get('price') as string);
     const stock = parseInt(formData.get('stock') as string) || 0;
+
+    const pricingMatrixRaw = formData.get('pricingMatrix') as string;
+    let pricingMatrix: any = null;
+    let basePrice = parseFloat(formData.get('price') as string) || 0;
+    
+    if (pricingMatrixRaw) {
+      pricingMatrix = JSON.parse(pricingMatrixRaw);
+      const allPrices = Object.values(pricingMatrix).flatMap((m: any) => [
+        parseFloat(m.Standard?.Matte || 0), parseFloat(m.Standard?.Glossy || 0),
+        parseFloat(m.Premium?.Matte || 0), parseFloat(m.Premium?.Glossy || 0)
+      ]).filter((p: number) => !isNaN(p) && p > 0);
+      if (allPrices.length > 0) {
+        basePrice = Math.min(...allPrices);
+      }
+    }
 
     const { data: existing } = await supabase.from('products').select('*').eq('id', productId).single();
     if (!existing) throw new Error('Product not found');
@@ -610,6 +641,11 @@ export async function updateGraphicKitAction(productId: string, formData: FormDa
       imageUrls = [publicUrl];
     }
 
+    const meta_data = existing.meta_data || {};
+    if (pricingMatrix) {
+      meta_data.pricing_matrix = pricingMatrix;
+    }
+
     const { error: pError } = await supabase
       .from('products')
       .update({ 
@@ -618,16 +654,97 @@ export async function updateGraphicKitAction(productId: string, formData: FormDa
         description, 
         stock,
         images: imageUrls, 
+        meta_data,
         updated_at: new Date().toISOString() 
       })
       .eq('id', productId);
 
     if (pError) throw pError;
 
+    if (pricingMatrix && meta_data.compatible_models) {
+      await supabase.from('variants').delete().eq('product_id', productId);
+      const variantRows: any[] = [];
+      meta_data.compatible_models.forEach((mName: string) => {
+        const modelPricing = pricingMatrix[mName];
+        if (!modelPricing) return;
+        variantRows.push(
+          { product_id: productId, name: 'Option', value: `${mName} - Standard Matte`, price_adjustment: parseFloat(modelPricing.Standard?.Matte || '0') - basePrice, stock: 999 },
+          { product_id: productId, name: 'Option', value: `${mName} - Standard Glossy`, price_adjustment: parseFloat(modelPricing.Standard?.Glossy || '0') - basePrice, stock: 999 },
+          { product_id: productId, name: 'Option', value: `${mName} - Premium Matte`, price_adjustment: parseFloat(modelPricing.Premium?.Matte || '0') - basePrice, stock: 999 },
+          { product_id: productId, name: 'Option', value: `${mName} - Premium Glossy`, price_adjustment: parseFloat(modelPricing.Premium?.Glossy || '0') - basePrice, stock: 999 }
+        );
+      });
+      if (variantRows.length > 0) {
+        await supabase.from('variants').insert(variantRows);
+      }
+    }
+
     revalidatePath('/admin/graphic-kits');
+    revalidatePath('/shop');
     revalidatePath('/admin/inventory');
     return { success: true };
   } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * REDEFINED: Duplicate Product
+ */
+export async function duplicateProductAction(productId: string) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  try {
+    const { data: existing, error: fetchError } = await supabase
+      .from('products')
+      .select('*, variants(*)')
+      .eq('id', productId)
+      .single();
+
+    if (fetchError || !existing) throw new Error('Product not found for duplication');
+
+    const newName = `${existing.name} (Copy)`;
+    const newSlug = newName.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '') + '-' + uuidv4().slice(0, 4);
+
+    const { data: newProduct, error: insertError } = await supabase
+      .from('products')
+      .insert([{
+        name: newName,
+        slug: newSlug,
+        category_id: existing.category_id,
+        price: existing.price,
+        description: existing.description,
+        stock: existing.stock,
+        images: existing.images,
+        is_new: existing.is_new,
+        is_featured: existing.is_featured,
+        meta_data: existing.meta_data,
+      }])
+      .select()
+      .single();
+
+    if (insertError) throw insertError;
+
+    if (existing.variants && existing.variants.length > 0) {
+      const variantRows = existing.variants.map((v: any) => ({
+        product_id: newProduct.id,
+        name: v.name,
+        value: v.value,
+        price_adjustment: v.price_adjustment,
+        stock: v.stock
+      }));
+      await supabase.from('variants').insert(variantRows);
+    }
+
+    revalidatePath('/admin/graphic-kits');
+    revalidatePath('/admin/products');
+    revalidatePath('/admin/inventory');
+    revalidatePath('/shop');
+
+    return { success: true, data: newProduct };
+  } catch (error: any) {
+    console.error('Duplicate Error:', error);
     return { success: false, error: error.message };
   }
 }

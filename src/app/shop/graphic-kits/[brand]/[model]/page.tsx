@@ -10,6 +10,23 @@ import ScrollReveal from '@/components/ui/ScrollReveal';
 
 type Props = { params: { brand: string, model: string } };
 
+function parseModels(modelStr: string): string[] {
+  if (!modelStr.includes('/')) return [modelStr];
+  const parts = modelStr.split(' ');
+  const slashPartIndex = parts.findIndex(p => p.includes('/'));
+  if (slashPartIndex === -1) return [modelStr];
+  const slashPart = parts[slashPartIndex];
+  const dashSplit = slashPart.split('-');
+  let prefix = dashSplit.length > 1 ? dashSplit.slice(0, -1).join('-') + '-' : '';
+  const varsStr = dashSplit[dashSplit.length - 1];
+  const vars = varsStr.split('/');
+  return vars.map(v => {
+    const newParts = [...parts];
+    newParts[slashPartIndex] = `${prefix}${v}`;
+    return newParts.join(' ');
+  });
+}
+
 export default function ModelProductsPage({ params }: Props) {
   const [modelProducts, setModelProducts] = React.useState<Product[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -33,15 +50,18 @@ export default function ModelProductsPage({ params }: Props) {
       if (res.success && res.data) {
         const allKits = res.data as unknown as Product[];
         
+        const parsedExpectedModels = parseModels(modelStr).map(m => m.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''));
+        
         // Filter by brand and model
         const filtered = allKits.filter(p => {
           const compatibleBrands = p.meta_data?.brand?.toLowerCase() || '';
           const compatibleModels = p.meta_data?.compatible_models || [];
           
           const brandMatch = compatibleBrands === params.brand.toLowerCase();
-          const modelMatch = compatibleModels.some((m: string) => 
-            m.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') === params.model
-          );
+          const modelMatch = compatibleModels.some((m: string) => {
+            const dbModelSlug = m.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+            return dbModelSlug === params.model || parsedExpectedModels.includes(dbModelSlug);
+          });
           
           return brandMatch && modelMatch;
         });

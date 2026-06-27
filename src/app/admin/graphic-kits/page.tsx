@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { Layers, Package, Plus, X, Search, Filter, Trash2, Edit3, Bike, IndianRupee } from 'lucide-react';
+import { Layers, Package, Plus, X, Search, Filter, Trash2, Edit3, Bike, IndianRupee, Copy } from 'lucide-react';
 import NewGraphicKitForm from '@/components/admin/NewGraphicKitForm';
-import { getProductsWithVariantsAction, deleteProductAction, updateGraphicKitAction } from '@/app/admin/products/actions';
+import { getProductsWithVariantsAction, deleteProductAction, updateGraphicKitAction, duplicateProductAction } from '@/app/admin/products/actions';
 import Image from 'next/image';
 import Sheet from '@/components/ui/Sheet';
 
@@ -16,6 +16,7 @@ export default function AdminGraphicKitsPage() {
   const [kits, setKits] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -33,6 +34,13 @@ export default function AdminGraphicKitsPage() {
     setDeletingId(productId);
     await deleteProductAction(productId);
     setDeletingId(null);
+    loadData();
+  };
+
+  const handleDuplicate = async (productId: string) => {
+    setDuplicatingId(productId);
+    await duplicateProductAction(productId);
+    setDuplicatingId(null);
     loadData();
   };
 
@@ -137,8 +145,11 @@ export default function AdminGraphicKitsPage() {
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-mono text-[9px] text-wu-red tracking-[0.2em] uppercase">{k.meta_data?.brand}</span>
                       <div className="flex gap-2">
-                        <button onClick={() => { setEditingKit(k); setIsEditSheetOpen(true); }} className="text-white/20 hover:text-white transition-colors"><Edit3 size={14} /></button>
-                        <button onClick={() => handleDelete(k.id)} disabled={deletingId === k.id} className="text-white/20 hover:text-wu-red transition-colors">
+                        <button onClick={() => handleDuplicate(k.id)} disabled={duplicatingId === k.id} className="text-white/20 hover:text-white transition-colors" title="Duplicate Design">
+                          {duplicatingId === k.id ? <div className="w-3 h-3 border border-white/20 border-t-white rounded-full animate-spin" /> : <Copy size={14} />}
+                        </button>
+                        <button onClick={() => { setEditingKit(k); setIsEditSheetOpen(true); }} className="text-white/20 hover:text-white transition-colors" title="Edit Design"><Edit3 size={14} /></button>
+                        <button onClick={() => handleDelete(k.id)} disabled={deletingId === k.id} className="text-white/20 hover:text-wu-red transition-colors" title="Delete Design">
                           {deletingId === k.id ? <div className="w-3 h-3 border border-white/20 border-t-wu-red rounded-full animate-spin" /> : <Trash2 size={14} />}
                         </button>
                       </div>
@@ -176,9 +187,22 @@ function EditGraphicKitForm({ kit, onSuccess }: any) {
   const [pending, setPending] = useState(false);
   const [preview, setPreview] = useState(kit.images?.[0]);
 
+  const [pricingMatrix, setPricingMatrix] = useState<any>(kit.meta_data?.pricing_matrix || {});
+  const parsedModels = kit.meta_data?.compatible_models || [];
+
+  const updatePrice = (model: string, quality: string, finish: string, value: string) => {
+    setPricingMatrix((prev: any) => ({
+      ...prev,
+      [model]: { ...prev[model], [quality]: { ...prev[model][quality], [finish]: value } }
+    }));
+  };
+
   const clientAction = async (formData: FormData) => {
     setError(null);
     setPending(true);
+    if (parsedModels.length > 0) {
+      formData.append('pricingMatrix', JSON.stringify(pricingMatrix));
+    }
     const res = await updateGraphicKitAction(kit.id, formData);
     setPending(false);
     if (res.success) onSuccess();
@@ -201,13 +225,42 @@ function EditGraphicKitForm({ kit, onSuccess }: any) {
         <input name="name" defaultValue={kit.name} className="w-full bg-white/5 border border-white/5 rounded-xl py-4 px-6 text-white text-sm focus:border-wu-red/50 transition-all" required />
       </div>
 
-      <div className="space-y-2">
-        <label className="font-mono text-[10px] text-white/30 uppercase tracking-widest">Starting Price (₹)</label>
-        <div className="relative">
-          <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={14} />
-          <input name="price" type="number" defaultValue={kit.price} className="w-full bg-white/5 border border-white/5 rounded-xl py-4 pl-12 pr-6 text-white text-sm focus:border-wu-red/50 transition-all" required />
+      {parsedModels.length > 0 ? (
+        <div className="space-y-6 pt-6 border-t border-white/5">
+          <h3 className="font-display font-black text-white text-lg uppercase tracking-tight">Pricing & Variants</h3>
+          <div className="space-y-4">
+            {parsedModels.map((model: string) => (
+              <div key={model} className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 space-y-6">
+                <p className="font-display font-bold text-wu-red text-xs uppercase tracking-widest">{model}</p>
+                <div className="grid grid-cols-2 gap-8">
+                  {['Standard', 'Premium'].map(q => (
+                    <div key={q} className="space-y-4">
+                      <p className="font-mono text-[9px] text-white/30 uppercase tracking-[0.2em] border-b border-white/5 pb-2">{q} Quality</p>
+                      {['Matte', 'Glossy'].map(f => (
+                        <div key={f} className="flex items-center gap-4">
+                          <span className="w-12 text-[10px] font-mono text-white/20 uppercase">{f}</span>
+                          <div className="relative flex-1">
+                            <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-white/10" size={12} />
+                            <input type="number" value={pricingMatrix[model]?.[q]?.[f] || ''} onChange={e => updatePrice(model, q, f, e.target.value)} className="w-full bg-black/40 border border-white/5 rounded-lg py-2 pl-10 pr-4 text-white text-xs focus:border-[#E8161B]/30 transition-all" required />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="space-y-2">
+          <label className="font-mono text-[10px] text-white/30 uppercase tracking-widest">Starting Price (₹)</label>
+          <div className="relative">
+            <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={14} />
+            <input name="price" type="number" defaultValue={kit.price} className="w-full bg-white/5 border border-white/5 rounded-xl py-4 pl-12 pr-6 text-white text-sm focus:border-wu-red/50 transition-all" required />
+          </div>
+        </div>
+      )}
 
       <div className="space-y-2">
         <label className="font-mono text-[10px] text-white/30 uppercase tracking-widest">Quantity (Pieces)</label>

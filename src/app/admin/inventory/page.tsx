@@ -4,10 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { formatPrice } from '@/data';
 import { 
   Package, Search, Filter, Box, ShieldCheck, 
-  Star, StarOff, Save, RefreshCw, AlertTriangle, Trash2
+  Star, StarOff, Save, RefreshCw, AlertTriangle, Trash2, Sparkles
 } from 'lucide-react';
 import Image from 'next/image';
-import { getAllProductsAction, toggleFeaturedAction, updateStockAction, deleteProductAction } from '@/app/admin/products/actions';
+import { getAllProductsAction, toggleFeaturedAction, toggleNewAction, updateStockAction, deleteProductAction } from '@/app/admin/products/actions';
 
 export default function AdminInventoryPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -34,6 +34,17 @@ export default function AdminInventoryPage() {
     const res = await toggleFeaturedAction(id, !currentStatus);
     if (res.success) {
       setProducts(products.map(p => p.id === id ? { ...p, is_featured: !currentStatus } : p));
+    } else {
+      alert('Failed to update: ' + res.error);
+    }
+    setUpdatingId(null);
+  };
+
+  const handleToggleNew = async (id: string, currentStatus: boolean) => {
+    setUpdatingId(id);
+    const res = await toggleNewAction(id, !currentStatus);
+    if (res.success) {
+      setProducts(products.map(p => p.id === id ? { ...p, is_new: !currentStatus } : p));
     } else {
       alert('Failed to update: ' + res.error);
     }
@@ -132,20 +143,37 @@ export default function AdminInventoryPage() {
                      </span>
                   </td>
                   <td className="px-6 py-5">
-                     <button 
-                      disabled={updatingId === product.id}
-                      onClick={() => handleToggleFeatured(product.id, product.is_featured)}
-                      className={`flex items-center gap-3 px-4 py-2 rounded-xl border transition-all ${
-                        product.is_featured 
-                          ? 'bg-[#E8161B]/10 border-[#E8161B]/30 text-[#E8161B]' 
-                          : 'bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10'
-                      }`}
-                     >
-                       {product.is_featured ? <Star size={16} fill="currentColor" /> : <StarOff size={16} />}
-                       <span className="font-display font-bold text-[10px] tracking-widest uppercase">
-                         {product.is_featured ? 'Featured' : 'Promote'}
-                       </span>
-                     </button>
+                     <div className="flex flex-col gap-2">
+                       <button 
+                        disabled={updatingId === product.id}
+                        onClick={() => handleToggleFeatured(product.id, product.is_featured)}
+                        className={`flex items-center gap-3 px-4 py-2 rounded-xl border transition-all ${
+                          product.is_featured 
+                            ? 'bg-[#E8161B]/10 border-[#E8161B]/30 text-[#E8161B]' 
+                            : 'bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10'
+                        }`}
+                       >
+                         {product.is_featured ? <Star size={14} fill="currentColor" /> : <StarOff size={14} />}
+                         <span className="font-display font-bold text-[10px] tracking-widest uppercase">
+                           {product.is_featured ? 'Featured' : 'Promote'}
+                         </span>
+                       </button>
+
+                       <button 
+                        disabled={updatingId === product.id}
+                        onClick={() => handleToggleNew(product.id, product.is_new)}
+                        className={`flex items-center gap-3 px-4 py-2 rounded-xl border transition-all ${
+                          product.is_new 
+                            ? 'bg-blue-500/10 border-blue-500/30 text-blue-500' 
+                            : 'bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10'
+                        }`}
+                       >
+                         <Sparkles size={14} className={product.is_new ? "fill-currentColor" : ""} />
+                         <span className="font-display font-bold text-[10px] tracking-widest uppercase">
+                           {product.is_new ? 'New Arrival' : 'Mark New'}
+                         </span>
+                       </button>
+                     </div>
                   </td>
                   <td className="px-6 py-5">
                      <div className="flex items-center gap-3">
