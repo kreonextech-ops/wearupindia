@@ -78,8 +78,8 @@ export default function AdminGraphicKitsPage() {
   }, [kits, searchQuery, filterBrand]);
 
   const brands = useMemo(() => {
-    return Array.from(new Set(kits.map(k => k.meta_data?.brand).filter(Boolean)));
-  }, [kits]);
+    return GRAPHIC_KITS_STRUCTURE.map(b => b.brand);
+  }, []);
 
   return (
     <div className="space-y-10">
@@ -133,8 +133,8 @@ export default function AdminGraphicKitsPage() {
             onChange={(e) => setFilterBrand(e.target.value)}
             className="flex-1 sm:w-48 appearance-none bg-white/[0.02] border border-white/5 rounded-2xl px-6 py-4 font-mono text-[10px] uppercase tracking-widest text-white/60 focus:outline-none focus:border-wu-red/50 cursor-pointer"
           >
-            <option value="all">All Brands</option>
-            {brands.map(b => <option key={b as string} value={b as string}>{b as string}</option>)}
+            <option value="all" className="bg-[#0A0A0A] text-white">All Brands</option>
+            {brands.map(b => <option key={b as string} value={b as string} className="bg-[#0A0A0A] text-white">{b as string}</option>)}
           </select>
         </div>
       </div>
