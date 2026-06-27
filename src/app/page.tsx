@@ -282,7 +282,7 @@ export default async function Home() {
         <div className="max-w-7xl mx-auto">
           <ScrollReveal className="flex items-center justify-between mb-16">
             <div>
-              <p className="font-mono text-[11px] text-wu-red tracking-[0.4em] uppercase mb-3">// Curated Gear</p>
+              <p className="font-mono text-[11px] text-wu-red tracking-[0.4em] uppercase mb-3">// The Elite Selection</p>
               <h2 className="font-display font-black text-4xl sm:text-6xl text-foreground uppercase tracking-tighter italic">Featured Kits</h2>
             </div>
             <Link href="/shop/featured" className="hidden sm:flex items-center gap-2 group text-muted-foreground hover:text-wu-red transition-colors">
