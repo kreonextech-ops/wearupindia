@@ -21,7 +21,7 @@ export default async function Home() {
   const res = await getAllProductsAction();
   const dbProducts = res.success && res.data ? res.data : [];
   
-  const newArrivals = dbProducts.filter(p => p.is_new).reverse().slice(0, 5);
+  const newArrivals = dbProducts.filter(p => p.is_new).slice(0, 5);
   const featuredKits = dbProducts.filter(p => p.is_featured).slice(0, 5);
   
   const wrappingService = services.find(s => s.slug === 'bike-wrapping');
