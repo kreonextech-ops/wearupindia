@@ -64,7 +64,9 @@ export default function CategoryPage({ params }: Props) {
       // Bike Compatibility (only for non-apparel)
       const isApparel = params.category === 'tshirts' || params.category === 'hoodies' || params.category === 't-shirts';
       if (!isApparel && filters.bikeBrand !== 'all') {
-        const bikeMatch = product.compatibleBrands.includes(filters.bikeBrand);
+        const bikeMatch = (product.compatibleBrands || []).some(
+          cb => cb.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') === filters.bikeBrand
+        );
         if (!bikeMatch) return false;
       }
 

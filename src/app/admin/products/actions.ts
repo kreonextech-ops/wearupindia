@@ -435,7 +435,7 @@ export async function getProductsWithVariantsAction(categorySlug: string) {
         inStock: p.stock > 0,
         rating: 5,
         reviews: 0,
-        compatibleBrands: p.meta_data?.brand ? [p.meta_data.brand] : [],
+        compatibleBrands: p.meta_data?.brand ? [p.meta_data.brand] : (p.meta_data?.specs?.brand ? [p.meta_data.specs.brand] : []),
         sizes: p.variants.reduce((acc: any, v: any) => {
           acc[v.value] = v.stock;
           return acc;
@@ -468,7 +468,7 @@ export async function getProductsAction(categorySlug: string) {
       inStock: p.stock > 0,
       rating: 5,
       reviews: 0,
-      compatibleBrands: p.meta_data?.brand ? [p.meta_data.brand] : [],
+      compatibleBrands: p.meta_data?.brand ? [p.meta_data.brand] : (p.meta_data?.specs?.brand ? [p.meta_data.specs.brand] : []),
       sizes: p.variants?.reduce((acc: any, v: any) => {
         acc[v.value] = v.stock;
         return acc;
@@ -505,7 +505,7 @@ export async function getProductBySlugAction(categorySlug: string, productSlug: 
       inStock: data.stock > 0,
       rating: 5,
       reviews: 0,
-      compatibleBrands: data.meta_data?.brand ? [data.meta_data.brand] : [],
+      compatibleBrands: data.meta_data?.brand ? [data.meta_data.brand] : (data.meta_data?.specs?.brand ? [data.meta_data.specs.brand] : []),
       sizes: data.variants?.reduce((acc: any, v: any) => {
         acc[v.value] = v.stock;
         return acc;

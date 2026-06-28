@@ -1,9 +1,10 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Bike } from 'lucide-react';
-import { brands, products, formatPrice } from '@/data';
+import { brands, formatPrice, Product } from '@/data';
 import ProductCard from '@/components/shop/ProductCard';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 
@@ -12,9 +13,25 @@ export default function BrandPage() {
   const brandSlug = params.brand as string;
   const brand = brands.find(b => b.slug === brandSlug);
   
-  const filteredProducts = products.filter(p => 
-    p.compatibleBrands.includes(brandSlug)
-  );
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      setIsLoading(true);
+      const { getAllProductsAction } = await import('@/app/admin/products/actions');
+      const res = await getAllProductsAction();
+      if (res.success && res.data) {
+        const all = res.data as unknown as Product[];
+        setFilteredProducts(all.filter(p => {
+          if (!p.compatibleBrands) return false;
+          return p.compatibleBrands.some(cb => cb.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') === brandSlug);
+        }));
+      }
+      setIsLoading(false);
+    }
+    load();
+  }, [brandSlug]);
 
   if (!brand) {
     return (

@@ -212,9 +212,11 @@ function EditGraphicKitForm({ kit, onSuccess }: any) {
 
   const [pricingMatrix, setPricingMatrix] = useState<any>(kit.meta_data?.pricing_matrix || {});
   
-  const [selectedBrand, setSelectedBrand] = useState(kit.meta_data?.brand || '');
-  const [selectedModel, setSelectedModel] = useState(kit.meta_data?.model || '');
-  const [parsedModels, setParsedModels] = useState<string[]>(kit.meta_data?.compatible_models || []);
+  const [selectedBrand, setSelectedBrand] = useState(kit.meta_data?.brand || kit.meta_data?.specs?.brand || '');
+  const [selectedModel, setSelectedModel] = useState(kit.meta_data?.model || kit.meta_data?.specs?.model || '');
+  const [parsedModels, setParsedModels] = useState<string[]>(
+    kit.meta_data?.compatible_models || (kit.meta_data?.specs?.model ? [kit.meta_data.specs.model] : [])
+  );
 
   useEffect(() => {
     if (!selectedModel) { setParsedModels([]); return; }

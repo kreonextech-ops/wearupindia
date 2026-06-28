@@ -81,10 +81,11 @@ export default function ProductPage({ params }: Props) {
   const isBikeAccessory = params.category === 'bike-accessories' || product?.category === 'bike-accessories';
   
   // Cross-reference compatible brands from the updated data
-  const compatibleBrandData = useMemo(() => 
-    product ? brands.filter(b => product.compatibleBrands?.includes(b.slug)) : [],
-    [product]
-  );
+  const compatibleBrandData = useMemo(() => {
+    if (!product || !product.compatibleBrands) return [];
+    const slugs = product.compatibleBrands.map(cb => cb.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''));
+    return brands.filter(b => slugs.includes(b.slug));
+  }, [product]);
 
   const handleAddToCart = () => {
     if (!product) return;

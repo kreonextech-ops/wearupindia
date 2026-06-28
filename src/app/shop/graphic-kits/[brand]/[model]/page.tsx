@@ -54,10 +54,11 @@ export default function ModelProductsPage({ params }: Props) {
         
         // Filter by brand and model
         const filtered = allKits.filter(p => {
-          const compatibleBrands = p.meta_data?.brand?.toLowerCase() || '';
-          const compatibleModels = p.meta_data?.compatible_models || [];
+          const rawBrand = p.meta_data?.brand || p.meta_data?.specs?.brand || '';
+          const compatibleBrandsSlug = rawBrand.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+          const compatibleModels = p.meta_data?.compatible_models || (p.meta_data?.specs?.model ? [p.meta_data.specs.model] : []);
           
-          const brandMatch = compatibleBrands === params.brand.toLowerCase();
+          const brandMatch = compatibleBrandsSlug === params.brand.toLowerCase();
           const modelMatch = compatibleModels.some((m: string) => {
             const dbModelSlug = m.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
             return dbModelSlug === params.model || parsedExpectedModels.includes(dbModelSlug);

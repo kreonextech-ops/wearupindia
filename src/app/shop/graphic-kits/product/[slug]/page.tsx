@@ -42,6 +42,11 @@ export default function GraphicKitProductPage({ params }: Props) {
         
         if (res.success && res.data) {
           const p = res.data as unknown as Product;
+          
+          if (p.meta_data && !p.meta_data.compatible_models && p.meta_data.specs?.model) {
+            p.meta_data.compatible_models = [p.meta_data.specs.model];
+          }
+
           setProduct(p);
           
           const models = p.meta_data?.compatible_models || [];
