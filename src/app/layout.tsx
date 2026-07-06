@@ -10,11 +10,16 @@ export const metadata: Metadata = {
 };
 
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
+import { Inter, Outfit, JetBrains_Mono } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-body', display: 'swap' });
+const outfit = Outfit({ subsets: ['latin'], variable: '--font-display', display: 'swap' });
+const jetbrains = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="antialiased font-body">
+      <body className={`${inter.variable} ${outfit.variable} ${jetbrains.variable} antialiased font-body`}>
         <ThemeProvider>
           <StoreProvider>
             <LayoutWrapper>

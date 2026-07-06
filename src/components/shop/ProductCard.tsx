@@ -18,9 +18,6 @@ export default function ProductCard({ product }: { product: Product }) {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
       whileHover="hover"
       className="group relative flex flex-col bg-card rounded-2xl overflow-hidden border border-border transition-all duration-500 hover:border-wu-red/50 hover:shadow-[0_0_40px_var(--wu-red-glow)]"
     >

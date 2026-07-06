@@ -54,14 +54,6 @@ export default function SafeImage({
           }
         }}
       />
-      
-      <style jsx global>{`
-        @keyframes shimmer {
-          100% {
-            transform: translateX(100%);
-          }
-        }
-      `}</style>
     </div>
   );
 }

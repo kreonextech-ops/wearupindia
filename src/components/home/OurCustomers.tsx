@@ -33,7 +33,6 @@ function Cell({
         src={src}
         alt={alt}
         fill
-        unoptimized
         sizes="(max-width: 768px) 100vw, 33vw"
         className="w-full h-full object-cover block hover:scale-[1.03] transition-transform duration-500 ease-out"
       />

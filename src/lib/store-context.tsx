@@ -54,7 +54,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
-  // Sync to database if logged in
+  // Sync to database if logged in — debounced by 1.5s to avoid a DB write on every keypress/click
   useEffect(() => {
     if (!user) return;
     
@@ -68,7 +68,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       await supabase.from('wishlists').upsert({ user_id: user.id, items: wishItems }, { onConflict: 'user_id' });
     };
     
-    syncData();
+    const timer = setTimeout(syncData, 1500);
+    return () => clearTimeout(timer);
   }, [cart, wishlist, user, supabase]);
 
   useEffect(() => {

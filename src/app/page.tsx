@@ -15,14 +15,11 @@ import CombinedContactCTA from '@/components/home/CombinedContactCTA';
 import OurCustomers from '@/components/home/OurCustomers';
 
 import HeroVideo from '@/components/home/HeroVideo';
-import { getAllProductsAction } from '@/app/admin/products/actions';
+import ResponsiveHeroVideo from '@/components/home/ResponsiveHeroVideo';
+import { getCachedHomeProducts } from '@/app/admin/products/actions';
 
 export default async function Home() {
-  const res = await getAllProductsAction();
-  const dbProducts = res.success && res.data ? res.data : [];
-  
-  const newArrivals = dbProducts.filter(p => p.is_new).slice(0, 5);
-  const featuredKits = dbProducts.filter(p => p.is_featured).slice(0, 5);
+  const { newArrivals, featuredKits } = await getCachedHomeProducts();
   
   const wrappingService = services.find(s => s.slug === 'bike-wrapping');
   const washService = services.find(s => s.slug === 'premium-wash');
@@ -59,25 +56,15 @@ export default async function Home() {
           >
             {/* Video Background with Poster Crossfade */}
             {idx === 0 ? (
-              <>
-                {/* Mobile: Sequential playback */}
-                <div className="md:hidden absolute inset-0">
-                  <SequentialVideoPlayer 
-                    sources={[
-                      getAssetUrl('/videos/hero-video-3.mp4'),
-                      getAssetUrl('/videos/hero-video-untitled.mp4'),
-                      getAssetUrl('/videos/hero-video-1.mp4')
-                    ]}
-                    className="w-full h-full object-cover opacity-60"
-                  />
-                </div>
-                {/* Desktop: Continuous loop with Poster */}
-                <HeroVideo 
-                  src={panel.src}
-                  poster={panel.poster}
-                  className="hidden md:block absolute inset-0 w-full h-full"
-                />
-              </>
+              <ResponsiveHeroVideo 
+                sources={[
+                  getAssetUrl('/videos/hero-video-3.mp4'),
+                  getAssetUrl('/videos/hero-video-untitled.mp4'),
+                  getAssetUrl('/videos/hero-video-1.mp4')
+                ]}
+                singleSource={panel.src}
+                poster={panel.poster}
+              />
             ) : (
               <HeroVideo 
                 src={panel.src}
@@ -215,7 +202,7 @@ export default async function Home() {
                             />
                           ) : (
                             <video 
-                              autoPlay muted loop playsInline 
+                              autoPlay muted loop playsInline preload="none"
                               className="w-full h-full object-cover opacity-70"
                             >
                               <source src={getAssetUrl("/videos/categories/bike-accessories.mp4")} type="video/mp4" />
@@ -327,7 +314,7 @@ export default async function Home() {
           {/* Wrapping - Half Width */}
           <ScrollReveal direction="up" className="relative h-[450px] lg:h-[600px] rounded-[2.5rem] overflow-hidden group">
             <video 
-              autoPlay muted loop playsInline 
+              autoPlay muted loop playsInline preload="none"
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-105 opacity-60"
             >
               <source src={getAssetUrl("/videos/services/bike-wrapping.mp4")} type="video/mp4" />

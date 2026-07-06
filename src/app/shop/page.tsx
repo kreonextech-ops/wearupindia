@@ -1,41 +1,15 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import { Lock, ArrowRight, ClipboardList, ShoppingBag, Sparkles, ShieldCheck, Zap } from 'lucide-react';
 import { categories, Product } from '@/data';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import ShopCategorySection from '@/components/shop/ShopCategorySection';
-import BulkOrderModal from '@/components/shop/BulkOrderModal';
+import BulkOrderButton from '@/components/shop/BulkOrderButton';
+import { getAllProductsAction } from '@/app/admin/products/actions';
 
-export default function ShopPage() {
-  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadAllProducts() {
-      setIsLoading(true);
-      try {
-        const { getAllProductsAction } = await import('@/app/admin/products/actions');
-        const res = await getAllProductsAction();
-        if (res.success && res.data) {
-          setAllProducts(res.data as unknown as Product[]);
-        }
-      } catch (error) {
-        console.error('Failed to load shop products:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadAllProducts();
-  }, []);
-
-  const openBulkModal = (categoryName: string) => {
-    setSelectedCategory(categoryName);
-    setIsBulkModalOpen(true);
-  };
+export default async function ShopPage() {
+  const res = await getAllProductsAction();
+  const allProducts = (res.success && res.data ? res.data : []) as Product[];
 
   return (
     <div className="min-h-screen bg-background">
@@ -100,14 +74,7 @@ export default function ShopPage() {
 
       {/* ─── CATEGORY ROWS ─── */}
       <div className="pb-12 space-y-0">
-        {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center">
-            <div className="w-10 h-10 border-4 border-muted border-t-wu-red rounded-full animate-spin mb-4" />
-            <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">Loading Catalog...</p>
-          </div>
-        ) : (
-          <>
-            {/* Active Categories */}
+        {/* Active Categories */}
             {categories.map((category) => {
               if (!category.isComingSoon) {
                 const categoryProducts = allProducts.filter(p => p.category === category.slug);
@@ -121,9 +88,6 @@ export default function ShopPage() {
               }
               return null;
             })}
-          </>
-        )}
-
         {/* Coming Soon Categories */}
         {categories.map((category) => {
           if (category.isComingSoon) {
@@ -167,12 +131,7 @@ export default function ShopPage() {
                       </div>
                       
                       {/* Bulk Orders */}
-                      <button 
-                        onClick={() => openBulkModal(category.name)}
-                        className="inline-flex items-center gap-4 px-7 py-2.5 bg-foreground text-background font-display font-bold text-[10px] tracking-[0.3em] uppercase rounded-full hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-xl group/btn"
-                      >
-                        Contact for Bulk Orders <ClipboardList size={12} className="group-hover/btn:rotate-12 transition-transform" />
-                      </button>
+                      <BulkOrderButton categoryName={category.name} />
                     </div>
                   </div>
                 </ScrollReveal>
@@ -188,12 +147,6 @@ export default function ShopPage() {
           return null;
         })}
       </div>
-
-      <BulkOrderModal 
-        isOpen={isBulkModalOpen} 
-        onClose={() => setIsBulkModalOpen(false)} 
-        categoryName={selectedCategory} 
-      />
     </div>
   );
 }

@@ -1,9 +1,11 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, unstable_cache } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
+import { config } from '@/lib/config';
 import { uploadToR2, deleteFromR2 } from '@/lib/r2';
 
 /**
@@ -755,3 +757,51 @@ export async function duplicateProductAction(productId: string) {
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * CACHED HOME PAGE QUERIES (TTFB Optimization)
+ * Uses unstable_cache and a cookie-less client so it doesn't opt out of Next.js static generation/caching.
+ */
+export const getCachedHomeProducts = unstable_cache(
+  async () => {
+    const supabase = createSupabaseClient(config.supabase.url, config.supabase.anonKey);
+    
+    // Fetch Featured (limit 5)
+    const { data: featured } = await supabase
+      .from('products')
+      .select(`
+        *,
+        categories (slug, name)
+      `)
+      .eq('is_featured', true)
+      .limit(5);
+
+    // Fetch New Arrivals (limit 5)
+    const { data: newArrivals } = await supabase
+      .from('products')
+      .select(`
+        *,
+        categories (slug, name)
+      `)
+      .eq('is_new', true)
+      .limit(5);
+
+    const mapProduct = (p: any) => ({
+      ...p,
+      category: p.categories?.slug || 'uncategorized',
+      categoryName: p.categories?.name || 'Uncategorized',
+      inStock: p.stock > 0,
+      is_featured: p.is_featured,
+      is_new: p.is_new,
+      rating: 5,
+      reviews: 0
+    });
+
+    return {
+      featuredKits: (featured || []).map(mapProduct),
+      newArrivals: (newArrivals || []).map(mapProduct)
+    };
+  },
+  ['home-products-cache'], // Cache key
+  { revalidate: 3600 }     // Revalidate every hour
+);
