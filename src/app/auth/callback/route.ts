@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // Use the canonical site URL to avoid redirecting to localhost:3000 in production.
 // `origin` from request.url can resolve to the internal server address.
 function getSiteURL(): string {

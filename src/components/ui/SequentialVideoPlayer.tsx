@@ -28,7 +28,6 @@ export default function SequentialVideoPlayer({ sources, className = "" }: Seque
       autoPlay
       muted
       playsInline
-      preload="none"
       onEnded={() => setCurrentIndex((prev) => (prev + 1) % sources.length)}
       className={className}
     />

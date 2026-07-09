@@ -204,7 +204,7 @@ export default async function Home() {
                             />
                           ) : (
                             <video 
-                              autoPlay muted loop playsInline preload="none"
+                              autoPlay muted loop playsInline
                               className="w-full h-full object-cover opacity-70"
                             >
                               <source src={getAssetUrl("/videos/categories/bike-accessories.mp4")} type="video/mp4" />
@@ -316,7 +316,7 @@ export default async function Home() {
           {/* Wrapping - Half Width */}
           <ScrollReveal direction="up" className="relative h-[450px] lg:h-[600px] rounded-[2.5rem] overflow-hidden group">
             <video 
-              autoPlay muted loop playsInline preload="none"
+              autoPlay muted loop playsInline
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-105 opacity-60"
             >
               <source src={getAssetUrl("/videos/services/bike-wrapping.mp4")} type="video/mp4" />
