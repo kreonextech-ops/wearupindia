@@ -22,7 +22,7 @@ export default function PrivacyPage() {
     },
     {
       title: '6. Your Rights',
-      content: 'You can request access, correction, or deletion of your personal data by contacting us at info@wearupindia.com. We will respond within 30 days.',
+      content: 'You can request access, correction, or deletion of your personal data by contacting us at info@wearupindia.com. If you want to permanently remove your data (such as name, number, address, etc.) from our database, kindly WhatsApp us and we will remove your data immediately.',
     },
     {
       title: '7. Contact',
