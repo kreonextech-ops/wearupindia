@@ -6,13 +6,15 @@ import { getAssetUrl } from '@/lib/assets';
 import ProductCard from '@/components/shop/ProductCard';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import SequentialVideoPlayer from '@/components/ui/SequentialVideoPlayer';
-import BrandMarquee from '@/components/home/BrandMarquee';
-import BikeSelector from '@/components/home/BikeSelector';
-import StatsBar from '@/components/home/StatsBar';
-import TestimonialsSection from '@/components/home/Testimonials';
-import InstagramReels from '@/components/home/InstagramReels';
-import CombinedContactCTA from '@/components/home/CombinedContactCTA';
-import OurCustomers from '@/components/home/OurCustomers';
+import dynamic from 'next/dynamic';
+
+const BrandMarquee = dynamic(() => import('@/components/home/BrandMarquee'));
+const BikeSelector = dynamic(() => import('@/components/home/BikeSelector'));
+const StatsBar = dynamic(() => import('@/components/home/StatsBar'));
+const TestimonialsSection = dynamic(() => import('@/components/home/Testimonials'));
+const InstagramReels = dynamic(() => import('@/components/home/InstagramReels'));
+const CombinedContactCTA = dynamic(() => import('@/components/home/CombinedContactCTA'));
+const OurCustomers = dynamic(() => import('@/components/home/OurCustomers'));
 
 import HeroVideo from '@/components/home/HeroVideo';
 import ResponsiveHeroVideo from '@/components/home/ResponsiveHeroVideo';

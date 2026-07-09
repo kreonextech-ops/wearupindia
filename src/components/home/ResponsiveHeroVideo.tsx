@@ -28,8 +28,12 @@ export default function ResponsiveHeroVideo({ sources, singleSource, poster }: R
   // Hydration safety: render nothing or a poster fallback until client decides
   if (isMobile === null) {
     return (
-      <div className="absolute inset-0 w-full h-full bg-black">
-        {/* We can just show the poster image here or let it be blank for a split second */}
+      <div className="absolute inset-0 w-full h-full bg-black overflow-hidden">
+        <img 
+          src={poster} 
+          alt="Hero Backdrop" 
+          className="w-full h-full object-cover opacity-80"
+        />
       </div>
     );
   }
