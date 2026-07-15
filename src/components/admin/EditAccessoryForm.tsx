@@ -24,19 +24,18 @@ interface EditAccessoryFormProps {
 }
 
 const TEMPLATE_MAPPING: Record<string, string> = {
-  'Liqui Moly': 'liquids', 'Brake Oil': 'liquids', 'Anti Fog': 'liquids', 'Helmet Cleaner': 'liquids',
+  'Engine Oil': 'liquids', 'Coolant': 'liquids', 'Brake Oil': 'liquids', 'Cleaner': 'liquids', 'Additives': 'liquids', 'Lube': 'liquids', 'Anti Fog': 'liquids', 'Helmet Cleaner': 'liquids',
   'Top Box 45L': 'luggage', 'Saddle Bag': 'luggage', 'Rack Less Bag': 'luggage', 'Crash Bar Bag': 'luggage',
   'Tail Bag': 'luggage', 'Tank Bag': 'luggage', 'Handle Bar Bag': 'luggage',
   'Backpack 100% Waterproof': 'luggage', 'Waist Bag': 'luggage', 'Hydration Bag': 'luggage',
-  'Navigation System': 'electronics', 'Foglight - 5 LED': 'electronics', 'Fog Light - 4 LED': 'electronics',
-  'Fog Light - P49': 'electronics', 'MG - VK 70 Pro': 'electronics', 'VK 50 S': 'electronics', 'VK 60': 'electronics',
+  'Navigation System': 'electronics', 'Spark Plug': 'electronics', 'Lights': 'electronics', 'Switches': 'electronics', 'Harness': 'electronics', 'V6': 'electronics', 'Q8': 'electronics', 'EF-7 pro': 'electronics',
   'Body Cover': 'fabric', 'Gear Shoe Cover': 'fabric',
-  'BMC Air Filter': 'hardware', 'RCB Brakes': 'hardware', 'RCB Suspension': 'hardware',
+  'Oil Filter': 'hardware', 'Air Filter': 'hardware', 'Brake Pads': 'hardware', 'Chain Sprocket': 'hardware', 'Exhaust': 'hardware', 'Clamps': 'hardware',
   'Crashguard': 'hardware', 'Saddle Stay': 'hardware', 'Stand Extender': 'hardware',
   'Head Light Grill': 'hardware', 'Radiator Grill': 'hardware', 'Engine Guard and Skid Plate': 'hardware',
-  'Frame Slider': 'hardware', 'Coolant Guard': 'hardware', 'Master Cylinder Guard': 'hardware', 'Foot Peg Extender': 'hardware',
+  'Frame Slider': 'hardware', 'Coolant Guard': 'hardware', 'Master Cylinder Guard': 'hardware', 'Foot Peg Extender': 'hardware', 'Mirror': 'hardware', 'Tyre Hugger': 'hardware', 'Hand Guard': 'hardware',
   'Petrol Cans': 'general', 'Bungee Cords': 'general', 'GoPro Mount': 'general', 'Goggles 100%': 'general',
-  'Foglight Clamp': 'general', 'Mobile Mount': 'general', 'Spools': 'general', 'Hand Grips': 'general',
+  'Mobile Mount': 'general', 'Spools': 'general', 'Hand Grips': 'general',
   'Brake Lever Grips': 'general', 'Gear Cover': 'general', 'Key Chain': 'general', 'Disc Lock': 'general',
 };
 

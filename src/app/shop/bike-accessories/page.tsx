@@ -44,7 +44,7 @@ export default function BikeAccessoriesPage() {
               {accessoryCategories.map((cat) => (
                 <Link 
                   key={cat.slug}
-                  href={`/shop/bike-accessories/${cat.slug}`}
+                  href={`/shop/bike-accessories/category/${cat.slug}`}
                   className="flex flex-col items-center text-center group"
                 >
                   <span className="font-display font-black text-[11px] text-black uppercase tracking-[0.1em] group-hover:text-wu-red transition-colors">
@@ -75,7 +75,7 @@ export default function BikeAccessoriesPage() {
           {accessoryCategories.map((cat) => (
             <Link 
               key={cat.slug}
-              href={`/shop/bike-accessories/${cat.slug}`}
+              href={`/shop/bike-accessories/category/${cat.slug}`}
               className="group relative flex flex-col bg-[#0A0A0A] border border-white/5 overflow-hidden transition-all duration-500 hover:border-wu-red/30 hover:shadow-[0_20px_50px_rgba(232,22,27,0.1)]"
             >
               {/* Image Container */}

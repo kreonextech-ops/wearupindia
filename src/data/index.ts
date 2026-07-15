@@ -77,7 +77,7 @@ export const MOTORCYCLE_ACCESSORIES_STRUCTURE = [
   {
     category: 'Performance',
     slug: 'performance',
-    items: ['Liqui Moly', 'Brake Oil', 'BMC Air Filter', 'RCB Brakes', 'RCB Suspension']
+    items: ['Engine Oil', 'Oil Filter', 'Coolant', 'Brake Oil', 'Spark Plug', 'Air Filter', 'Cleaner', 'Additives', 'Brake Pads', 'Chain Sprocket', 'Lube', 'Exhaust']
   },
   {
     category: 'Luggage Accessories Touring',
@@ -87,7 +87,7 @@ export const MOTORCYCLE_ACCESSORIES_STRUCTURE = [
   {
     category: 'Fog Lights',
     slug: 'fog-lights',
-    items: ['Foglight - 5 LED', 'Fog Light - 4 LED', 'Fog Light - P49', 'MG - VK 70 Pro', 'VK 50 S', 'VK 60']
+    items: ['Lights', 'Clamps', 'Switches', 'Harness']
   },
   {
     category: 'Bags and Backpacks',
@@ -102,12 +102,22 @@ export const MOTORCYCLE_ACCESSORIES_STRUCTURE = [
   {
     category: 'Accessories',
     slug: 'accessories',
-    items: ['Foglight Clamp', 'Mobile Mount', 'GoPro Mount', 'Spools', 'Hand Grips', 'Brake Lever Grips', 'Gear Cover', 'Gear Shoe Cover', 'Key Chain']
+    items: ['Mobile Mount', 'GoPro Mount', 'Spools', 'Hand Grips', 'Brake Lever Grips', 'Gear Cover', 'Gear Shoe Cover', 'Key Chain', 'Mirror', 'Tyre Hugger']
   },
   {
     category: 'Bike Protection',
     slug: 'bike-protection',
-    items: ['Crashguard', 'Saddle Stay', 'Stand Extender', 'Head Light Grill', 'Radiator Grill', 'Body Cover', 'Engine Guard and Skid Plate', 'Frame Slider', 'Disc Lock', 'Coolant Guard', 'Master Cylinder Guard', 'Foot Peg Extender']
+    items: ['Crashguard', 'Saddle Stay', 'Stand Extender', 'Head Light Grill', 'Radiator Grill', 'Body Cover', 'Engine Guard and Skid Plate', 'Frame Slider', 'Disc Lock', 'Coolant Guard', 'Master Cylinder Guard', 'Foot Peg Extender', 'Hand Guard']
+  },
+  {
+    category: 'Intercom & BT Devices',
+    slug: 'intercom-bt-devices',
+    items: ['V6', 'Q8', 'EF-7 pro']
+  },
+  {
+    category: 'Bike Body Parts',
+    slug: 'bike-body-parts',
+    items: []
   }
 ];
 

@@ -13,8 +13,12 @@ interface NewAccessoryFormProps {
 
 const TEMPLATE_MAPPING: Record<string, string> = {
   // Liquids
-  'Liqui Moly': 'liquids',
+  'Engine Oil': 'liquids',
+  'Coolant': 'liquids',
   'Brake Oil': 'liquids',
+  'Cleaner': 'liquids',
+  'Additives': 'liquids',
+  'Lube': 'liquids',
   'Anti Fog': 'liquids',
   'Helmet Cleaner': 'liquids',
 
@@ -32,21 +36,25 @@ const TEMPLATE_MAPPING: Record<string, string> = {
 
   // Electronics
   'Navigation System': 'electronics',
-  'Foglight - 5 LED': 'electronics',
-  'Fog Light - 4 LED': 'electronics',
-  'Fog Light - P49': 'electronics',
-  'MG - VK 70 Pro': 'electronics',
-  'VK 50 S': 'electronics',
-  'VK 60': 'electronics',
+  'Spark Plug': 'electronics',
+  'Lights': 'electronics',
+  'Switches': 'electronics',
+  'Harness': 'electronics',
+  'V6': 'electronics',
+  'Q8': 'electronics',
+  'EF-7 pro': 'electronics',
 
   // Fabric
   'Body Cover': 'fabric',
   'Gear Shoe Cover': 'fabric',
 
   // Hardware
-  'BMC Air Filter': 'hardware',
-  'RCB Brakes': 'hardware',
-  'RCB Suspension': 'hardware',
+  'Oil Filter': 'hardware',
+  'Air Filter': 'hardware',
+  'Brake Pads': 'hardware',
+  'Chain Sprocket': 'hardware',
+  'Exhaust': 'hardware',
+  'Clamps': 'hardware',
   'Crashguard': 'hardware',
   'Saddle Stay': 'hardware',
   'Stand Extender': 'hardware',
@@ -57,13 +65,15 @@ const TEMPLATE_MAPPING: Record<string, string> = {
   'Coolant Guard': 'hardware',
   'Master Cylinder Guard': 'hardware',
   'Foot Peg Extender': 'hardware',
+  'Mirror': 'hardware',
+  'Tyre Hugger': 'hardware',
+  'Hand Guard': 'hardware',
 
   // General
   'Petrol Cans': 'general',
   'Bungee Cords': 'general',
   'GoPro Mount': 'general',
   'Goggles 100%': 'general',
-  'Foglight Clamp': 'general',
   'Mobile Mount': 'general',
   'Spools': 'general',
   'Hand Grips': 'general',
