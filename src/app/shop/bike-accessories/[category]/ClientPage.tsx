@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Heart, ShoppingCart, Check, Shield, Truck, ChevronRight, Share2, Zap, Info, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Heart, ShoppingCart, Check, Shield, Truck, ChevronRight, Share2, Zap, Info, MessageCircle, Settings, Box, Droplet, Activity, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatPrice, Product } from '@/data';
@@ -10,6 +10,96 @@ import { useStore } from '@/lib/store-context';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Props = { params: { category: string } };
+
+const getProductSpecifications = (subItem: string | undefined) => {
+  const normalized = subItem?.toLowerCase() || '';
+
+  const maps: Record<string, any> = {
+    'additives': {
+      specs: [
+        { title: 'Combustion Boost', desc: 'Optimizes fuel burn for smoother acceleration.', icon: Zap },
+        { title: 'Engine Clean', desc: 'Removes carbon deposits from valves and injectors.', icon: Shield },
+        { title: 'Fuel Economy', desc: 'Improves mileage by ensuring efficient combustion.', icon: Activity },
+        { title: 'Easy Pour', desc: 'Designed for quick, mess-free DIY application.', icon: Check },
+      ],
+      quote: '"Restore lost power and protect your engine. Engineered to counter the effects of low-quality fuels and keep your machine running at its absolute peak."'
+    },
+    'coolant': {
+      specs: [
+        { title: 'Anti-Boil', desc: 'Prevents overheating during intense rides and traffic.', icon: Activity },
+        { title: 'Anti-Freeze', desc: 'Maintains optimal flow in extreme cold weather.', icon: Droplet },
+        { title: 'Corrosion Shield', desc: 'Protects radiator and water pump from rust.', icon: Shield },
+        { title: 'Ready to Use', desc: 'Pre-mixed formula, no distilled water needed.', icon: Check },
+      ],
+      quote: '"Keep your engine running cool under the harshest conditions. Formulated for maximum thermal stability so you can push your bike to the limits safely."'
+    },
+    'engine oil': {
+      specs: [
+        { title: 'Friction Reduction', desc: 'Smooths gear shifts and reduces engine noise.', icon: Zap },
+        { title: 'Wear Protection', desc: 'Advanced additives prevent premature engine wear.', icon: Shield },
+        { title: 'Thermal Stability', desc: 'Maintains viscosity under extreme racing heat.', icon: Activity },
+        { title: 'OEM Approved', desc: 'Meets and exceeds global manufacturer standards.', icon: Check },
+      ],
+      quote: '"The lifeblood of your motorcycle. Premium synthetic blend that delivers unmatched protection, smoother shifts, and uncompromising performance on every ride."'
+    },
+    'crashguard': {
+      specs: [
+        { title: 'Heavy-Duty Build', desc: 'High-tensile steel construction for maximum impact resistance.', icon: Shield },
+        { title: 'Direct Fit', desc: 'Precision-engineered for easy, bolt-on installation.', icon: Settings },
+        { title: 'Weatherproof', desc: 'Premium powder-coated finish protects against rust.', icon: Droplet },
+        { title: 'Tested Tough', desc: 'Rigorously tested to withstand drops and slides.', icon: Check },
+      ],
+      quote: '"Armor your ride against the unexpected. Over-engineered to take the hit so your bike doesn\'t have to. Ride with absolute peace of mind."'
+    },
+    'lights': {
+      specs: [
+        { title: 'High Lumen Output', desc: 'Intense beams for crystal-clear night time visibility.', icon: Zap },
+        { title: 'IP68 Waterproof', desc: 'Fully sealed housing to survive heavy monsoons.', icon: Droplet },
+        { title: 'Plug & Play', desc: 'Designed for safe integration with your bike\'s electricals.', icon: Settings },
+        { title: 'Durable Housing', desc: 'Aircraft-grade aluminum body for superior heat dissipation.', icon: Shield },
+      ],
+      quote: '"Turn night into day. Built for the hardcore tourer, our lighting solutions cut through darkness, fog, and rain, ensuring you always see what\'s coming next."'
+    },
+    'saddle bag': {
+      specs: [
+        { title: 'Maximum Capacity', desc: 'Smartly designed compartments for long tours.', icon: Box },
+        { title: 'Weatherproof', desc: 'Keeps your gear dry and secure through rain.', icon: Droplet },
+        { title: 'Secure Mounting', desc: 'Anti-vibration straps keep luggage stable at high speeds.', icon: Shield },
+        { title: 'Durable Materials', desc: 'Tear-resistant fabrics and robust hardware.', icon: Check },
+      ],
+      quote: '"Pack up and chase the horizon. Designed for the long haul, our luggage systems keep your essentials secure, balanced, and protected from the elements."'
+    }
+  };
+
+  for (const key of Object.keys(maps)) {
+    if (normalized.includes(key)) {
+      return maps[key];
+    }
+  }
+
+  if (normalized.includes('guard') || normalized.includes('slider') || normalized.includes('grill') || normalized.includes('stay')) {
+    return maps['crashguard'];
+  }
+  if (normalized.includes('bag') || normalized.includes('box')) {
+    return maps['saddle bag'];
+  }
+  if (normalized.includes('light') || normalized.includes('switch') || normalized.includes('harness')) {
+    return maps['lights'];
+  }
+  if (normalized.includes('oil') || normalized.includes('lube') || normalized.includes('cleaner') || normalized.includes('filter')) {
+    return maps['engine oil'];
+  }
+
+  return {
+    specs: [
+      { title: 'Premium Quality', desc: 'Crafted from top-tier materials for long-lasting durability.', icon: Star },
+      { title: 'Perfect Fit', desc: 'Precision-engineered to seamlessly integrate with your motorcycle.', icon: Settings },
+      { title: 'Weather Resistant', desc: 'Built to withstand sun, rain, and everything in between.', icon: Droplet },
+      { title: 'Rider Approved', desc: 'Tested and trusted by the riding community across India.', icon: Check },
+    ],
+    quote: '"Elevate your riding experience. Every accessory we offer is handpicked for its exceptional quality, functionality, and ability to make your journey better."'
+  };
+};
 
 export default function BikeAccessoryProductOrCategoryPage({ params }: Props) {
   const router = useRouter();
@@ -175,6 +265,36 @@ export default function BikeAccessoryProductOrCategoryPage({ params }: Props) {
               }
               return null;
             })()}
+
+            {/* Product Specifications & Quote */}
+            {(() => {
+              const specData = getProductSpecifications((product as any).meta_data?.sub_item);
+              return (
+                <div className="pt-10 border-t border-border mt-10">
+                  <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                    <Info size={20} className="text-wu-red" /> 
+                    Product Specifications
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {specData.specs.map((item: any, i: number) => (
+                      <div key={i} className="p-5 border border-border rounded-2xl hover:border-wu-red/30 transition-colors bg-muted/5">
+                        <div className="w-8 h-8 rounded-lg bg-wu-red/10 text-wu-red flex items-center justify-center mb-3">
+                          <item.icon size={16} />
+                        </div>
+                        <h3 className="text-sm font-bold mb-1">{item.title}</h3>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="mt-8 p-6 bg-muted/30 rounded-2xl">
+                    <p className="text-sm text-muted-foreground leading-relaxed italic">
+                      {specData.quote}
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* RIGHT: Info */}
@@ -195,7 +315,7 @@ export default function BikeAccessoryProductOrCategoryPage({ params }: Props) {
                   <span className={product.inStock ? 'text-wu-red font-bold' : 'text-muted-foreground'}>
                     {product.inStock ? 'In Stock' : 'Out of Stock'}
                   </span>
-                  <span className="text-foreground/40 border-l border-border pl-4">Free Shipping on Orders over ₹4999</span>
+                  <span className="text-foreground/40 border-l border-border pl-4">Free delivery on orders of ₹5,000 or more</span>
                 </div>
               </div>
 
@@ -255,24 +375,7 @@ export default function BikeAccessoryProductOrCategoryPage({ params }: Props) {
                 </div>
               </div>
 
-              {/* Trust Badges */}
-              <div className="grid grid-cols-1 gap-6 pt-4">
-                {[
-                  { icon: Shield, label: '3M Certified', sub: 'UV Proof & Monsoon Durable' },
-                  { icon: Truck, label: 'Pan-India Shipping', sub: 'Express delivery available' },
-                  { icon: Zap, label: 'Quality Guarantee', sub: 'Premium grade materials only' },
-                ].map(({ icon: Icon, label, sub }, i) => (
-                  <div key={i} className="flex items-center gap-5 group">
-                    <div className="w-14 h-14 rounded-2xl border border-border flex items-center justify-center bg-foreground/[0.02] group-hover:border-wu-red/30 transition-all shadow-sm">
-                      <Icon size={20} className="text-wu-red" />
-                    </div>
-                    <div>
-                      <h4 className="font-display font-bold text-base text-foreground tracking-tight">{label}</h4>
-                      <p className="font-body text-[10px] text-muted-foreground uppercase tracking-widest font-medium">{sub}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+
             </div>
           </div>
         </div>
