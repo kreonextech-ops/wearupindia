@@ -113,7 +113,7 @@ export default function BikeAccessoryProductOrCategoryPage({ params }: Props) {
                     src={product.images[selectedImage] || product.images[0]}
                     alt={product.name}
                     fill
-                    className="object-cover"
+                    className="object-contain"
                     priority
                   />
                 </motion.div>
@@ -130,7 +130,7 @@ export default function BikeAccessoryProductOrCategoryPage({ params }: Props) {
                     onClick={() => setSelectedImage(i)}
                     className={`relative w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 border-2 transition-all duration-300 ${selectedImage === i ? 'border-wu-red scale-105' : 'border-transparent grayscale opacity-50'}`}
                   >
-                    <Image src={img} alt="" fill className="object-cover" />
+                    <Image src={img} alt="" fill className="object-contain" />
                   </button>
                 ))}
               </div>
