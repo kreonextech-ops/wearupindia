@@ -25,7 +25,7 @@ export default async function AccessorySubCategoryPage({ params }: Props) {
     return allProducts.find(p =>
       p.name.toLowerCase().includes(itemName.toLowerCase()) ||
       itemName.toLowerCase().includes(p.name.toLowerCase()) ||
-      (p as any).meta_data?.sub_item === toSlug(itemName)
+      (p as any).meta_data?.sub_item?.toLowerCase() === itemName.toLowerCase()
     );
   }
 

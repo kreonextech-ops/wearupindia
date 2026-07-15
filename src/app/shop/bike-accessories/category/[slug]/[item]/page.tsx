@@ -17,12 +17,13 @@ export default async function AccessoryItemPage({ params }: Props) {
   const res = await getProductsAction('bike-accessories');
   const allProducts: Product[] = (res.success && res.data) ? res.data as unknown as Product[] : [];
 
-  // Find matching product by slug or name
+  // Find matching product by slug, name, or meta_data.sub_item
   const product = allProducts.find(p =>
     p.slug === params.item ||
     p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === params.item ||
     p.name.toLowerCase().includes(itemName.toLowerCase()) ||
-    itemName.toLowerCase().includes(p.name.toLowerCase())
+    itemName.toLowerCase().includes(p.name.toLowerCase()) ||
+    (p as any).meta_data?.sub_item?.toLowerCase() === itemName.toLowerCase()
   ) || null;
 
   // Pass everything pre-fetched to the client component
