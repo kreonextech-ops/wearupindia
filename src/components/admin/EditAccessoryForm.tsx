@@ -65,6 +65,8 @@ export default function EditAccessoryForm({ product, onSuccess }: EditAccessoryF
 
   const clientAction = async (formData: FormData) => {
     setError(null);
+    if (selectedCategory) formData.append('sub_category', selectedCategory);
+    if (selectedSubCategory) formData.append('sub_item', selectedSubCategory);
 
     const result = await updateProductAction(product.id, formData);
     if (result.success) {

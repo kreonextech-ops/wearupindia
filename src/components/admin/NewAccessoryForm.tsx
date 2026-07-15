@@ -102,7 +102,7 @@ export default function NewAccessoryForm({ onSuccess }: NewAccessoryFormProps) {
     
     // Add both category and sub-category for filtering
     formData.append('sub_category', selectedCategory);
-    formData.append('item_type', selectedSubCategory);
+    formData.append('sub_item', selectedSubCategory);
 
     const result = await createProductAction(formData);
     if (result.success) {

@@ -180,9 +180,14 @@ export async function updateProductAction(productId: string, formData: FormData)
       }
     }
     
+    const subCategory = formData.get('sub_category') as string | null;
+    const subItem = formData.get('sub_item') as string | null;
+
     // Merge existing meta_data with updated specs
     const meta_data = existing.meta_data || {};
     meta_data.specs = specs;
+    if (subCategory) meta_data.sub_category = subCategory;
+    if (subItem) meta_data.sub_item = subItem;
 
     const { error } = await supabase
       .from('products')
