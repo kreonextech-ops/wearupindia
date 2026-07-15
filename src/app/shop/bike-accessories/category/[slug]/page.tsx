@@ -134,7 +134,7 @@ export default async function AccessorySubCategoryPage({ params }: Props) {
                     <ChevronRight size={18} className="text-white/20 group-hover:text-wu-red group-hover:translate-x-1 transform transition-all" />
                   </div>
                   <span className={`font-mono text-[9px] tracking-[0.2em] uppercase ${product ? 'text-wu-red' : 'text-white/20'}`}>
-                    {product ? 'In Stock — View Product' : 'Coming Soon'}
+                    {product ? 'Available — View Category' : 'Coming Soon'}
                   </span>
                 </div>
 
