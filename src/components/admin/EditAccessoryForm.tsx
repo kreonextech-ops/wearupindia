@@ -28,7 +28,7 @@ const TEMPLATE_MAPPING: Record<string, string> = {
   'Top Box 45L': 'luggage', 'Saddle Bag': 'luggage', 'Rack Less Bag': 'luggage', 'Crash Bar Bag': 'luggage',
   'Tail Bag': 'luggage', 'Tank Bag': 'luggage', 'Handle Bar Bag': 'luggage',
   'Backpack 100% Waterproof': 'luggage', 'Waist Bag': 'luggage', 'Hydration Bag': 'luggage',
-  'Navigation System': 'electronics', 'Spark Plug': 'electronics', 'Lights': 'electronics', 'Switches': 'electronics', 'Harness': 'electronics', 'V6': 'electronics', 'Q8': 'electronics', 'EF-7 pro': 'electronics',
+  'Navigation System': 'electronics', 'Spark Plug': 'electronics', 'Lights': 'electronics', 'Switches': 'electronics', 'Harness': 'electronics', 'V6': 'electronics', 'Q8': 'electronics', 'EF-7 pro': 'electronics', 'Indicator': 'electronics',
   'Body Cover': 'fabric', 'Gear Shoe Cover': 'fabric',
   'Oil Filter': 'hardware', 'Air Filter': 'hardware', 'Brake Pads': 'hardware', 'Chain Sprocket': 'hardware', 'Exhaust': 'hardware', 'Clamps': 'hardware',
   'Crashguard': 'hardware', 'Saddle Stay': 'hardware', 'Stand Extender': 'hardware',

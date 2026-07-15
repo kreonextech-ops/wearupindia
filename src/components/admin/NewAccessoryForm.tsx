@@ -43,6 +43,7 @@ const TEMPLATE_MAPPING: Record<string, string> = {
   'V6': 'electronics',
   'Q8': 'electronics',
   'EF-7 pro': 'electronics',
+  'Indicator': 'electronics',
 
   // Fabric
   'Body Cover': 'fabric',

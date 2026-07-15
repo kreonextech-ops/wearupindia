@@ -102,7 +102,7 @@ export const MOTORCYCLE_ACCESSORIES_STRUCTURE = [
   {
     category: 'Accessories',
     slug: 'accessories',
-    items: ['Mobile Mount', 'GoPro Mount', 'Spools', 'Hand Grips', 'Brake Lever Grips', 'Gear Cover', 'Gear Shoe Cover', 'Key Chain', 'Mirror', 'Tyre Hugger']
+    items: ['Mobile Mount', 'GoPro Mount', 'Spools', 'Hand Grips', 'Brake Lever Grips', 'Gear Cover', 'Gear Shoe Cover', 'Key Chain', 'Mirror', 'Tyre Hugger', 'Indicator']
   },
   {
     category: 'Bike Protection',
