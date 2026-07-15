@@ -3,7 +3,7 @@ import { getProductsAction } from '@/app/admin/products/actions';
 import { accessoryCategories, Product } from '@/data';
 import AccessoryItemClient from './AccessoryItemClient';
 
-type Props = { params: { slug: string; item: string } };
+type Props = { params: { slug: string; itemSlug: string; productSlug: string } };
 
 function toName(slug: string) {
   return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -11,20 +11,14 @@ function toName(slug: string) {
 
 export default async function AccessoryItemPage({ params }: Props) {
   const subCat = accessoryCategories.find(c => c.slug === params.slug);
-  const itemName = toName(params.item);
+  const itemName = toName(params.itemSlug);
 
   // Fetch all bike-accessories products on the SERVER — instant, no spinner
   const res = await getProductsAction('bike-accessories');
   const allProducts: Product[] = (res.success && res.data) ? res.data as unknown as Product[] : [];
 
-  // Find matching product by slug, name, or meta_data.sub_item
-  const product = allProducts.find(p =>
-    p.slug === params.item ||
-    p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === params.item ||
-    p.name.toLowerCase().includes(itemName.toLowerCase()) ||
-    itemName.toLowerCase().includes(p.name.toLowerCase()) ||
-    (p as any).meta_data?.sub_item?.toLowerCase() === itemName.toLowerCase()
-  ) || null;
+  // Find matching product by slug
+  const product = allProducts.find(p => p.slug === params.productSlug) || null;
 
   // Pass everything pre-fetched to the client component
   return (
