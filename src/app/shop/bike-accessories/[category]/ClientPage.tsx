@@ -288,8 +288,8 @@ export default function BikeAccessoryProductOrCategoryPage({ params }: Props) {
                   </div>
                   
                   <div className="mt-8 p-6 bg-muted/30 rounded-2xl">
-                    <p className="text-sm text-muted-foreground leading-relaxed italic">
-                      {specData.quote}
+                    <p className="text-sm text-muted-foreground leading-relaxed italic whitespace-pre-wrap">
+                      {product.description || specData.quote}
                     </p>
                   </div>
                 </div>
@@ -308,9 +308,7 @@ export default function BikeAccessoryProductOrCategoryPage({ params }: Props) {
                 <h1 className="font-display font-black text-5xl sm:text-6xl text-foreground tracking-tighter leading-[0.9] uppercase mb-4">
                   {product.name}
                 </h1>
-                <p className="font-body text-muted-foreground text-sm leading-relaxed mb-6 max-w-md">
-                  {product.description || 'Premium quality accessory designed for maximum performance.'}
-                </p>
+
                 <div className="flex items-center gap-4 text-[10px] font-mono tracking-widest uppercase">
                   <span className={product.inStock ? 'text-wu-red font-bold' : 'text-muted-foreground'}>
                     {product.inStock ? 'In Stock' : 'Out of Stock'}
