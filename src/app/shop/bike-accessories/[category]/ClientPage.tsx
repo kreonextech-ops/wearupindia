@@ -309,11 +309,22 @@ export default function BikeAccessoryProductOrCategoryPage({ params }: Props) {
                   {product.name}
                 </h1>
 
-                <div className="flex items-center gap-4 text-[10px] font-mono tracking-widest uppercase">
-                  <span className={product.inStock ? 'text-wu-red font-bold' : 'text-muted-foreground'}>
-                    {product.inStock ? 'In Stock' : 'Out of Stock'}
-                  </span>
-                  <span className="text-foreground/40 border-l border-border pl-4">Free delivery on orders of ₹5,000 or more</span>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-4 text-[10px] font-mono tracking-widest uppercase">
+                    <span className={product.inStock ? 'text-wu-red font-bold' : 'text-muted-foreground'}>
+                      {product.inStock ? 'In Stock' : 'Out of Stock'}
+                    </span>
+                    <span className="text-foreground/40 border-l border-border pl-4">Free delivery on orders of ₹5,000 or more</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 text-[10px] font-mono tracking-widest uppercase">
+                    <span className="text-foreground/60 border border-border px-3 py-1 rounded-full bg-foreground/[0.02]">
+                      Fits: {(product as any).meta_data?.bike_compatibility === 'specific' && (product as any).meta_data?.compatible_bikes 
+                        ? (product as any).meta_data.compatible_bikes 
+                        : 'Universal (All Bikes)'
+                      }
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -323,7 +334,12 @@ export default function BikeAccessoryProductOrCategoryPage({ params }: Props) {
                   <Zap size={100} className="text-wu-red" />
                 </div>
                 <div className="flex items-baseline gap-4 mb-8">
-                  <span className="font-display font-black text-5xl text-foreground tracking-tighter">{formatPrice(product.price)}</span>
+                  <span className="font-display font-black text-4xl sm:text-5xl text-foreground tracking-tighter">
+                    {(product as any).meta_data?.price_type === 'range' && (product as any).meta_data?.price_max
+                      ? `${formatPrice(product.price)} - ${formatPrice((product as any).meta_data.price_max)}`
+                      : formatPrice(product.price)
+                    }
+                  </span>
                   {product.originalPrice && (
                     <span className="font-display font-bold text-2xl text-muted-foreground line-through tracking-tighter">{formatPrice(product.originalPrice)}</span>
                   )}

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useFormStatus } from 'react-dom';
 import { Upload, X, Package, Tag, IndianRupee, Database, AlignLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { createProductAction, updateProductAction } from '@/app/admin/products/actions';
 import { GRAPHIC_KITS_STRUCTURE, MOTORCYCLE_ACCESSORIES_STRUCTURE } from '@/data';
 import Image from 'next/image';
@@ -19,6 +19,8 @@ export default function NewProductForm({ product, onSuccess }: NewProductFormPro
   const [selectedCategory, setSelectedCategory] = React.useState<string>(product?.category || '');
   const [selectedBrand, setSelectedBrand] = React.useState<string>(product?.meta_data?.brand || '');
   const [selectedSubCategory, setSelectedSubCategory] = React.useState<string>(product?.meta_data?.sub_category || '');
+  const [priceType, setPriceType] = React.useState<string>(product?.meta_data?.price_type || 'single');
+  const [bikeCompatibility, setBikeCompatibility] = React.useState<string>(product?.meta_data?.bike_compatibility || 'all');
   const formRef = React.useRef<HTMLFormElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,19 +116,60 @@ export default function NewProductForm({ product, onSuccess }: NewProductFormPro
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Price (₹)</label>
-          <div className="relative whitespace-nowrap">
-             <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
-             <input 
-              name="price"
-              type="number" 
-              defaultValue={product?.price || ''}
-              placeholder="0"
-              className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#E8161B]/50 focus:bg-white/10 transition-all font-body text-sm"
-              required
-            />
+        <div className={`space-y-2 ${selectedCategory === 'bike-accessories' && priceType === 'range' ? 'col-span-2' : ''}`}>
+          <div className="flex justify-between items-center mb-1">
+            <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Price (₹)</label>
+            {selectedCategory === 'bike-accessories' && (
+              <select 
+                name="price_type" 
+                value={priceType} 
+                onChange={e => setPriceType(e.target.value)}
+                className="bg-transparent border-none text-[10px] font-mono text-[#E8161B] uppercase tracking-widest focus:outline-none cursor-pointer"
+              >
+                <option value="single" className="bg-[#0A0A0A]">Single Price</option>
+                <option value="range" className="bg-[#0A0A0A]">Price Range</option>
+              </select>
+            )}
           </div>
+          
+          {selectedCategory === 'bike-accessories' && priceType === 'range' ? (
+            <div className="flex gap-4">
+              <div className="relative whitespace-nowrap flex-1">
+                 <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
+                 <input 
+                  name="price"
+                  type="number" 
+                  defaultValue={product?.price || ''}
+                  placeholder="Min Price"
+                  className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#E8161B]/50 focus:bg-white/10 transition-all font-body text-sm"
+                  required
+                />
+              </div>
+              <div className="relative whitespace-nowrap flex-1">
+                 <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
+                 <input 
+                  name="price_max"
+                  type="number" 
+                  defaultValue={product?.meta_data?.price_max || ''}
+                  placeholder="Max Price"
+                  className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#E8161B]/50 focus:bg-white/10 transition-all font-body text-sm"
+                  required
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="relative whitespace-nowrap">
+               <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
+               <input 
+                name="price"
+                type="number" 
+                defaultValue={product?.price || ''}
+                placeholder="0"
+                className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#E8161B]/50 focus:bg-white/10 transition-all font-body text-sm"
+                required
+              />
+            </div>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -244,6 +287,56 @@ export default function NewProductForm({ product, onSuccess }: NewProductFormPro
                   <option key={item} value={item.toLowerCase().replace(/[^a-z0-9]+/g, '-')} className="bg-[#0A0A0A]">{item}</option>
                 ))}
               </select>
+            </div>
+            
+            <div className="col-span-2 space-y-3 mt-4 pt-4 border-t border-white/10">
+              <div className="flex justify-between items-center">
+                <label className="font-mono text-[10px] text-[#E8161B] tracking-[0.2em] uppercase font-bold">Bike Compatibility</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="bike_compatibility" 
+                      value="all"
+                      checked={bikeCompatibility === 'all'}
+                      onChange={() => setBikeCompatibility('all')}
+                      className="accent-[#E8161B]"
+                    />
+                    <span className="text-xs font-mono text-white/60">Universal (All Bikes)</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="bike_compatibility" 
+                      value="specific"
+                      checked={bikeCompatibility === 'specific'}
+                      onChange={() => setBikeCompatibility('specific')}
+                      className="accent-[#E8161B]"
+                    />
+                    <span className="text-xs font-mono text-white/60">Specific Bikes</span>
+                  </label>
+                </div>
+              </div>
+              
+              <AnimatePresence>
+                {bikeCompatibility === 'specific' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <input 
+                      name="compatible_bikes"
+                      type="text" 
+                      defaultValue={product?.meta_data?.compatible_bikes || ''}
+                      placeholder="e.g. KTM Duke 390, RC 390, Husqvarna 250"
+                      className="w-full bg-[#E8161B]/5 border border-[#E8161B]/20 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-[#E8161B] transition-all font-body text-sm"
+                      required={bikeCompatibility === 'specific'}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         )}

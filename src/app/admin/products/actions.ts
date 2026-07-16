@@ -111,7 +111,10 @@ export async function createProductAction(formData: FormData) {
     const subItem = formData.get('sub_item') as string | null;
 
     // Extract dynamic specs
-    const standardFields = ['name', 'category_slug', 'price', 'description', 'stock', 'image', 'sub_category', 'sub_item'];
+    const standardFields = [
+      'name', 'category_slug', 'price', 'description', 'stock', 'image', 
+      'sub_category', 'sub_item', 'price_type', 'price_max', 'bike_compatibility', 'compatible_bikes'
+    ];
     const specs: Record<string, string> = {};
     for (const [key, value] of Array.from(formData.entries())) {
       if (!standardFields.includes(key) && value && typeof value === 'string') {
@@ -131,7 +134,15 @@ export async function createProductAction(formData: FormData) {
         images: imageUrls,
         is_new: true,
         is_featured: false,
-        meta_data: { sub_category: subCategory, sub_item: subItem, specs }
+        meta_data: { 
+          sub_category: subCategory, 
+          sub_item: subItem, 
+          price_type: formData.get('price_type') as string | null,
+          price_max: formData.get('price_max') ? Number(formData.get('price_max')) : null,
+          bike_compatibility: formData.get('bike_compatibility') as string | null,
+          compatible_bikes: formData.get('compatible_bikes') as string | null,
+          specs 
+        }
       }])
       .select()
       .single();
@@ -172,7 +183,10 @@ export async function updateProductAction(productId: string, formData: FormData)
     }
 
     // Extract dynamic specs
-    const standardFields = ['id', 'name', 'price', 'description', 'stock', 'image', 'sub_category', 'sub_item'];
+    const standardFields = [
+      'id', 'name', 'price', 'description', 'stock', 'image', 
+      'sub_category', 'sub_item', 'price_type', 'price_max', 'bike_compatibility', 'compatible_bikes'
+    ];
     const specs: Record<string, string> = {};
     for (const [key, value] of Array.from(formData.entries())) {
       if (!standardFields.includes(key) && value && typeof value === 'string') {
@@ -188,6 +202,16 @@ export async function updateProductAction(productId: string, formData: FormData)
     meta_data.specs = specs;
     if (subCategory) meta_data.sub_category = subCategory;
     if (subItem) meta_data.sub_item = subItem;
+    
+    const priceType = formData.get('price_type') as string | null;
+    const priceMax = formData.get('price_max');
+    const bikeComp = formData.get('bike_compatibility') as string | null;
+    const compBikes = formData.get('compatible_bikes') as string | null;
+    
+    if (priceType) meta_data.price_type = priceType;
+    if (priceMax) meta_data.price_max = Number(priceMax);
+    if (bikeComp) meta_data.bike_compatibility = bikeComp;
+    if (compBikes) meta_data.compatible_bikes = compBikes;
 
     const { error } = await supabase
       .from('products')
