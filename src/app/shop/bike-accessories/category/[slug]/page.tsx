@@ -20,9 +20,9 @@ export default async function AccessorySubCategoryPage({ params }: Props) {
   const res = await getProductsAction('bike-accessories');
   const allProducts: Product[] = (res.success && res.data) ? res.data as unknown as Product[] : [];
 
-  // For each item, find a matching product
-  function findProduct(itemName: string): Product | undefined {
-    return allProducts.find(p =>
+  // For each item, find matching products
+  function findProducts(itemName: string): Product[] {
+    return allProducts.filter(p =>
       p.name.toLowerCase().includes(itemName.toLowerCase()) ||
       itemName.toLowerCase().includes(p.name.toLowerCase()) ||
       (p as any).meta_data?.sub_item?.toLowerCase() === itemName.toLowerCase()
@@ -65,14 +65,15 @@ export default async function AccessorySubCategoryPage({ params }: Props) {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between gap-12 min-w-max">
               {subItems.map((item) => {
-                const product = findProduct(item);
+                const matchingProducts = findProducts(item);
+                const count = matchingProducts.length;
                 return (
                   <div key={item} className="flex flex-col items-center text-center group">
                     <span className="font-display font-black text-[11px] text-black uppercase tracking-[0.1em] group-hover:text-wu-red transition-colors">
                       {item}
                     </span>
-                    <span className={`font-mono text-[8px] uppercase tracking-[0.1em] mt-0.5 ${product ? 'text-wu-red' : 'text-black/30'}`}>
-                      {product ? 'Available' : 'Coming Soon'}
+                    <span className={`font-mono text-[8px] uppercase tracking-[0.1em] mt-0.5 ${count > 0 ? 'text-wu-red' : 'text-black/30'}`}>
+                      {count > 0 ? 'Available' : 'Coming Soon'}
                     </span>
                   </div>
                 );
@@ -98,9 +99,10 @@ export default async function AccessorySubCategoryPage({ params }: Props) {
         {/* ─── SUB-ITEMS GRID ─── */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {subItems.map((item) => {
-            const product = findProduct(item);
+            const matchingProducts = findProducts(item);
+            const count = matchingProducts.length;
             const itemSlug = toSlug(item);
-            const image = product?.images?.[0] || FALLBACK_IMAGE;
+            const image = FALLBACK_IMAGE; // Use consistent image as requested
             const href = `/shop/bike-accessories/category/${params.slug}/${itemSlug}`;
 
             return (
@@ -118,7 +120,7 @@ export default async function AccessorySubCategoryPage({ params }: Props) {
                     className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-transparent opacity-80" />
-                  {!product && (
+                  {count === 0 && (
                     <div className="absolute top-4 left-4 px-3 py-1 bg-black/60 border border-white/10 rounded-full">
                       <span className="font-mono text-[8px] text-white/50 uppercase tracking-widest">Coming Soon</span>
                     </div>
@@ -133,8 +135,8 @@ export default async function AccessorySubCategoryPage({ params }: Props) {
                     </h3>
                     <ChevronRight size={18} className="text-white/20 group-hover:text-wu-red group-hover:translate-x-1 transform transition-all" />
                   </div>
-                  <span className={`font-mono text-[9px] tracking-[0.2em] uppercase ${product ? 'text-wu-red' : 'text-white/20'}`}>
-                    {product ? 'Available — View Category' : 'Coming Soon'}
+                  <span className={`font-mono text-[9px] tracking-[0.2em] uppercase ${count > 0 ? 'text-wu-red' : 'text-white/20'}`}>
+                    {count > 0 ? `Available - ${count} product${count > 1 ? 's' : ''}` : 'Coming Soon'}
                   </span>
                 </div>
 
