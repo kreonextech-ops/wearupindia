@@ -68,6 +68,15 @@ const getProductSpecifications = (subItem: string | undefined) => {
         { title: 'Durable Materials', desc: 'Tear-resistant fabrics and robust hardware.', icon: Check },
       ],
       quote: '"Pack up and chase the horizon. Designed for the long haul, our luggage systems keep your essentials secure, balanced, and protected from the elements."'
+    },
+    'spark plug': {
+      specs: [
+        { title: 'Iridium Core', desc: 'Extremely durable center electrode for maximum lifespan.', icon: Zap },
+        { title: 'Better Combustion', desc: 'Concentrated spark ensures complete fuel burn and more power.', icon: Activity },
+        { title: 'Cold Starts', desc: 'Requires lower voltage to spark, guaranteeing instant starts.', icon: Check },
+        { title: 'Fuel Efficiency', desc: 'Consistent ignition improves overall mileage and throttle response.', icon: Shield },
+      ],
+      quote: '"Experience the power of Iridium. These premium spark plugs deliver unparalleled ignition efficiency, ensuring instant starts, crisper throttle response, and maximum power out of every drop of fuel."'
     }
   };
 
@@ -225,6 +234,17 @@ export default function BikeAccessoryProductOrCategoryPage({ params }: Props) {
                 ))}
               </div>
             )}
+            
+            {/* WhatsApp Query Button */}
+            <a 
+              href={`https://wa.me/919093543071?text=Hi%20WearUp!%20I'd%20like%20to%20know%20more%20about%20${encodeURIComponent(product.name)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 flex items-center justify-center gap-3 w-full bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white border border-[#25D366]/20 py-4 rounded-2xl transition-all duration-300 font-display font-bold uppercase tracking-widest text-xs sm:text-sm"
+            >
+              <MessageCircle size={18} />
+              Need more info? Message us on WhatsApp
+            </a>
 
             {/* Technical Specifications */}
             {(() => {
