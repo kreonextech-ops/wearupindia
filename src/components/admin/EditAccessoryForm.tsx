@@ -45,6 +45,8 @@ export default function EditAccessoryForm({ product, onSuccess }: EditAccessoryF
   const [error, setError] = React.useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = React.useState(product.meta_data?.sub_category || '');
   const [selectedSubCategory, setSelectedSubCategory] = React.useState(product.meta_data?.sub_item || '');
+  const [priceType, setPriceType] = React.useState(product.meta_data?.price_type || 'single');
+  const [bikeCompatibility, setBikeCompatibility] = React.useState(product.meta_data?.bike_compatibility || 'all');
   const formRef = React.useRef<HTMLFormElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -162,17 +164,49 @@ export default function EditAccessoryForm({ product, onSuccess }: EditAccessoryF
         {/* Pricing */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Price (₹)</label>
-            <input
-              name="price"
-              type="number"
-              defaultValue={product.price}
-              className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-[#E8161B]/50 font-body text-sm"
-              required
-            />
+            <div className="flex justify-between items-center mb-1">
+              <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Price (₹)</label>
+              <select 
+                name="price_type" 
+                value={priceType} 
+                onChange={e => setPriceType(e.target.value)}
+                className="bg-transparent border-none text-[10px] font-mono text-[#E8161B] uppercase tracking-widest focus:outline-none cursor-pointer"
+              >
+                <option value="single" className="bg-[#0A0A0A]">Single Price</option>
+                <option value="range" className="bg-[#0A0A0A]">Price Range</option>
+              </select>
+            </div>
+            {priceType === 'range' ? (
+              <div className="flex gap-4">
+                <input
+                  name="price"
+                  type="number"
+                  defaultValue={product.price}
+                  placeholder="Min"
+                  className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-[#E8161B]/50 font-body text-sm"
+                  required
+                />
+                <input
+                  name="price_max"
+                  type="number"
+                  defaultValue={product.meta_data?.price_max || ''}
+                  placeholder="Max"
+                  className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-[#E8161B]/50 font-body text-sm"
+                  required
+                />
+              </div>
+            ) : (
+              <input
+                name="price"
+                type="number"
+                defaultValue={product.price}
+                className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-[#E8161B]/50 font-body text-sm"
+                required
+              />
+            )}
           </div>
           <div className="space-y-2">
-            <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Stock</label>
+            <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase mt-1 block">Stock</label>
             <input
               name="stock"
               type="number"
@@ -181,6 +215,33 @@ export default function EditAccessoryForm({ product, onSuccess }: EditAccessoryF
               required
             />
           </div>
+        </div>
+        
+        {/* Bike Compatibility */}
+        <div className="space-y-3 p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+          <div className="flex justify-between items-center">
+            <label className="font-mono text-[10px] text-[#E8161B] tracking-[0.2em] uppercase font-bold">Bike Compatibility</label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="bike_compatibility" value="all" checked={bikeCompatibility === 'all'} onChange={() => setBikeCompatibility('all')} className="accent-[#E8161B]" />
+                <span className="text-xs font-mono text-white/60">Universal</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="bike_compatibility" value="specific" checked={bikeCompatibility === 'specific'} onChange={() => setBikeCompatibility('specific')} className="accent-[#E8161B]" />
+                <span className="text-xs font-mono text-white/60">Specific</span>
+              </label>
+            </div>
+          </div>
+          {bikeCompatibility === 'specific' && (
+            <input 
+              name="compatible_bikes" 
+              type="text" 
+              defaultValue={product.meta_data?.compatible_bikes || ''}
+              placeholder="e.g. KTM Duke 390, RC 390" 
+              className="w-full bg-[#E8161B]/5 border border-[#E8161B]/20 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-[#E8161B] transition-all font-body text-sm mt-3" 
+              required 
+            />
+          )}
         </div>
 
         {/* Description */}
