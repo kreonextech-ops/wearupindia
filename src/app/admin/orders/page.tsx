@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Search, Package, Truck, CheckCircle2, XCircle, Clock, Eye, ChevronDown, X, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { formatINR } from '@/lib/analytics';
+import Link from 'next/link';
 
 type OrderStatus = 'all' | 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
 
@@ -60,14 +61,16 @@ export default function AdminOrdersPage() {
     if (data) {
       // Get item counts per order
       const withDetails: Order[] = await Promise.all(data.map(async (o: any) => {
-        const { count } = await supabase
+        const { data: itemsData } = await supabase
           .from('order_items')
-          .select('*', { count: 'exact', head: true })
+          .select('quantity, price_at_purchase, products(name, slug)')
           .eq('order_id', o.id);
+        
         return {
           ...o,
           user_email: o.profiles?.email ?? o.shipping_address?.email ?? '—',
-          items_count: count ?? 0,
+          items_count: itemsData ? itemsData.length : 0,
+          items: itemsData || [],
         };
       }));
       setOrders(withDetails);
@@ -350,6 +353,29 @@ export default function AdminOrdersPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Items List (Clickable Product Links) */}
+                {(order as any).items && (order as any).items.length > 0 && (
+                  <div className="w-full mt-4 pt-4 border-t border-white/5">
+                    <p className="font-mono text-[9px] text-white/30 uppercase tracking-widest mb-3">Order Items</p>
+                    <div className="space-y-2">
+                      {(order as any).items.map((item: any, idx: number) => (
+                        <div key={idx} className="flex justify-between items-center bg-white/5 rounded-lg px-4 py-2">
+                          <div className="flex items-center gap-3">
+                            <span className="font-display font-bold text-xs text-white/40">{item.quantity}x</span>
+                            <Link 
+                              href={`/admin/products?search=${item.products?.name}`} 
+                              className="font-display font-bold text-sm text-white hover:text-[#E8161B] transition-colors"
+                            >
+                              {item.products?.name || 'Unknown Product'}
+                            </Link>
+                          </div>
+                          <span className="font-mono text-xs text-white/60">{formatINR(item.price_at_purchase)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </motion.div>
             );
           })}

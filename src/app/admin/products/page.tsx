@@ -11,12 +11,16 @@ import Link from 'next/link';
 import Sheet from '@/components/ui/Sheet';
 import NewProductForm from '@/components/admin/NewProductForm';
 import { getAllProductsAction, deleteProductAction } from '@/app/admin/products/actions';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function AdminProductsPage() {
+function AdminProductsContent() {
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams?.get('search') || '';
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [editingProduct, setEditingProduct] = useState<any>(null);
 
   const loadProducts = async () => {
@@ -186,5 +190,13 @@ export default function AdminProductsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminProductsPage() {
+  return (
+    <Suspense fallback={<div className="py-20 flex justify-center"><div className="w-8 h-8 border-2 border-white/20 border-t-[#E8161B] rounded-full animate-spin" /></div>}>
+      <AdminProductsContent />
+    </Suspense>
   );
 }

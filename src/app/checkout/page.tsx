@@ -1,5 +1,6 @@
 'use client';
 import { Suspense } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -185,15 +186,19 @@ function CheckoutInner() {
         zip: form.pincode,
       };
 
+      const generatedId = uuidv4();
+      const finalOrderId = `WU-${generatedId.slice(0, 8).toUpperCase()}`;
+
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert([{
+          id: generatedId,
           user_id: user?.id ?? null,
           total_amount: total,
           status: 'pending',
           payment_status: 'unpaid',
           shipping_address: shippingAddress,
-          payment_intent_id: form.paymentMethod === 'online' ? 'cashfree' : 'whatsapp',
+          payment_intent_id: form.paymentMethod === 'online' ? finalOrderId : 'whatsapp',
         }])
         .select()
         .single();
@@ -212,9 +217,6 @@ function CheckoutInner() {
         }
       }
 
-      const finalOrderId = `WU-${order.id.slice(0, 8).toUpperCase()}`;
-      // Save actual intent id for verification
-      if(form.paymentMethod === 'online') { await supabase.from('orders').update({ payment_intent_id: finalOrderId }).eq('id', order.id); }
       setOrderId(finalOrderId);
 
       if (appliedCoupon) {
