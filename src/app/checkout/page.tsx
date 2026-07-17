@@ -153,7 +153,7 @@ function CheckoutInner() {
 
   const update = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
 
-  const shipping = cartTotal >= 499 ? 0 : 99;
+  const shipping = 0; // cartTotal >= 499 ? 0 : 99; // Temporarily free for all orders
   const couponDiscount = appliedCoupon?.discountAmount || 0;
   const total = cartTotal + shipping - couponDiscount;
   const hasGraphicKits = cart.some((item: any) => item.category === 'graphic-kits' || item.slug?.includes('graphic-kit'));

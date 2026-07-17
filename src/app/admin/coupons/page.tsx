@@ -59,7 +59,7 @@ export default function AdminCouponsPage() {
           .select('order_total')
           .eq('coupon_code', c.code);
         const revenue = usages?.reduce((sum: number, u: any) => sum + (u.order_total || 0), 0) || 0;
-        return { ...c, revenue_attributed: revenue };
+        return { ...c, revenue_attributed: revenue, times_used: usages ? usages.length : 0 };
       }));
       setCoupons(withRevenue);
     }
