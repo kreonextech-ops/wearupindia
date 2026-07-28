@@ -50,11 +50,11 @@ export async function POST(request: Request) {
               <h1 style="color:#333;font-size:24px;font-weight:bold;margin:0 0 20px;">Order Confirmed ✅</h1>
               <p style="color:#555;font-size:16px;line-height:26px;margin:0 0 16px;">Hey ${customerName || 'there'},</p>
               ${paymentMode === 'whatsapp' 
-                ? \`<div style="background:#fff3f3;border:1px solid #ffcccc;border-left:4px solid #e8161b;padding:16px;margin:0 0 24px;border-radius:4px;">
+                ? `<div style="background:#fff3f3;border:1px solid #ffcccc;border-left:4px solid #e8161b;padding:16px;margin:0 0 24px;border-radius:4px;">
                      <h4 style="margin:0 0 8px;color:#e8161b;font-size:16px;">Payment Pending (WhatsApp Order)</h4>
                      <p style="margin:0;color:#555;font-size:14px;line-height:22px;">This order was placed via WhatsApp and payment is to be completed manually. We will be in touch via WhatsApp to confirm payment and delivery details.</p>
-                   </div>\`
-                : \`<p style="color:#555;font-size:16px;line-height:26px;margin:0 0 24px;">Thanks for gearing up with WearUp! We've received your order and are getting it ready for shipment.</p>\`
+                   </div>`
+                : `<p style="color:#555;font-size:16px;line-height:26px;margin:0 0 24px;">Thanks for gearing up with WearUp! We've received your order and are getting it ready for shipment.</p>`
               }
 
               <!-- Order ID Box -->
