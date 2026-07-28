@@ -84,7 +84,8 @@ function CheckoutInner() {
                 customerName: orderData.shipping_address?.full_name,
                 orderId: id,
                 totalAmount: orderData.total_amount,
-                items: items
+                items: items,
+                paymentMode: 'online'
               }),
             });
           } catch (err) {
@@ -282,6 +283,7 @@ function CheckoutInner() {
           orderId: finalOrderId,
           totalAmount: total,
           items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
+          paymentMode: form.paymentMethod,
         });
         const emailRes = await fetch('/api/emails/order-confirmation', {
           method: 'POST',
@@ -292,6 +294,7 @@ function CheckoutInner() {
             orderId: finalOrderId,
             totalAmount: total,
             items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
+            paymentMode: form.paymentMethod,
           }),
         });
         if (!emailRes.ok) {

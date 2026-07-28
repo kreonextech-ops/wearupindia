@@ -293,6 +293,11 @@ export default function AdminOrdersPage() {
                         }`}>
                           {order.payment_status}
                         </span>
+                        {order.payment_intent_id === 'whatsapp' && (
+                          <span className="font-mono text-[9px] px-2 py-0.5 rounded-full border uppercase tracking-widest text-orange-400 bg-orange-400/10 border-orange-400/20">
+                            WHATSAPP ORDER
+                          </span>
+                        )}
                       </div>
                       <p className="font-mono text-[9px] text-white/30 mt-0.5">{order.user_email}</p>
                       {addr.full_name && (

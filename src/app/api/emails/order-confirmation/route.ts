@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
     const resend = new Resend(apiKey);
     const body = await request.json();
-    const { email, customerName, orderId, totalAmount, items } = body;
+    const { email, customerName, orderId, totalAmount, items, paymentMode } = body;
 
     if (!email || !orderId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -49,9 +49,13 @@ export async function POST(request: Request) {
             <td style="padding:40px 32px;">
               <h1 style="color:#333;font-size:24px;font-weight:bold;margin:0 0 20px;">Order Confirmed ✅</h1>
               <p style="color:#555;font-size:16px;line-height:26px;margin:0 0 16px;">Hey ${customerName || 'there'},</p>
-              <p style="color:#555;font-size:16px;line-height:26px;margin:0 0 24px;">
-                Thanks for gearing up with WearUp! We've received your order and will be in touch via WhatsApp to confirm delivery details.
-              </p>
+              ${paymentMode === 'whatsapp' 
+                ? \`<div style="background:#fff3f3;border:1px solid #ffcccc;border-left:4px solid #e8161b;padding:16px;margin:0 0 24px;border-radius:4px;">
+                     <h4 style="margin:0 0 8px;color:#e8161b;font-size:16px;">Payment Pending (WhatsApp Order)</h4>
+                     <p style="margin:0;color:#555;font-size:14px;line-height:22px;">This order was placed via WhatsApp and payment is to be completed manually. We will be in touch via WhatsApp to confirm payment and delivery details.</p>
+                   </div>\`
+                : \`<p style="color:#555;font-size:16px;line-height:26px;margin:0 0 24px;">Thanks for gearing up with WearUp! We've received your order and are getting it ready for shipment.</p>\`
+              }
 
               <!-- Order ID Box -->
               <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f9f9;border-radius:4px;margin-bottom:24px;">
