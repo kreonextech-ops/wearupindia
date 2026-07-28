@@ -18,6 +18,7 @@ interface Order {
   created_at: string;
   user_email?: string;
   items_count?: number;
+  payment_intent_id?: string;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
