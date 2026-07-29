@@ -17,7 +17,6 @@ export default function AdminSettingsPage() {
     taxRate: '18',
     freeShippingThreshold: '499',
     upiId: 'wearup@upi',
-    enableCod: true,
     orderNotifications: true,
     promoEmails: false
   });
@@ -129,12 +128,6 @@ export default function AdminSettingsPage() {
                 </div>
 
                 <div className="pt-6 border-t border-white/5">
-                  <label className="flex items-center gap-3 cursor-pointer group">
-                    <div className={`w-12 h-6 rounded-full transition-colors relative ${settings.enableCod ? 'bg-[#E8161B]' : 'bg-white/10'}`}>
-                      <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${settings.enableCod ? 'left-7' : 'left-1'}`} />
-                    </div>
-                    <span className="font-display font-bold text-sm text-white group-hover:text-[#E8161B] transition-colors">Enable Cash on Delivery</span>
-                  </label>
                 </div>
               </div>
             </div>

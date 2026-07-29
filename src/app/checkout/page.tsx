@@ -446,7 +446,7 @@ function CheckoutInner() {
                          </label>
                          <label className="flex items-center gap-2 text-white text-sm cursor-pointer">
                            <input type="radio" name="paymentMethod" value="whatsapp" checked={form.paymentMethod === 'whatsapp'} onChange={e => update('paymentMethod', e.target.value)} className="accent-[#E8161B]" />
-                           WhatsApp Order (Manual/COD)
+                           WhatsApp Order
                          </label>
                        </div>
                     ) : (
