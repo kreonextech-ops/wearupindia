@@ -246,7 +246,7 @@ function CheckoutInner() {
 
       clearCart();
       
-      const hasGraphicKits = cart.some((item: any) => item.category === 'graphic-kits');
+      // Removed duplicate declaration of hasGraphicKits
       if (form.paymentMethod === 'online') {
         const res = await fetch('/api/payment/create-order', {
            method: 'POST',
