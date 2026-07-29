@@ -155,11 +155,22 @@ function CheckoutInner() {
   const update = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
 
   const shipping = 0; // cartTotal >= 499 ? 0 : 99; // Temporarily free for all orders
-  const couponDiscount = appliedCoupon?.discountAmount || 0;
-  const total = cartTotal + shipping - couponDiscount;
   const hasGraphicKits = cart.some((item: any) => item.category === 'graphic-kits' || item.slug?.includes('graphic-kit'));
+  const couponDiscount = (hasGraphicKits && appliedCoupon) ? appliedCoupon.discountAmount : 0;
+  const total = cartTotal + shipping - couponDiscount;
+
+  // Force online payment if a coupon is applied
+  useEffect(() => {
+    if (appliedCoupon && form.paymentMethod !== 'online') {
+      setForm(prev => ({ ...prev, paymentMethod: 'online' }));
+    }
+  }, [appliedCoupon, form.paymentMethod]);
 
   const handlePlaceOrder = async () => {
+    if (appliedCoupon && form.paymentMethod !== 'online') {
+      setPlaceError('Coupons are only valid for prepaid (online) orders.');
+      return;
+    }
     setPlacing(true);
     setPlaceError('');
     const supabase = createClient();
@@ -220,7 +231,7 @@ function CheckoutInner() {
 
       setOrderId(finalOrderId);
 
-      if (appliedCoupon) {
+      if (appliedCoupon && hasGraphicKits) {
         await supabase.from('coupon_usages').insert([{
           coupon_id: appliedCoupon.couponId,
           coupon_code: appliedCoupon.code,
@@ -444,9 +455,10 @@ function CheckoutInner() {
                            <input type="radio" name="paymentMethod" value="online" checked={form.paymentMethod === 'online'} onChange={e => update('paymentMethod', e.target.value)} className="accent-[#E8161B]" />
                            Pay Online (Cashfree)
                          </label>
-                         <label className="flex items-center gap-2 text-white text-sm cursor-pointer">
-                           <input type="radio" name="paymentMethod" value="whatsapp" checked={form.paymentMethod === 'whatsapp'} onChange={e => update('paymentMethod', e.target.value)} className="accent-[#E8161B]" />
+                         <label className={`flex items-center gap-2 text-sm ${appliedCoupon ? 'text-[#444] cursor-not-allowed' : 'text-white cursor-pointer'}`}>
+                           <input type="radio" name="paymentMethod" value="whatsapp" checked={form.paymentMethod === 'whatsapp'} disabled={!!appliedCoupon} onChange={e => update('paymentMethod', e.target.value)} className="accent-[#E8161B]" />
                            WhatsApp Order
+                           {appliedCoupon && <span className="text-[10px] text-[#E8161B] ml-2 font-mono uppercase tracking-wider">(Not available with coupon)</span>}
                          </label>
                        </div>
                     ) : (
@@ -508,7 +520,7 @@ function CheckoutInner() {
                     {shipping === 0 ? 'FREE' : formatPrice(shipping)}
                   </span>
                 </div>
-                {appliedCoupon && (
+                {(appliedCoupon && hasGraphicKits) && (
                   <div className="flex justify-between text-sm">
                     <span className="font-mono text-[10px] text-green-400">Coupon: {appliedCoupon.code}</span>
                     <span className="font-display font-bold text-green-400">−{formatPrice(couponDiscount)}</span>

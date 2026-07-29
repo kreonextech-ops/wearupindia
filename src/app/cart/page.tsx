@@ -14,19 +14,29 @@ export default function CartPage() {
   const [couponError, setCouponError] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
 
+  const graphicKitsTotal = cart
+    .filter((item: any) => item.category === 'graphic-kits' || item.slug?.includes('graphic-kit'))
+    .reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
   const shipping = cartTotal >= 499 ? 0 : 99;
   const discount = couponApplied?.discountAmount || 0;
   const total = cartTotal + shipping - discount;
 
   const handleApplyCoupon = async () => {
     if (!couponInput.trim()) return;
+    
+    if (graphicKitsTotal === 0) {
+      setCouponError('Coupons are only valid for graphic kits.');
+      return;
+    }
+
     setCouponLoading(true);
     setCouponError('');
     try {
       const res = await fetch('/api/coupons/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: couponInput.trim(), cartTotal }),
+        body: JSON.stringify({ code: couponInput.trim(), cartTotal: graphicKitsTotal }),
       });
       const data = await res.json();
       if (data.valid) {
@@ -168,6 +178,7 @@ export default function CartPage() {
                     </button>
                   </div>
                   {couponError && <p className="font-mono text-[10px] text-red-400">{couponError}</p>}
+                  <p className="font-mono text-[10px] text-[#666] mt-1">Valid on prepaid orders for graphic kits only.</p>
                 </div>
               )}
 
