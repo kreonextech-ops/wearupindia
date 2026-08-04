@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Search, Package, Truck, CheckCircle2, XCircle, Clock, Eye, ChevronDown, X, Loader2 } from 'lucide-react';
+import { ShoppingCart, Search, Package, Truck, CheckCircle2, XCircle, Clock, Eye, ChevronDown, X, Loader2, Trash2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { formatINR } from '@/lib/analytics';
 import Link from 'next/link';
@@ -122,6 +122,26 @@ export default function AdminOrdersPage() {
     await supabase.from('orders').update({ payment_status: newPaymentStatus, updated_at: new Date().toISOString() }).eq('id', orderId);
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, payment_status: newPaymentStatus } : o));
     setUpdatingId(null);
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!confirm('Are you sure you want to delete this order? This action cannot be undone and will remove it from the customer\'s view.')) return;
+    setUpdatingId(orderId);
+    try {
+      // Delete from related tables first to avoid foreign key errors (if cascade delete is not set)
+      await supabase.from('order_items').delete().eq('order_id', orderId);
+      await supabase.from('coupon_usages').delete().eq('order_id', orderId);
+      
+      const { error } = await supabase.from('orders').delete().eq('id', orderId);
+      if (error) throw error;
+      
+      setOrders(prev => prev.filter(o => o.id !== orderId));
+    } catch (err: any) {
+      console.error('Delete order error:', err.message);
+      alert('Failed to delete order. Please try again.');
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   const filtered = orders.filter(o => {
@@ -356,6 +376,14 @@ export default function AdminOrdersPage() {
                         </select>
                         <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
                       </div>
+                      <button
+                        onClick={() => handleDeleteOrder(order.id)}
+                        disabled={updatingId === order.id}
+                        className="flex items-center justify-center gap-2 w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 hover:border-red-500/50 rounded-lg px-3 py-2 font-mono text-[9px] uppercase tracking-widest transition-all disabled:opacity-40"
+                      >
+                        <Trash2 size={12} />
+                        Delete
+                      </button>
                     </div>
                   </div>
                 </div>
