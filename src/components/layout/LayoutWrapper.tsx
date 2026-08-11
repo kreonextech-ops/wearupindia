@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import CouponPopup from '@/components/ui/CouponPopup';
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -12,7 +13,12 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     <>
       {!isAdmin && <Navbar />}
       <main>{children}</main>
-      {!isAdmin && <Footer />}
+      {!isAdmin && (
+        <>
+          <Footer />
+          <CouponPopup />
+        </>
+      )}
     </>
   );
 }

@@ -22,6 +22,7 @@ type Coupon = {
   influencer_contact: string | null;
   created_at: string;
   revenue_attributed?: number;
+  show_in_popup?: boolean;
 };
 
 const inputCls = 'w-full bg-[#0d0d0d] border border-white/10 text-white placeholder-[#444] px-4 py-2.5 font-mono text-xs focus:outline-none focus:border-[#E8161B] transition-colors rounded-lg';
@@ -35,6 +36,8 @@ export default function AdminCouponsPage() {
   const [createError, setCreateError] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [extendingId, setExtendingId] = useState<string | null>(null);
+  const [settingPopupId, setSettingPopupId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     code: '', discount_type: 'percent', discount_value: '',
@@ -110,6 +113,41 @@ export default function AdminCouponsPage() {
     await supabase.from('coupons').delete().eq('id', id);
     setCoupons(prev => prev.filter(c => c.id !== id));
     setDeletingId(null);
+  };
+
+  const handleSetPopup = async (coupon: Coupon) => {
+    setSettingPopupId(coupon.id);
+    
+    if (!coupon.show_in_popup) {
+        const currentPopup = coupons.find(c => c.show_in_popup);
+        if (currentPopup) {
+            await supabase.from('coupons').update({ show_in_popup: false }).eq('id', currentPopup.id);
+        }
+        await supabase.from('coupons').update({ show_in_popup: true }).eq('id', coupon.id);
+        setCoupons(prev => prev.map(c => ({ ...c, show_in_popup: c.id === coupon.id })));
+    } else {
+        await supabase.from('coupons').update({ show_in_popup: false }).eq('id', coupon.id);
+        setCoupons(prev => prev.map(c => c.id === coupon.id ? { ...c, show_in_popup: false } : c));
+    }
+    
+    setSettingPopupId(null);
+  };
+
+  const handleExtendExpiry = async (coupon: Coupon) => {
+    const defaultDate = coupon.expiry_date ? new Date(coupon.expiry_date).toISOString().split('T')[0] : '';
+    const newDateStr = prompt('Enter new expiry date (YYYY-MM-DD):', defaultDate);
+    if (!newDateStr) return;
+    
+    const parsedDate = new Date(newDateStr);
+    if (isNaN(parsedDate.getTime())) {
+      alert('Invalid date format.');
+      return;
+    }
+    
+    setExtendingId(coupon.id);
+    await supabase.from('coupons').update({ expiry_date: parsedDate.toISOString() }).eq('id', coupon.id);
+    setCoupons(prev => prev.map(c => c.id === coupon.id ? { ...c, expiry_date: parsedDate.toISOString() } : c));
+    setExtendingId(null);
   };
 
   const formatDiscount = (c: Coupon) =>
@@ -251,7 +289,7 @@ export default function AdminCouponsPage() {
           <table className="w-full min-w-[900px]">
             <thead>
               <tr className="border-b border-white/5">
-                {['Code', 'Influencer', 'Discount', 'Used / Limit', 'Revenue Attr.', 'Expiry', 'Status', 'Actions'].map(h => (
+                {['Code', 'Influencer', 'Discount', 'Used / Limit', 'Revenue Attr.', 'Expiry', 'Popup', 'Status', 'Actions'].map(h => (
                   <th key={h} className="pb-3 text-left font-mono text-[9px] text-[#555] tracking-widest uppercase px-3 first:pl-0 last:pr-0">{h}</th>
                 ))}
               </tr>
@@ -297,12 +335,36 @@ export default function AdminCouponsPage() {
                   </td>
                   {/* Expiry */}
                   <td className="py-4 px-3">
-                    {coupon.expiry_date ? (
-                      <span className={`font-mono text-[10px] ${isExpired(coupon.expiry_date) ? 'text-red-400' : 'text-white/60'}`}>
-                        {new Date(coupon.expiry_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
-                        {isExpired(coupon.expiry_date) && ' (Expired)'}
-                      </span>
-                    ) : <span className="font-mono text-[9px] text-white/20">No expiry</span>}
+                    <div className="flex flex-col items-start gap-1">
+                      {coupon.expiry_date ? (
+                        <span className={`font-mono text-[10px] ${isExpired(coupon.expiry_date) ? 'text-red-400' : 'text-white/60'}`}>
+                          {new Date(coupon.expiry_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
+                          {isExpired(coupon.expiry_date) && ' (Expired)'}
+                        </span>
+                      ) : <span className="font-mono text-[9px] text-white/20">No expiry</span>}
+                      
+                      <button 
+                        onClick={() => handleExtendExpiry(coupon)}
+                        disabled={extendingId === coupon.id}
+                        className="text-[9px] font-mono uppercase tracking-widest text-[#E8161B] hover:text-white transition-colors disabled:opacity-50"
+                      >
+                        {extendingId === coupon.id ? 'Saving...' : 'Extend'}
+                      </button>
+                    </div>
+                  </td>
+                  {/* Popup */}
+                  <td className="py-4 px-3">
+                    <button
+                      onClick={() => handleSetPopup(coupon)}
+                      disabled={settingPopupId === coupon.id}
+                      className={`font-mono text-[9px] uppercase tracking-widest px-2 py-1 rounded border transition-all disabled:opacity-40 ${
+                        coupon.show_in_popup 
+                          ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' 
+                          : 'bg-white/5 border-white/10 text-white/40 hover:text-white'
+                      }`}
+                    >
+                      {settingPopupId === coupon.id ? '...' : (coupon.show_in_popup ? 'Is Popup' : 'Set Popup')}
+                    </button>
                   </td>
                   {/* Status toggle */}
                   <td className="py-4 px-3">
