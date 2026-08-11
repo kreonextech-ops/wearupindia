@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient as createBrowserClient } from '@supabase/supabase-js';
 
+export const dynamic = 'force-dynamic';
+
 // Use the service-role-free anon key directly
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
