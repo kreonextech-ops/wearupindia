@@ -161,10 +161,12 @@ function CheckoutInner() {
 
   // Force online payment if a coupon is applied
   useEffect(() => {
-    if (appliedCoupon && form.paymentMethod !== 'online') {
+    if (hasGraphicKits && form.paymentMethod !== 'online') {
+      setForm(prev => ({ ...prev, paymentMethod: 'online' }));
+    } else if (appliedCoupon && form.paymentMethod !== 'online') {
       setForm(prev => ({ ...prev, paymentMethod: 'online' }));
     }
-  }, [appliedCoupon, form.paymentMethod]);
+  }, [appliedCoupon, form.paymentMethod, hasGraphicKits]);
 
   const handlePlaceOrder = async () => {
     if (appliedCoupon && form.paymentMethod !== 'online') {
@@ -450,17 +452,13 @@ function CheckoutInner() {
                   <div className="p-5 bg-[#111] border border-[#1a1a1a]">
                     <h3 className={labelClass}>Payment Mode</h3>
                     {hasGraphicKits ? (
-                       <div className="flex flex-col gap-2 mt-2">
-                         <label className="flex items-center gap-2 text-white text-sm cursor-pointer">
-                           <input type="radio" name="paymentMethod" value="online" checked={form.paymentMethod === 'online'} onChange={e => update('paymentMethod', e.target.value)} className="accent-[#E8161B]" />
-                           Pay Online (Cashfree)
-                         </label>
-                         <label className={`flex items-center gap-2 text-sm ${appliedCoupon ? 'text-[#444] cursor-not-allowed' : 'text-white cursor-pointer'}`}>
-                           <input type="radio" name="paymentMethod" value="whatsapp" checked={form.paymentMethod === 'whatsapp'} disabled={!!appliedCoupon} onChange={e => update('paymentMethod', e.target.value)} className="accent-[#E8161B]" />
-                           WhatsApp Order
-                           {appliedCoupon && <span className="text-[10px] text-[#E8161B] ml-2 font-mono uppercase tracking-wider">(Not available with coupon)</span>}
-                         </label>
-                       </div>
+                      <div className="flex flex-col gap-2 mt-2">
+                        <label className="flex items-center gap-2 text-white text-sm cursor-pointer">
+                          <input type="radio" name="paymentMethod" value="online" checked={true} readOnly className="accent-[#E8161B]" />
+                          Prepaid Order (Online Payment)
+                        </label>
+                        <p className="font-body text-[#E8161B] text-[11px] mt-1 ml-6">* Only prepaid orders are allowed for Graphic Kits.</p>
+                      </div>
                     ) : (
                       <>
                         <p className="font-display font-bold text-white text-sm uppercase">WhatsApp Order</p>

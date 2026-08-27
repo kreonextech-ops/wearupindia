@@ -290,6 +290,16 @@ export default function GraphicKitClient({ product, related, categorySlug }: Pro
                       Buy Now
                     </button>
                   </div>
+                  
+                  <a
+                    href={`https://wa.me/916296396462?text=Hi%20WearUp!%20I%20have%20a%20query%20about%20the%20${encodeURIComponent(product.name)}%20graphic%20kit.`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="h-12 mt-1 flex items-center justify-center gap-2 border border-green-500/20 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all w-full"
+                  >
+                    <MessageCircle size={14} />
+                    WhatsApp Us for Details
+                  </a>
                 </div>
               </div>
 
