@@ -24,7 +24,13 @@ export default function CouponPopup() {
     // Fetch the active popup coupon
     const fetchPopupCoupon = async () => {
       try {
-        const res = await fetch('/api/coupons/popup');
+        const res = await fetch('/api/coupons/popup', { 
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
         const data = await res.json();
         
         if (data.active) {

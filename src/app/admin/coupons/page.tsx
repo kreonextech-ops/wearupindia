@@ -118,16 +118,25 @@ export default function AdminCouponsPage() {
   const handleSetPopup = async (coupon: Coupon) => {
     setSettingPopupId(coupon.id);
     
-    if (!coupon.show_in_popup) {
-        const currentPopup = coupons.find(c => c.show_in_popup);
-        if (currentPopup) {
-            await supabase.from('coupons').update({ show_in_popup: false }).eq('id', currentPopup.id);
-        }
-        await supabase.from('coupons').update({ show_in_popup: true }).eq('id', coupon.id);
-        setCoupons(prev => prev.map(c => ({ ...c, show_in_popup: c.id === coupon.id })));
-    } else {
-        await supabase.from('coupons').update({ show_in_popup: false }).eq('id', coupon.id);
-        setCoupons(prev => prev.map(c => c.id === coupon.id ? { ...c, show_in_popup: false } : c));
+    try {
+      if (!coupon.show_in_popup) {
+          const currentPopup = coupons.find(c => c.show_in_popup);
+          if (currentPopup) {
+              const { error: err1 } = await supabase.from('coupons').update({ show_in_popup: false }).eq('id', currentPopup.id);
+              if (err1) throw err1;
+          }
+          const { error: err2 } = await supabase.from('coupons').update({ show_in_popup: true }).eq('id', coupon.id);
+          if (err2) throw err2;
+          
+          setCoupons(prev => prev.map(c => ({ ...c, show_in_popup: c.id === coupon.id })));
+      } else {
+          const { error } = await supabase.from('coupons').update({ show_in_popup: false }).eq('id', coupon.id);
+          if (error) throw error;
+          
+          setCoupons(prev => prev.map(c => c.id === coupon.id ? { ...c, show_in_popup: false } : c));
+      }
+    } catch (err: any) {
+      alert('Failed to update popup status: ' + err.message);
     }
     
     setSettingPopupId(null);
