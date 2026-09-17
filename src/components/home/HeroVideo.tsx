@@ -47,6 +47,8 @@ export default function HeroVideo({ src, poster, className = "", priority = fals
         muted
         loop
         playsInline
+        preload="auto"
+        poster={poster}
         onLoadedData={handleLoaded}
         onCanPlay={handleLoaded}
         onPlaying={handleLoaded}

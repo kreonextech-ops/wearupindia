@@ -5,9 +5,10 @@ import { useState, useRef, useEffect } from 'react';
 interface SequentialVideoPlayerProps {
   sources: string[];
   className?: string;
+  poster?: string;
 }
 
-export default function SequentialVideoPlayer({ sources, className = "" }: SequentialVideoPlayerProps) {
+export default function SequentialVideoPlayer({ sources, className = "", poster }: SequentialVideoPlayerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -28,6 +29,8 @@ export default function SequentialVideoPlayer({ sources, className = "" }: Seque
       autoPlay
       muted
       playsInline
+      preload="auto"
+      poster={currentIndex === 0 ? poster : undefined}
       onEnded={() => setCurrentIndex((prev) => (prev + 1) % sources.length)}
       className={className}
     />

@@ -44,6 +44,7 @@ export default function ResponsiveHeroVideo({ sources, singleSource, poster }: R
         <div className="absolute inset-0">
           <SequentialVideoPlayer 
             sources={sources}
+            poster={poster}
             className="w-full h-full object-cover opacity-60"
           />
         </div>
