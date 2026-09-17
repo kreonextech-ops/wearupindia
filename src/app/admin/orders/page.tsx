@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Search, Package, Truck, CheckCircle2, XCircle, Clock, Eye, ChevronDown, X, Loader2, Trash2 } from 'lucide-react';
+import { ShoppingCart, Search, Package, Truck, CheckCircle2, XCircle, Clock, Eye, ChevronDown, X, Loader2, Trash2, Copy } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { formatINR } from '@/lib/analytics';
 import Link from 'next/link';
@@ -320,12 +320,26 @@ export default function AdminOrdersPage() {
                           </span>
                         )}
                       </div>
-                      <p className="font-mono text-[9px] text-white/30 mt-0.5">{order.user_email}</p>
-                      {addr.full_name && (
-                        <p className="font-mono text-[9px] text-white/20 mt-0.5">
-                          {addr.full_name} · {addr.city}, {addr.state}
-                        </p>
-                      )}
+                      <div className="w-full mt-3 p-3 bg-white/[0.02] border border-white/[0.05] rounded-xl flex items-start justify-between gap-4">
+                        <div className="font-mono text-[10px] text-white/40 leading-relaxed">
+                          {addr.full_name && <span className="text-white/80 font-bold block mb-1">{addr.full_name}</span>}
+                          {addr.street && <span>{addr.street}<br/></span>}
+                          {(addr.city || addr.state || addr.zip) && <span>{[addr.city, addr.state].filter(Boolean).join(', ')} - {addr.zip}<br/></span>}
+                          {addr.phone && <span>Phone: {addr.phone}<br/></span>}
+                          {addr.email && <span>Email: {addr.email}</span>}
+                        </div>
+                        <button 
+                          onClick={() => {
+                            const text = `${addr.full_name || ''}\n${addr.street || ''}\n${[addr.city, addr.state].filter(Boolean).join(', ')} - ${addr.zip || ''}\nPhone: ${addr.phone || ''}\nEmail: ${addr.email || ''}`.trim();
+                            navigator.clipboard.writeText(text);
+                            alert('Address copied!');
+                          }}
+                          className="p-2 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-lg transition-colors flex-shrink-0"
+                          title="Copy Address"
+                        >
+                          <Copy size={14} />
+                        </button>
+                      </div>
                     </div>
                   </div>
 
