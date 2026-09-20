@@ -409,7 +409,14 @@ export default function AdminOrdersPage() {
                     <div className="space-y-2">
                       {(order as any).items.map((item: any, idx: number) => {
                         const snapshotItem = order.shipping_address?.cart_snapshot?.find((i: any) => i.name === item.products?.name);
-                        const sizeDisplay = snapshotItem?.size ? ` - Size: ${snapshotItem.size}` : '';
+                        
+                        let opts = [];
+                        if (snapshotItem?.size) opts.push(`Size: ${snapshotItem.size}`);
+                        if (snapshotItem?.model) opts.push(`Model: ${snapshotItem.model}`);
+                        if (snapshotItem?.quality) opts.push(`Quality: ${snapshotItem.quality}`);
+                        if (snapshotItem?.finish) opts.push(`Finish: ${snapshotItem.finish}`);
+                        
+                        const displayOptions = opts.length > 0 ? ` - ${opts.join(' | ')}` : '';
                         
                         return (
                           <div key={idx} className="flex justify-between items-center bg-white/5 rounded-lg px-4 py-2">
@@ -420,7 +427,7 @@ export default function AdminOrdersPage() {
                                 className="font-display font-bold text-sm text-white hover:text-[#E8161B] transition-colors"
                               >
                                 {item.products?.name || 'Unknown Product'}
-                                <span className="text-white/60 font-mono text-xs">{sizeDisplay}</span>
+                                <span className="text-white/60 font-mono text-xs">{displayOptions}</span>
                               </Link>
                             </div>
                             <span className="font-mono text-xs text-white/60">{formatINR(item.price_at_purchase)}</span>

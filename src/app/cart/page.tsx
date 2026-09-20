@@ -101,6 +101,15 @@ export default function CartPage() {
                       {item.selectedSize && (
                         <p className="font-mono text-[10px] text-white/50 mt-1 uppercase">Size: {item.selectedSize}</p>
                       )}
+                      {item.selectedModel && (
+                        <p className="font-mono text-[10px] text-white/50 mt-1 uppercase">Model: {item.selectedModel}</p>
+                      )}
+                      {item.selectedQuality && (
+                        <p className="font-mono text-[10px] text-white/50 mt-0.5 uppercase">Quality: {item.selectedQuality}</p>
+                      )}
+                      {item.selectedFinish && (
+                        <p className="font-mono text-[10px] text-white/50 mt-0.5 uppercase">Finish: {item.selectedFinish}</p>
+                      )}
                     </div>
                     <button onClick={() => removeFromCart(item.id)} className="text-[#444] hover:text-[#E8161B] transition-colors flex-shrink-0">
                       <Trash2 size={16} />

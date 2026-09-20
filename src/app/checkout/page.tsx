@@ -244,7 +244,15 @@ function CheckoutInner() {
         city: form.city,
         state: form.state,
         zip: form.pincode,
-        cart_snapshot: cart.map(i => ({ id: i.id, name: i.name, size: i.selectedSize, qty: i.quantity }))
+        cart_snapshot: cart.map(i => ({ 
+          id: i.id, 
+          name: i.name, 
+          size: i.selectedSize, 
+          model: i.selectedModel,
+          quality: i.selectedQuality,
+          finish: i.selectedFinish,
+          qty: i.quantity 
+        }))
       };
 
       const generatedId = uuidv4();
@@ -329,8 +337,14 @@ function CheckoutInner() {
       message += `*Shipping Address:*%0A${form.address}, ${form.city}, ${form.state} - ${form.pincode}%0A%0A`;
       message += `*Order Items:*%0A`;
       cart.forEach((item, index) => {
-         const sizeText = item.selectedSize ? ` [Size: ${item.selectedSize}]` : '';
-         message += `${index + 1}. ${item.name}${sizeText} (x${item.quantity}) - ₹${item.price}%0A`;
+         let options = [];
+         if (item.selectedSize) options.push(`Size: ${item.selectedSize}`);
+         if (item.selectedModel) options.push(`Model: ${item.selectedModel}`);
+         if (item.selectedQuality) options.push(`Quality: ${item.selectedQuality}`);
+         if (item.selectedFinish) options.push(`Finish: ${item.selectedFinish}`);
+         
+         const optionsText = options.length > 0 ? ` [${options.join(' | ')}]` : '';
+         message += `${index + 1}. ${item.name}${optionsText} (x${item.quantity}) - ₹${item.price}%0A`;
       });
       message += `%0A*Total Amount:* ₹${total}%0A`;
       
@@ -338,11 +352,19 @@ function CheckoutInner() {
       window.open(whatsappUrl, '_blank');
 
       try {
-        const itemsWithSizes = cart.map(item => ({
-          name: item.selectedSize ? `${item.name} (Size: ${item.selectedSize})` : item.name,
-          quantity: item.quantity,
-          price: item.price
-        }));
+        const itemsWithSizes = cart.map(item => {
+          let opts = [];
+          if (item.selectedSize) opts.push(`Size: ${item.selectedSize}`);
+          if (item.selectedModel) opts.push(`Model: ${item.selectedModel}`);
+          if (item.selectedQuality) opts.push(`Quality: ${item.selectedQuality}`);
+          if (item.selectedFinish) opts.push(`Finish: ${item.selectedFinish}`);
+          
+          return {
+            name: opts.length > 0 ? `${item.name} (${opts.join(' | ')})` : item.name,
+            quantity: item.quantity,
+            price: item.price
+          };
+        });
 
         console.log('Sending email payload:', {
           email: form.email,
@@ -532,6 +554,15 @@ function CheckoutInner() {
                         <p className="font-display font-bold text-xs text-white uppercase tracking-wider truncate">{item.name}</p>
                         {item.selectedSize && (
                           <p className="font-mono text-[9px] text-white/50 mt-0.5 uppercase">Size: {item.selectedSize}</p>
+                        )}
+                        {item.selectedModel && (
+                          <p className="font-mono text-[9px] text-white/50 mt-0.5 uppercase">Model: {item.selectedModel}</p>
+                        )}
+                        {item.selectedQuality && (
+                          <p className="font-mono text-[9px] text-white/50 mt-0.5 uppercase">Quality: {item.selectedQuality}</p>
+                        )}
+                        {item.selectedFinish && (
+                          <p className="font-mono text-[9px] text-white/50 mt-0.5 uppercase">Finish: {item.selectedFinish}</p>
                         )}
                         
                         <div className="flex items-center gap-3 mt-1">
