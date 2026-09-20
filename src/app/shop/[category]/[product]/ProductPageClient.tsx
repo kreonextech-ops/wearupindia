@@ -283,34 +283,25 @@ export default function ProductPageClient({ product, related, categorySlug }: Pr
                 </div>
 
                 {/* Size Selection (For T-Shirts) */}
-                {isTShirt && (product as any).sizes && (
+                {isTShirt && (
                   <div className="mb-8">
                     <div className="flex items-center justify-between mb-4">
                       <p className="font-mono text-[10px] tracking-[0.2em] font-black uppercase text-foreground/40">Select Size</p>
                       <button className="text-[9px] font-mono text-wu-red uppercase tracking-widest hover:underline transition-all">Size Guide</button>
                     </div>
                     <div className="flex flex-wrap gap-3">
-                      {Object.entries((product as any).sizes).map(([size, stock]) => {
-                        const isOutOfStock = (stock as number) <= 0;
+                      {['S', 'M', 'L', 'XL', 'XXL'].map(size => {
                         return (
                           <button
                             key={size}
-                            disabled={isOutOfStock}
                             onClick={() => setSelectedSize(size)}
                             className={`w-14 h-14 rounded-xl border font-display font-bold text-sm transition-all relative overflow-hidden ${
-                              isOutOfStock 
-                                ? 'bg-background/20 border-white/5 text-white/10 cursor-not-allowed opacity-50' 
-                                : selectedSize === size
+                                selectedSize === size
                                   ? 'bg-wu-red border-wu-red text-white shadow-lg shadow-wu-red/20'
                                   : 'bg-background/50 border-border text-foreground hover:border-wu-red/50 hover:bg-foreground/5'
                             }`}
                           >
                             {size}
-                            {isOutOfStock && (
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-10 h-[1px] bg-white/20 rotate-45" />
-                              </div>
-                            )}
                           </button>
                         );
                       })}

@@ -117,7 +117,6 @@ export default function AdminTShirtsPage() {
               <tr>
                 <th className="px-6 py-5">Product</th>
                 <th className="px-6 py-5">Total Stock</th>
-                <th className="px-6 py-5">Size Breakdown</th>
                 <th className="px-6 py-5 text-right">Actions</th>
               </tr>
             </thead>
@@ -137,16 +136,6 @@ export default function AdminTShirtsPage() {
                     <span className={`px-2 py-1 rounded-full text-[9px] font-mono tracking-widest uppercase ${p.stock > 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
                       {p.stock} Units
                     </span>
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="flex gap-1.5">
-                      {Object.entries(p.sizes || {}).map(([size, qty]: any) => (
-                        <div key={size} className="flex flex-col items-center">
-                          <span className={`w-7 h-7 rounded flex items-center justify-center font-display text-[10px] font-bold ${qty > 0 ? 'bg-white/10 text-white' : 'bg-red-500/10 text-red-500 opacity-30'}`}>{size}</span>
-                          <span className="text-[8px] font-mono text-white/20 mt-1">{qty}</span>
-                        </div>
-                      ))}
-                    </div>
                   </td>
                   <td className="px-6 py-5 text-right">
                     <div className="flex justify-end gap-2">
@@ -174,57 +163,11 @@ function EditTShirtForm({ product, onSuccess }: any) {
   const [error, setError] = React.useState<string | null>(null);
   const [pending, setPending] = React.useState(false);
   const [preview, setPreview] = React.useState(product.images?.[0]);
-  
-  // Initialize sizes from product.sizes
-  const [sizes, setSizes] = React.useState<Record<string, { active: boolean; qty: number }>>(() => {
-    const base = {
-      S: { active: false, qty: 0 },
-      M: { active: false, qty: 0 },
-      L: { active: false, qty: 0 },
-      XL: { active: false, qty: 0 },
-      XXL: { active: false, qty: 0 }
-    };
-    if (product.sizes) {
-      Object.entries(product.sizes).forEach(([s, qty]: any) => {
-        if (base[s as keyof typeof base]) {
-          base[s as keyof typeof base] = { active: true, qty: qty };
-        }
-      });
-    }
-    return base;
-  });
-
-  const toggleSize = (size: string) => {
-    setSizes(prev => ({
-      ...prev,
-      [size]: { ...prev[size], active: !prev[size].active, qty: !prev[size].active ? (prev[size].qty || 1) : 0 }
-    }));
-  };
-
-  const handleQtyChange = (size: string, value: string) => {
-    const num = parseInt(value) || 0;
-    setSizes(prev => ({
-      ...prev,
-      [size]: { ...prev[size], qty: num >= 0 ? num : 0, active: num > 0 ? true : prev[size].active }
-    }));
-  };
 
   const clientAction = async (formData: FormData) => {
     setError(null);
     setPending(true);
 
-    const activeSizes: Record<string, number> = {};
-    Object.entries(sizes).forEach(([s, data]) => {
-      if (data.active) activeSizes[s] = data.qty;
-    });
-
-    if (Object.keys(activeSizes).length === 0) {
-      setError("Please select at least one size.");
-      setPending(false);
-      return;
-    }
-
-    formData.append('sizes', JSON.stringify(activeSizes));
     const res = await updateTShirtAction(product.id, formData);
     setPending(false);
     if (res.success) onSuccess();
@@ -251,30 +194,9 @@ function EditTShirtForm({ product, onSuccess }: any) {
         <input name="price" type="number" defaultValue={product.price} placeholder="Price" className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white text-sm focus:border-[#E8161B]/50 outline-none transition-all" required />
       </div>
       
-      <div className="space-y-4 pt-4 border-t border-white/5">
-        <label className="font-mono text-[10px] text-[#E8161B] tracking-[0.2em] uppercase font-bold block">Size & Inventory</label>
-        <div className="grid grid-cols-5 gap-2">
-          {Object.entries(sizes).map(([s, data]) => (
-            <div key={s} className="space-y-2">
-              <button
-                type="button"
-                onClick={() => toggleSize(s)}
-                className={`w-full py-1 text-center font-display font-black text-[10px] rounded-t-lg transition-all border-x border-t ${
-                  data.active ? 'bg-[#E8161B] border-[#E8161B] text-white' : 'bg-white/5 border-white/10 text-white/20'
-                }`}
-              >
-                {s}
-              </button>
-              <input
-                type="number"
-                value={data.qty}
-                onChange={e => handleQtyChange(s, e.target.value)}
-                placeholder="0"
-                className={`w-full bg-white/5 border border-white/5 rounded-b-lg py-2 text-center text-white text-xs focus:border-[#E8161B]/50 outline-none transition-all ${!data.active ? 'opacity-20' : ''}`}
-              />
-            </div>
-          ))}
-        </div>
+      <div className="space-y-2">
+        <label className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase">Total Stock</label>
+        <input name="stock" type="number" defaultValue={product.stock} placeholder="100" className="w-full bg-white/5 border border-white/5 rounded-xl py-3 px-4 text-white text-sm focus:border-[#E8161B]/50 outline-none transition-all" required />
       </div>
 
       <div className="space-y-2">

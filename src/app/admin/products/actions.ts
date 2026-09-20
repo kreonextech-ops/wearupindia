@@ -20,13 +20,9 @@ export async function createTShirtAction(formData: FormData) {
     const price = parseFloat(formData.get('price') as string);
     const description = formData.get('description') as string;
     const imageFile = formData.get('image') as File;
-    const fit = formData.get('fit') as string;
     const material = formData.get('material') as string;
     const sku = formData.get('sku') as string;
-    const sizesRaw = formData.get('sizes') as string; 
-
-    let sizes: Record<string, number> = {};
-    try { sizes = JSON.parse(sizesRaw); } catch { sizes = {}; }
+    const stock = parseInt(formData.get('stock') as string) || 0;
 
     const { data: cat } = await supabase.from('categories').select('id').eq('slug', 'tshirts').single();
     if (!cat) throw new Error('T-Shirts category not found.');
@@ -36,7 +32,6 @@ export async function createTShirtAction(formData: FormData) {
     const filePath = `products/tshirts/${slug}.${fileExt}`;
     const publicUrl = await uploadToR2(imageFile, filePath);
 
-    const totalStock = Object.values(sizes).reduce((a, b) => a + b, 0);
     const { data: product, error: pError } = await supabase
       .from('products')
       .insert([{
@@ -45,30 +40,16 @@ export async function createTShirtAction(formData: FormData) {
         category_id: cat.id,
         price,
         description,
-        stock: totalStock,
+        stock,
         images: [publicUrl],
         is_new: true,
         is_featured: false,
-        meta_data: { fit, material, sku, type: 'tshirt' }
+        meta_data: { material, sku, type: 'tshirt' }
       }])
       .select()
       .single();
 
     if (pError) throw pError;
-
-    const variantRows = Object.entries(sizes)
-      .filter(([_, qty]) => qty >= 0)
-      .map(([size, qty]) => ({
-        product_id: product.id,
-        name: 'Size',
-        value: size,
-        stock: qty
-      }));
-
-    if (variantRows.length > 0) {
-      const { error: vError } = await supabase.from('variants').insert(variantRows);
-      if (vError) throw vError;
-    }
 
     revalidatePath('/admin/t-shirts');
     revalidatePath('/shop');
@@ -248,10 +229,7 @@ export async function updateTShirtAction(productId: string, formData: FormData) 
     const price = parseFloat(formData.get('price') as string);
     const description = formData.get('description') as string;
     const imageFile = formData.get('image') as File | null;
-    const sizesRaw = formData.get('sizes') as string;
-
-    let sizes: Record<string, number> = {};
-    try { sizes = JSON.parse(sizesRaw); } catch { sizes = {}; }
+    const stock = parseInt(formData.get('stock') as string) || 0;
 
     const { data: existing } = await supabase.from('products').select('*').eq('id', productId).single();
     if (!existing) throw new Error('Product not found');
@@ -264,29 +242,22 @@ export async function updateTShirtAction(productId: string, formData: FormData) 
       imageUrls = [publicUrl];
     }
 
-    const totalStock = Object.values(sizes).reduce((a, b) => a + b, 0);
     const { error: pError } = await supabase
       .from('products')
       .update({
         name,
         price,
         description,
-        stock: totalStock,
+        stock,
         images: imageUrls,
         updated_at: new Date().toISOString()
       })
       .eq('id', productId);
 
     if (pError) throw pError;
-
+    
+    // Cleanup any old variants if they existed
     await supabase.from('variants').delete().eq('product_id', productId);
-    const variantRows = Object.entries(sizes).map(([size, qty]) => ({
-      product_id: productId,
-      name: 'Size',
-      value: size,
-      stock: qty
-    }));
-    await supabase.from('variants').insert(variantRows);
 
     revalidatePath('/admin/t-shirts');
     revalidatePath('/shop/tshirts');

@@ -98,6 +98,9 @@ export default function CartPage() {
                       <Link href={`/shop/${item.category}/${item.slug}`}>
                         <h3 className="font-display font-bold text-base text-white hover:text-[#E8161B] transition-colors leading-tight">{item.name}</h3>
                       </Link>
+                      {item.selectedSize && (
+                        <p className="font-mono text-[10px] text-white/50 mt-1 uppercase">Size: {item.selectedSize}</p>
+                      )}
                     </div>
                     <button onClick={() => removeFromCart(item.id)} className="text-[#444] hover:text-[#E8161B] transition-colors flex-shrink-0">
                       <Trash2 size={16} />

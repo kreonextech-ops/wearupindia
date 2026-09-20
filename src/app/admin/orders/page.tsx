@@ -407,20 +407,26 @@ export default function AdminOrdersPage() {
                   <div className="w-full mt-4 pt-4 border-t border-white/5">
                     <p className="font-mono text-[9px] text-white/30 uppercase tracking-widest mb-3">Order Items</p>
                     <div className="space-y-2">
-                      {(order as any).items.map((item: any, idx: number) => (
-                        <div key={idx} className="flex justify-between items-center bg-white/5 rounded-lg px-4 py-2">
-                          <div className="flex items-center gap-3">
-                            <span className="font-display font-bold text-xs text-white/40">{item.quantity}x</span>
-                            <Link 
-                              href={`/admin/products?search=${item.products?.name}`} 
-                              className="font-display font-bold text-sm text-white hover:text-[#E8161B] transition-colors"
-                            >
-                              {item.products?.name || 'Unknown Product'}
-                            </Link>
+                      {(order as any).items.map((item: any, idx: number) => {
+                        const snapshotItem = order.shipping_address?.cart_snapshot?.find((i: any) => i.name === item.products?.name);
+                        const sizeDisplay = snapshotItem?.size ? ` - Size: ${snapshotItem.size}` : '';
+                        
+                        return (
+                          <div key={idx} className="flex justify-between items-center bg-white/5 rounded-lg px-4 py-2">
+                            <div className="flex items-center gap-3">
+                              <span className="font-display font-bold text-xs text-white/40">{item.quantity}x</span>
+                              <Link 
+                                href={`/admin/products?search=${item.products?.name}`} 
+                                className="font-display font-bold text-sm text-white hover:text-[#E8161B] transition-colors"
+                              >
+                                {item.products?.name || 'Unknown Product'}
+                                <span className="text-white/60 font-mono text-xs">{sizeDisplay}</span>
+                              </Link>
+                            </div>
+                            <span className="font-mono text-xs text-white/60">{formatINR(item.price_at_purchase)}</span>
                           </div>
-                          <span className="font-mono text-xs text-white/60">{formatINR(item.price_at_purchase)}</span>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}

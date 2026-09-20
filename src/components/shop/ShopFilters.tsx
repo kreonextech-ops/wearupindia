@@ -108,30 +108,7 @@ export default function ShopFilters({ onFilterChange, brandOptions = [], maxPric
         </div>
       )}
 
-      {/* Apparel Fit - ONLY FOR APPAREL */}
-      {isApparel && (
-        <div>
-          <label className="block font-mono text-[10px] text-wu-red tracking-[0.25em] uppercase mb-4 font-bold flex items-center gap-2">
-             <span className="w-4 h-px bg-wu-red" /> Desired Fit
-          </label>
-          <div className="flex flex-col gap-2">
-            {['Oversized', 'Regular', 'Slim'].map((fit) => (
-              <button
-                key={fit}
-                onClick={() => handleToggle(filters.fits, fit, 'fits')}
-                className={`px-4 py-3 rounded-xl border text-left font-display font-bold text-[10px] tracking-widest uppercase transition-all flex items-center justify-between ${
-                  filters.fits.includes(fit)
-                    ? 'bg-wu-red/10 border-wu-red text-wu-red'
-                    : 'bg-muted/30 border-border text-muted-foreground hover:border-wu-red/40 hover:text-foreground'
-                }`}
-              >
-                {fit}
-                {filters.fits.includes(fit) && <div className="w-1.5 h-1.5 rounded-full bg-wu-red animate-pulse" />}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+
 
       {/* Price Slider */}
       <div>

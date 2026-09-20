@@ -244,6 +244,7 @@ function CheckoutInner() {
         city: form.city,
         state: form.state,
         zip: form.pincode,
+        cart_snapshot: cart.map(i => ({ id: i.id, name: i.name, size: i.selectedSize, qty: i.quantity }))
       };
 
       const generatedId = uuidv4();
@@ -328,7 +329,8 @@ function CheckoutInner() {
       message += `*Shipping Address:*%0A${form.address}, ${form.city}, ${form.state} - ${form.pincode}%0A%0A`;
       message += `*Order Items:*%0A`;
       cart.forEach((item, index) => {
-         message += `${index + 1}. ${item.name} (x${item.quantity}) - ₹${item.price}%0A`;
+         const sizeText = item.selectedSize ? ` [Size: ${item.selectedSize}]` : '';
+         message += `${index + 1}. ${item.name}${sizeText} (x${item.quantity}) - ₹${item.price}%0A`;
       });
       message += `%0A*Total Amount:* ₹${total}%0A`;
       
@@ -336,12 +338,18 @@ function CheckoutInner() {
       window.open(whatsappUrl, '_blank');
 
       try {
+        const itemsWithSizes = cart.map(item => ({
+          name: item.selectedSize ? `${item.name} (Size: ${item.selectedSize})` : item.name,
+          quantity: item.quantity,
+          price: item.price
+        }));
+
         console.log('Sending email payload:', {
           email: form.email,
           customerName: form.firstName,
           orderId: finalOrderId,
           totalAmount: total,
-          items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
+          items: itemsWithSizes,
           paymentMode: form.paymentMethod,
         });
         const emailRes = await fetch('/api/emails/order-confirmation', {
@@ -352,7 +360,7 @@ function CheckoutInner() {
             customerName: form.firstName,
             orderId: finalOrderId,
             totalAmount: total,
-            items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
+            items: itemsWithSizes,
             paymentMode: form.paymentMethod,
           }),
         });
@@ -522,6 +530,9 @@ function CheckoutInner() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-display font-bold text-xs text-white uppercase tracking-wider truncate">{item.name}</p>
+                        {item.selectedSize && (
+                          <p className="font-mono text-[9px] text-white/50 mt-0.5 uppercase">Size: {item.selectedSize}</p>
+                        )}
                         
                         <div className="flex items-center gap-3 mt-1">
                           <div className="flex items-center border border-[#2a2a2a] bg-[#0d0d0d]">

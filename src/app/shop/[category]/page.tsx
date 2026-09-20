@@ -72,18 +72,13 @@ export default function CategoryPage({ params }: Props) {
 
       // Sizes (for apparel)
       if (isApparel && filters.sizes.length > 0) {
-        // If product has sizes in meta_data or variants
-        const productSizes = (product as any).sizes ? Object.keys((product as any).sizes) : [];
+        // T-Shirts have all sizes available
+        const productSizes = ['S', 'M', 'L', 'XL', 'XXL'];
         const hasSize = filters.sizes.some(s => productSizes.includes(s));
         if (!hasSize) return false;
       }
 
-      // Fit (for apparel)
-      if (isApparel && filters.fits.length > 0) {
-        const productFit = (product as any).meta_data?.fit;
-        const hasFit = filters.fits.some(f => productFit?.toLowerCase() === f.toLowerCase());
-        if (!hasFit) return false;
-      }
+
 
       return true;
     });
