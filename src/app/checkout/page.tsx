@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Check, ArrowLeft, ArrowRight, Lock, AlertCircle, MapPin, Loader2, Tag, X } from 'lucide-react';
+import { Check, ArrowLeft, ArrowRight, Lock, AlertCircle, MapPin, Loader2, Tag, X, Plus, Minus, Trash2 } from 'lucide-react';
 import { useStore } from '@/lib/store-context';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { load } from '@cashfreepayments/cashfree-js';
@@ -16,7 +16,7 @@ type Step = 'address' | 'payment' | 'confirm';
 const STATES = ['Andhra Pradesh','Assam','Bihar','Delhi','Goa','Gujarat','Haryana','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Odisha','Punjab','Rajasthan','Tamil Nadu','Telangana','Uttar Pradesh','West Bengal'];
 
 function CheckoutInner() {
-  const { cart, cartTotal, clearCart } = useStore();
+  const { cart, cartTotal, clearCart, updateQuantity, removeFromCart } = useStore();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [step, setStep] = useState<Step>('address');
@@ -517,14 +517,24 @@ function CheckoutInner() {
                 <div className="space-y-2">
                   {cart.map(item => (
                     <div key={item.id} className="flex gap-4 items-center p-3 bg-[#111] border border-[#1a1a1a]">
-                      <div className="relative w-14 h-14 bg-[#181818]">
+                      <div className="relative w-14 h-14 bg-[#181818] flex-shrink-0">
                         <Image src={item.images[0]} alt={item.name} fill className="object-cover opacity-80" />
                       </div>
-                      <div className="flex-1">
-                        <p className="font-display font-bold text-xs text-white uppercase tracking-wider">{item.name}</p>
-                        <p className="font-mono text-[10px] text-[#555]">QTY: {item.quantity}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-display font-bold text-xs text-white uppercase tracking-wider truncate">{item.name}</p>
+                        
+                        <div className="flex items-center gap-3 mt-1">
+                          <div className="flex items-center border border-[#2a2a2a] bg-[#0d0d0d]">
+                            <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-6 h-6 flex items-center justify-center text-[#666] hover:text-white hover:bg-[#1a1a1a] transition-colors"><Minus size={10} /></button>
+                            <span className="w-6 h-6 flex items-center justify-center font-mono text-[10px] text-white">{item.quantity}</span>
+                            <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-6 h-6 flex items-center justify-center text-[#666] hover:text-white hover:bg-[#1a1a1a] transition-colors"><Plus size={10} /></button>
+                          </div>
+                          <button onClick={() => removeFromCart(item.id)} className="text-[#444] hover:text-[#E8161B] transition-colors flex-shrink-0">
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
                       </div>
-                      <span className="font-display font-bold text-sm text-white">{formatPrice(item.price * item.quantity)}</span>
+                      <span className="font-display font-bold text-sm text-white flex-shrink-0">{formatPrice(item.price * item.quantity)}</span>
                     </div>
                   ))}
                 </div>
