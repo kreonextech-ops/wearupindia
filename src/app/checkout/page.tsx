@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Check, ArrowLeft, ArrowRight, Lock, AlertCircle, MapPin } from 'lucide-react';
+import { Check, ArrowLeft, ArrowRight, Lock, AlertCircle, MapPin, Loader2, Tag, X } from 'lucide-react';
 import { useStore } from '@/lib/store-context';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { load } from '@cashfreepayments/cashfree-js';
@@ -145,12 +145,58 @@ function CheckoutInner() {
   });
 
   const [appliedCoupon, setAppliedCoupon] = useState<null | { code: string; discountAmount: number; discountType: string; discountValue: number; couponId: string }>(null);
+  const [couponInput, setCouponInput] = useState('');
+  const [couponError, setCouponError] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+
   useEffect(() => {
     const stored = localStorage.getItem('appliedCoupon');
     if (stored) {
       try { setAppliedCoupon(JSON.parse(stored)); } catch {}
     }
   }, []);
+
+  const graphicKitsTotal = cart
+    .filter((item: any) => item.category === 'graphic-kits' || item.slug?.includes('graphic-kit'))
+    .reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  const handleApplyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    
+    if (graphicKitsTotal === 0) {
+      setCouponError('Coupons are only valid for graphic kits.');
+      return;
+    }
+
+    setCouponLoading(true);
+    setCouponError('');
+    try {
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: couponInput.trim(), cartTotal: graphicKitsTotal }),
+      });
+      const data = await res.json();
+      if (data.valid) {
+        const applied = { code: data.code, discountAmount: data.discountAmount, discountType: data.discountType, discountValue: data.discountValue, couponId: data.couponId };
+        setAppliedCoupon(applied);
+        localStorage.setItem('appliedCoupon', JSON.stringify(applied));
+        setCouponInput('');
+      } else {
+        setCouponError(data.error || 'Invalid coupon code.');
+      }
+    } catch {
+      setCouponError('Could not validate coupon. Please try again.');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError('');
+    localStorage.removeItem('appliedCoupon');
+  };
 
   const update = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
 
@@ -525,10 +571,46 @@ function CheckoutInner() {
                   </div>
                 )}
               </div>
-              <div className="flex justify-between items-center border-t border-[#1a1a1a] pt-4 mt-4">
+              <div className="flex justify-between items-center border-t border-[#1a1a1a] pt-4 mt-4 mb-4">
                 <span className="font-display font-black text-base text-white">TOTAL</span>
                 <span className="font-display font-black text-xl text-[#E8161B]">{formatPrice(Math.max(0, total))}</span>
               </div>
+
+              {/* Coupon */}
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/20 rounded-lg mb-4">
+                  <div className="flex items-center gap-2">
+                    <Check size={14} className="text-green-400" />
+                    <span className="font-mono text-xs text-green-400 font-bold">{appliedCoupon.code}</span>
+                    <span className="font-mono text-[10px] text-green-400/70">
+                      ({appliedCoupon.discountType === 'percent' ? `${appliedCoupon.discountValue}% off` : `₹${appliedCoupon.discountValue} off`})
+                    </span>
+                  </div>
+                  <button onClick={handleRemoveCoupon} className="text-green-400/50 hover:text-red-400 transition-colors"><X size={14} /></button>
+                </div>
+              ) : (
+                <div className="mb-4 space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Promo code"
+                      value={couponInput}
+                      onChange={e => { setCouponInput(e.target.value.toUpperCase()); setCouponError(''); }}
+                      onKeyDown={e => e.key === 'Enter' && handleApplyCoupon()}
+                      className="flex-1 bg-[#0d0d0d] border border-[#2a2a2a] text-white placeholder-[#444] px-3 py-2 font-mono text-xs focus:outline-none focus:border-[#E8161B] transition-colors"
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      disabled={couponLoading || !couponInput.trim()}
+                      className="px-4 py-2 border border-[#2a2a2a] text-[#666] font-display font-bold text-xs uppercase hover:border-[#E8161B] hover:text-white transition-colors disabled:opacity-40"
+                    >
+                      {couponLoading ? <Loader2 size={14} className="animate-spin" /> : 'Apply'}
+                    </button>
+                  </div>
+                  {couponError && <p className="font-mono text-[10px] text-red-400">{couponError}</p>}
+                  <p className="font-mono text-[10px] text-[#666] mt-1">Valid on prepaid orders for graphic kits only.</p>
+                </div>
+              )}
               <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[#1a1a1a]">
                 <Lock size={12} className="text-[#555]" />
                 <span className="font-mono text-[10px] text-[#555]">256-bit SSL secured checkout</span>
