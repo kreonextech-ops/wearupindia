@@ -79,10 +79,16 @@ export default function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-muted-foreground/50 text-xs font-mono">
-            © 2026 WEARUP. ALL RIGHTS RESERVED.
-          </p>
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <p className="text-muted-foreground/50 text-xs font-mono">
+              © 2026 WEARUP. ALL RIGHTS RESERVED.
+            </p>
+            <span className="hidden sm:inline text-muted-foreground/30">•</span>
+            <p className="text-muted-foreground/50 text-xs font-mono">
+              MADE BY <a href="https://www.kreonex.com" target="_blank" rel="noopener noreferrer" className="hover:text-wu-red transition-colors underline decoration-muted-foreground/30 underline-offset-4">KREONEX MEDIA</a>
+            </p>
+          </div>
           <p className="text-muted-foreground/30 text-xs font-mono">
             RIDE BOLD. STAY TRUE.
           </p>
