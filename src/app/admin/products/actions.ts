@@ -449,20 +449,30 @@ export async function getProductsWithVariantsAction(categorySlug: string) {
   }
 }
 
+export async function getCachedCategoryProducts(categorySlug: string) {
+  return unstable_cache(
+    async () => {
+      const supabase = createSupabaseClient(config.supabase.url, config.supabase.anonKey);
+      const { data, error } = await supabase
+        .from('products')
+        .select(`*, categories!inner(slug), variants(*)`)
+        .eq('categories.slug', categorySlug)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+    [`category-products-${categorySlug}`],
+    { revalidate: 3600, tags: ['products'] }
+  )();
+}
+
 /**
  * GENERIC: Fetch Products (Backwards compatibility)
  */
 export async function getProductsAction(categorySlug: string) {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
   try {
-    const { data, error } = await supabase
-      .from('products')
-      .select(`*, categories!inner(slug), variants(*)`)
-      .eq('categories.slug', categorySlug)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
+    const data = await getCachedCategoryProducts(categorySlug);
     
     const mappedData = data.map((p: any) => ({
       ...p,
@@ -483,23 +493,32 @@ export async function getProductsAction(categorySlug: string) {
   }
 }
 
+export async function getCachedProductBySlug(categorySlug: string, productSlug: string) {
+  return unstable_cache(
+    async () => {
+      const supabase = createSupabaseClient(config.supabase.url, config.supabase.anonKey);
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          categories!inner(slug),
+          variants(*)
+        `)
+        .eq('categories.slug', categorySlug)
+        .eq('slug', productSlug)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    [`product-by-slug-${categorySlug}-${productSlug}`],
+    { revalidate: 3600, tags: ['products'] }
+  )();
+}
+
 export async function getProductBySlugAction(categorySlug: string, productSlug: string) {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
-
   try {
-    const { data, error } = await supabase
-      .from('products')
-      .select(`
-        *,
-        categories!inner(slug),
-        variants(*)
-      `)
-      .eq('categories.slug', categorySlug)
-      .eq('slug', productSlug)
-      .single();
-
-    if (error) throw error;
+    const data = await getCachedProductBySlug(categorySlug, productSlug);
 
     const mappedProduct = {
       ...data,
