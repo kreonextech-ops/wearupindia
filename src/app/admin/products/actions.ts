@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath, unstable_cache } from 'next/cache';
+import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
@@ -53,6 +53,7 @@ export async function createTShirtAction(formData: FormData) {
 
     revalidatePath('/admin/t-shirts');
     revalidatePath('/shop');
+    revalidateTag('products');
     revalidatePath('/shop/t-shirts');
     return { success: true, data: product };
   } catch (error: any) {
@@ -131,6 +132,7 @@ export async function createProductAction(formData: FormData) {
     if (error) throw error;
     revalidatePath('/admin/products');
     revalidatePath('/shop');
+    revalidateTag('products');
     return { success: true, data };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -211,6 +213,7 @@ export async function updateProductAction(productId: string, formData: FormData)
     
     revalidatePath('/admin/products');
     revalidatePath('/shop');
+    revalidateTag('products');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -261,6 +264,7 @@ export async function updateTShirtAction(productId: string, formData: FormData) 
 
     revalidatePath('/admin/t-shirts');
     revalidatePath('/shop/tshirts');
+    revalidateTag('products');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -320,7 +324,9 @@ export async function deleteProductAction(productId: string) {
     revalidatePath('/admin/products');
     revalidatePath('/admin/inventory');
     revalidatePath('/shop');
+    revalidateTag('products');
     revalidatePath('/shop/graphic-kits');
+    revalidateTag('products');
     revalidatePath('/shop/bike-accessories');
     return { success: true };
   } catch (error: any) {
@@ -616,7 +622,9 @@ export async function createGraphicKitAction(formData: FormData) {
 
     revalidatePath('/admin/graphic-kits');
     revalidatePath('/shop');
+    revalidateTag('products');
     revalidatePath('/shop/graphic-kits');
+    revalidateTag('products');
     return { success: true, data: product };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -709,6 +717,7 @@ export async function updateGraphicKitAction(productId: string, formData: FormDa
 
     revalidatePath('/admin/graphic-kits');
     revalidatePath('/shop');
+    revalidateTag('products');
     revalidatePath('/admin/inventory');
     return { success: true };
   } catch (error: any) {
@@ -769,6 +778,7 @@ export async function duplicateProductAction(productId: string) {
     revalidatePath('/admin/products');
     revalidatePath('/admin/inventory');
     revalidatePath('/shop');
+    revalidateTag('products');
 
     return { success: true, data: newProduct };
   } catch (error: any) {
