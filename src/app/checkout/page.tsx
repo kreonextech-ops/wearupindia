@@ -151,6 +151,7 @@ function CheckoutInner() {
     address: '', city: '', state: '', pincode: '',
     paymentMethod: 'online',
   });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const [appliedCoupon, setAppliedCoupon] = useState<null | { code: string; discountAmount: number; discountType: string; discountValue: number; couponId: string }>(null);
   const [couponInput, setCouponInput] = useState('');
@@ -206,7 +207,33 @@ function CheckoutInner() {
     localStorage.removeItem('appliedCoupon');
   };
 
-  const update = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
+  const update = (key: string, value: string) => {
+    setForm(prev => ({ ...prev, [key]: value }));
+    setPlaceError('');
+    if (fieldErrors[key]) {
+      setFieldErrors(prev => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    }
+  };
+
+  const handlePhoneChange = (val: string) => {
+    let digits = val.replace(/\D/g, '');
+    if (val.startsWith('+91') || val.startsWith('91')) {
+      if (digits.length > 10 && digits.startsWith('91')) {
+        digits = digits.slice(2);
+      }
+    } else if (digits.length > 10 && digits.startsWith('0')) {
+      digits = digits.slice(1);
+    }
+    update('phone', digits.slice(0, 10));
+  };
+
+  const handlePincodeChange = (val: string) => {
+    update('pincode', val.replace(/\D/g, '').slice(0, 6));
+  };
 
   const shipping = 0; // cartTotal >= 499 ? 0 : 99; // Temporarily free for all orders
   const hasGraphicKits = cart.some((item: any) => item.category === 'graphic-kits' || item.slug?.includes('graphic-kit'));
@@ -222,42 +249,65 @@ function CheckoutInner() {
     }
   }, [appliedCoupon, form.paymentMethod, hasGraphicKits]);
 
-  const handleProceedToReview = () => {
-    setPlaceError('');
+  const validateDeliveryForm = () => {
+    const errors: Record<string, string> = {};
+
     if (!form.firstName.trim()) {
-      setPlaceError('Please enter your first name.');
-      return;
+      errors.firstName = 'First name is required.';
     }
+
     const cleanPhone = form.phone.replace(/\D/g, '');
     const normalizedPhone = cleanPhone.length === 12 && cleanPhone.startsWith('91')
       ? cleanPhone.slice(2)
       : (cleanPhone.length === 11 && cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone);
 
-    if (!normalizedPhone || normalizedPhone.length !== 10) {
-      setPlaceError('Please enter a valid 10-digit Indian mobile number.');
-      return;
-    }
-    if (!form.email.trim() || !form.email.includes('@')) {
-      setPlaceError('Please enter a valid email address.');
-      return;
-    }
-    if (!form.address.trim()) {
-      setPlaceError('Please enter your full delivery address.');
-      return;
-    }
-    if (!form.city.trim()) {
-      setPlaceError('Please enter your city.');
-      return;
-    }
-    if (!form.state.trim()) {
-      setPlaceError('Please select your state.');
-      return;
-    }
-    if (!form.pincode.trim() || form.pincode.trim().length < 6) {
-      setPlaceError('Please enter a valid 6-digit pincode.');
-      return;
+    if (!normalizedPhone) {
+      errors.phone = 'Phone number is required.';
+    } else if (normalizedPhone.length !== 10) {
+      errors.phone = 'Phone number must be exactly 10 digits.';
+    } else if (!/^[6-9]\d{9}$/.test(normalizedPhone)) {
+      errors.phone = 'Enter a valid Indian mobile number starting with 6, 7, 8, or 9.';
     }
 
+    if (!form.email.trim()) {
+      errors.email = 'Email address is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      errors.email = 'Please enter a valid email address.';
+    }
+
+    if (!form.address.trim() || form.address.trim().length < 5) {
+      errors.address = 'Please enter complete delivery address (street/flat).';
+    }
+
+    if (!form.city.trim()) {
+      errors.city = 'City is required.';
+    }
+
+    if (!form.state.trim()) {
+      errors.state = 'Please select your state.';
+    }
+
+    const cleanPincode = form.pincode.replace(/\D/g, '');
+    if (!cleanPincode || cleanPincode.length !== 6) {
+      errors.pincode = 'Please enter a valid 6-digit pincode.';
+    }
+
+    setFieldErrors(errors);
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors,
+      normalizedPhone
+    };
+  };
+
+  const handleProceedToReview = () => {
+    setPlaceError('');
+    const { isValid, errors } = validateDeliveryForm();
+    if (!isValid) {
+      const firstError = Object.values(errors)[0];
+      setPlaceError(firstError || 'Please complete all required fields.');
+      return;
+    }
     setStep('confirm');
   };
 
@@ -267,13 +317,10 @@ function CheckoutInner() {
       return;
     }
 
-    const cleanPhone = form.phone.replace(/\D/g, '');
-    const normalizedPhone = cleanPhone.length === 12 && cleanPhone.startsWith('91')
-      ? cleanPhone.slice(2)
-      : (cleanPhone.length === 11 && cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone);
-
-    if (!normalizedPhone || normalizedPhone.length !== 10) {
-      setPlaceError('Please enter a valid 10-digit Indian mobile number.');
+    const { isValid, errors, normalizedPhone } = validateDeliveryForm();
+    if (!isValid) {
+      setStep('address');
+      setPlaceError(Object.values(errors)[0] || 'Please complete all required fields.');
       return;
     }
 
@@ -509,7 +556,10 @@ function CheckoutInner() {
   ];
 
   const stepIndex = steps.findIndex(s => s.key === step);
-  const inputClass = "w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white placeholder-[#444] px-4 py-3 font-body text-sm focus:outline-none focus:border-[#E8161B] transition-colors";
+  const getInputClass = (fieldName: string) => {
+    const hasError = !!fieldErrors[fieldName];
+    return `w-full bg-[#0d0d0d] border ${hasError ? 'border-red-500 focus:border-red-500' : 'border-[#2a2a2a] focus:border-[#E8161B]'} text-white placeholder-[#444] px-4 py-3 font-body text-sm focus:outline-none transition-colors`;
+  };
   const labelClass = "font-mono text-[10px] text-[#555] tracking-widest uppercase mb-1 block";
 
   return (
@@ -547,43 +597,67 @@ function CheckoutInner() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className={labelClass}>First Name</label>
-                    <input className={inputClass} placeholder="Rahul" value={form.firstName} onChange={e => update('firstName', e.target.value)} />
+                    <label className={labelClass}>First Name *</label>
+                    <input className={getInputClass('firstName')} placeholder="Rahul" value={form.firstName} onChange={e => update('firstName', e.target.value)} />
+                    {fieldErrors.firstName && <p className="font-mono text-[10px] text-red-400 mt-1">{fieldErrors.firstName}</p>}
                   </div>
                   <div>
                     <label className={labelClass}>Last Name</label>
-                    <input className={inputClass} placeholder="Sharma" value={form.lastName} onChange={e => update('lastName', e.target.value)} />
+                    <input className={getInputClass('lastName')} placeholder="Sharma" value={form.lastName} onChange={e => update('lastName', e.target.value)} />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className={labelClass}>Email Address</label>
-                    <input className={inputClass} placeholder="rahul@example.com" value={form.email} onChange={e => update('email', e.target.value)} />
+                    <label className={labelClass}>Email Address *</label>
+                    <input type="email" className={getInputClass('email')} placeholder="rahul@example.com" value={form.email} onChange={e => update('email', e.target.value)} />
+                    {fieldErrors.email && <p className="font-mono text-[10px] text-red-400 mt-1">{fieldErrors.email}</p>}
                   </div>
                   <div>
-                    <label className={labelClass}>Phone Number</label>
-                    <input className={inputClass} placeholder="10-digit mobile number (e.g. 9876543210)" value={form.phone} onChange={e => update('phone', e.target.value)} />
+                    <label className={labelClass}>10-Digit Mobile Number *</label>
+                    <div className="relative flex">
+                      <span className="inline-flex items-center px-3 bg-[#181818] border border-r-0 border-[#2a2a2a] text-[#888] font-mono text-xs select-none">+91</span>
+                      <input 
+                        type="tel"
+                        maxLength={10}
+                        className={`${getInputClass('phone')} rounded-none`} 
+                        placeholder="9876543210" 
+                        value={form.phone} 
+                        onChange={e => handlePhoneChange(e.target.value)} 
+                      />
+                    </div>
+                    {fieldErrors.phone && <p className="font-mono text-[10px] text-red-400 mt-1">{fieldErrors.phone}</p>}
                   </div>
                 </div>
                 <div>
-                  <label className={labelClass}>Full Shipping Address</label>
-                  <textarea className={`${inputClass} resize-none`} rows={3} placeholder="House No, Street, Landmark" value={form.address} onChange={e => update('address', e.target.value)} />
+                  <label className={labelClass}>Full Shipping Address *</label>
+                  <textarea className={`${getInputClass('address')} resize-none`} rows={3} placeholder="Flat / House No, Building, Street, Landmark" value={form.address} onChange={e => update('address', e.target.value)} />
+                  {fieldErrors.address && <p className="font-mono text-[10px] text-red-400 mt-1">{fieldErrors.address}</p>}
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className={labelClass}>City</label>
-                    <input className={inputClass} placeholder="Bengaluru" value={form.city} onChange={e => update('city', e.target.value)} />
+                    <label className={labelClass}>City *</label>
+                    <input className={getInputClass('city')} placeholder="Bengaluru" value={form.city} onChange={e => update('city', e.target.value)} />
+                    {fieldErrors.city && <p className="font-mono text-[10px] text-red-400 mt-1">{fieldErrors.city}</p>}
                   </div>
                   <div>
-                    <label className={labelClass}>State</label>
-                    <select className={inputClass} value={form.state} onChange={e => update('state', e.target.value)}>
+                    <label className={labelClass}>State *</label>
+                    <select className={getInputClass('state')} value={form.state} onChange={e => update('state', e.target.value)}>
                       <option value="">Select State</option>
                       {STATES.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
+                    {fieldErrors.state && <p className="font-mono text-[10px] text-red-400 mt-1">{fieldErrors.state}</p>}
                   </div>
                   <div>
-                    <label className={labelClass}>Pincode</label>
-                    <input className={inputClass} placeholder="560001" value={form.pincode} onChange={e => update('pincode', e.target.value)} />
+                    <label className={labelClass}>Pincode *</label>
+                    <input 
+                      type="text"
+                      maxLength={6}
+                      className={getInputClass('pincode')} 
+                      placeholder="560001" 
+                      value={form.pincode} 
+                      onChange={e => handlePincodeChange(e.target.value)} 
+                    />
+                    {fieldErrors.pincode && <p className="font-mono text-[10px] text-red-400 mt-1">{fieldErrors.pincode}</p>}
                   </div>
                 </div>
                 {placeError && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 font-mono text-[11px] text-center">{placeError}</div>}
