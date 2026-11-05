@@ -222,11 +222,61 @@ function CheckoutInner() {
     }
   }, [appliedCoupon, form.paymentMethod, hasGraphicKits]);
 
+  const handleProceedToReview = () => {
+    setPlaceError('');
+    if (!form.firstName.trim()) {
+      setPlaceError('Please enter your first name.');
+      return;
+    }
+    const cleanPhone = form.phone.replace(/\D/g, '');
+    const normalizedPhone = cleanPhone.length === 12 && cleanPhone.startsWith('91')
+      ? cleanPhone.slice(2)
+      : (cleanPhone.length === 11 && cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone);
+
+    if (!normalizedPhone || normalizedPhone.length !== 10) {
+      setPlaceError('Please enter a valid 10-digit Indian mobile number.');
+      return;
+    }
+    if (!form.email.trim() || !form.email.includes('@')) {
+      setPlaceError('Please enter a valid email address.');
+      return;
+    }
+    if (!form.address.trim()) {
+      setPlaceError('Please enter your full delivery address.');
+      return;
+    }
+    if (!form.city.trim()) {
+      setPlaceError('Please enter your city.');
+      return;
+    }
+    if (!form.state.trim()) {
+      setPlaceError('Please select your state.');
+      return;
+    }
+    if (!form.pincode.trim() || form.pincode.trim().length < 6) {
+      setPlaceError('Please enter a valid 6-digit pincode.');
+      return;
+    }
+
+    setStep('confirm');
+  };
+
   const handlePlaceOrder = async () => {
     if (appliedCoupon && form.paymentMethod !== 'online') {
       setPlaceError('Coupons are only valid for prepaid (online) orders.');
       return;
     }
+
+    const cleanPhone = form.phone.replace(/\D/g, '');
+    const normalizedPhone = cleanPhone.length === 12 && cleanPhone.startsWith('91')
+      ? cleanPhone.slice(2)
+      : (cleanPhone.length === 11 && cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone);
+
+    if (!normalizedPhone || normalizedPhone.length !== 10) {
+      setPlaceError('Please enter a valid 10-digit Indian mobile number.');
+      return;
+    }
+
     setPlacing(true);
     setPlaceError('');
     const supabase = createClient();
@@ -239,7 +289,7 @@ function CheckoutInner() {
         const checkoutName = `${form.firstName} ${form.lastName}`.trim();
         const profileUpsert: any = { id: user.id, email: user.email, updated_at: new Date().toISOString() };
         if (checkoutName && !existingProfile?.full_name) profileUpsert.full_name = checkoutName;
-        if (form.phone) profileUpsert.phone_number = form.phone;
+        if (normalizedPhone) profileUpsert.phone_number = normalizedPhone;
         if (form.address) profileUpsert.shipping_address = { street: form.address, city: form.city, state: form.state, zip: form.pincode };
         await supabase.from('profiles').upsert(profileUpsert, { onConflict: 'id' });
       }
@@ -247,7 +297,7 @@ function CheckoutInner() {
       const shippingAddress = {
         full_name: `${form.firstName} ${form.lastName}`.trim(),
         email: form.email,
-        phone: form.phone,
+        phone: normalizedPhone,
         street: form.address,
         city: form.city,
         state: form.state,
@@ -306,12 +356,8 @@ function CheckoutInner() {
           order_total: total,
           discount_applied: appliedCoupon.discountAmount,
         }]);
-        localStorage.removeItem('appliedCoupon');
       }
 
-      clearCart();
-      
-      // Removed duplicate declaration of hasGraphicKits
       if (form.paymentMethod === 'online') {
         const res = await fetch('/api/payment/create-order', {
            method: 'POST',
@@ -321,20 +367,27 @@ function CheckoutInner() {
              orderAmount: total,
              customerDetails: {
                id: user?.id || 'guest',
-               name: `${form.firstName} ${form.lastName}`.trim(),
-               email: form.email,
-               phone: form.phone
+               name: `${form.firstName} ${form.lastName}`.trim() || 'Customer',
+               email: form.email || 'customer@wearupindia.com',
+               phone: normalizedPhone
              }
            })
         });
         const cfData = await res.json();
         if (cfData.payment_session_id) {
-           const cashfree = await load({ mode: process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'PRODUCTION' ? 'production' : 'sandbox' });
+           const cfMode = (process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT || '').toUpperCase() === 'PRODUCTION' ? 'production' : 'sandbox';
+           const cashfree = await load({ mode: cfMode });
            cashfree.checkout({ paymentSessionId: cfData.payment_session_id, redirectTarget: '_self' });
            return;
         } else {
            throw new Error(cfData.error || 'Failed to initialize payment');
         }
+      }
+
+      // Offline / WhatsApp order flow
+      clearCart();
+      if (appliedCoupon) {
+        localStorage.removeItem('appliedCoupon');
       }
 
       const adminPhone = hasGraphicKits ? "916296396462" : "919093543071";
@@ -410,6 +463,18 @@ function CheckoutInner() {
     }
   };
 
+  if (placing) {
+    return (
+      <div className="min-h-screen pt-16 flex flex-col items-center justify-center px-4 text-center">
+        <Loader2 className="w-12 h-12 text-[#E8161B] animate-spin mb-4" />
+        <h2 className="font-display font-bold text-2xl text-white uppercase tracking-wider mb-2">
+          {searchParams?.get('order_id') ? 'Verifying Payment...' : 'Connecting to Payment Gateway...'}
+        </h2>
+        <p className="text-[#888] text-sm">Please do not refresh or close this page.</p>
+      </div>
+    );
+  }
+
   if (orderPlaced) {
     return (
       <div className="min-h-screen pt-16 flex flex-col items-center justify-center px-4 text-center">
@@ -418,7 +483,7 @@ function CheckoutInner() {
         </div>
         <p className="font-mono text-[11px] text-[#E8161B] tracking-[0.3em] uppercase mb-3">// Order Placed</p>
         <h1 className="font-display font-black text-4xl text-white mb-4 uppercase">YOU&apos;RE ALL SET!</h1>
-        <p className="text-[#666] mb-8">Order <span className="text-[#E8161B] font-mono font-bold">{orderId}</span> is confirmed. Check your WhatsApp for next steps.</p>
+        <p className="text-[#666] mb-8">Order <span className="text-[#E8161B] font-mono font-bold">{orderId}</span> is confirmed. Check your email or WhatsApp for updates.</p>
         <div className="flex flex-col sm:flex-row gap-3">
           <Link href="/shop" className="bg-[#E8161B] text-white font-display font-bold text-sm tracking-widest uppercase px-8 py-4">Continue Shopping</Link>
           <Link href="/" className="border border-[#2a2a2a] text-[#888] font-display font-bold text-sm tracking-widest uppercase px-8 py-4">Back to Home</Link>
@@ -427,7 +492,7 @@ function CheckoutInner() {
     );
   }
 
-  if (cart.length === 0 && !orderPlaced) {
+  if (cart.length === 0) {
     return (
       <div className="min-h-screen pt-16 flex items-center justify-center">
         <div className="text-center">
@@ -497,7 +562,7 @@ function CheckoutInner() {
                   </div>
                   <div>
                     <label className={labelClass}>Phone Number</label>
-                    <input className={inputClass} placeholder="+91 98765 43210" value={form.phone} onChange={e => update('phone', e.target.value)} />
+                    <input className={inputClass} placeholder="10-digit mobile number (e.g. 9876543210)" value={form.phone} onChange={e => update('phone', e.target.value)} />
                   </div>
                 </div>
                 <div>
@@ -521,7 +586,8 @@ function CheckoutInner() {
                     <input className={inputClass} placeholder="560001" value={form.pincode} onChange={e => update('pincode', e.target.value)} />
                   </div>
                 </div>
-                <button onClick={() => setStep('confirm')} className="w-full bg-[#E8161B] text-white font-display font-black text-sm tracking-[0.2em] uppercase py-5 hover:bg-[#B81015] transition-all">Review Order &amp; Proceed</button>
+                {placeError && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 font-mono text-[11px] text-center">{placeError}</div>}
+                <button onClick={handleProceedToReview} className="w-full bg-[#E8161B] text-white font-display font-black text-sm tracking-[0.2em] uppercase py-5 hover:bg-[#B81015] transition-all">Review Order &amp; Proceed</button>
               </div>
             ) : (
               <div className="space-y-6">

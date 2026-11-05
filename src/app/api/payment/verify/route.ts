@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const CASHFREE_APP_ID = process.env.NEXT_PUBLIC_CASHFREE_APP_ID || '';
 const CASHFREE_SECRET_KEY = process.env.CASHFREE_SECRET_KEY || '';
-const CASHFREE_ENV = process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'PRODUCTION' ? 'production' : 'sandbox';
+const CASHFREE_ENV = (process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT || '').toUpperCase() === 'PRODUCTION' ? 'production' : 'sandbox';
 const CASHFREE_BASE_URL = CASHFREE_ENV === 'production'
   ? 'https://api.cashfree.com/pg'
   : 'https://sandbox.cashfree.com/pg';

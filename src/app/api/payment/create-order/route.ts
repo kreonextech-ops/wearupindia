@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 const CASHFREE_APP_ID = process.env.NEXT_PUBLIC_CASHFREE_APP_ID || '';
 const CASHFREE_SECRET_KEY = process.env.CASHFREE_SECRET_KEY || '';
-const CASHFREE_ENV = process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'PRODUCTION' ? 'production' : 'sandbox';
+const CASHFREE_ENV = (process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT || '').toUpperCase() === 'PRODUCTION' ? 'production' : 'sandbox';
 const CASHFREE_BASE_URL = CASHFREE_ENV === 'production'
   ? 'https://api.cashfree.com/pg'
   : 'https://sandbox.cashfree.com/pg';
@@ -12,15 +12,38 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { orderId, orderAmount, customerDetails } = body;
 
+    // Sanitize phone number to strictly 10 digits
+    let cleanPhone = (customerDetails?.phone || '').toString().replace(/\D/g, '');
+    if (cleanPhone.length === 12 && cleanPhone.startsWith('91')) {
+      cleanPhone = cleanPhone.slice(2);
+    } else if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) {
+      cleanPhone = cleanPhone.slice(1);
+    }
+
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      return NextResponse.json(
+        { error: 'Invalid phone number. Please provide a valid 10-digit Indian mobile number.' },
+        { status: 400 }
+      );
+    }
+
+    // Sanitize customer_id (alphanumeric, underscore, hyphen only)
+    const rawId = customerDetails?.id && customerDetails.id !== 'guest' ? customerDetails.id : `guest_${orderId}`;
+    const cleanCustomerId = rawId.toString().replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 50);
+
+    const cleanEmail = (customerDetails?.email || 'guest@example.com').trim();
+    const cleanName = (customerDetails?.name || 'Customer').trim() || 'Customer';
+    const amount = Math.round(Number(orderAmount) * 100) / 100;
+
     const payload = {
-      order_amount: orderAmount,
+      order_amount: amount,
       order_currency: 'INR',
       order_id: orderId,
       customer_details: {
-        customer_id: customerDetails.id || 'guest',
-        customer_phone: customerDetails.phone || '9999999999',
-        customer_email: customerDetails.email || 'guest@example.com',
-        customer_name: customerDetails.name || 'Guest',
+        customer_id: cleanCustomerId,
+        customer_phone: cleanPhone,
+        customer_email: cleanEmail,
+        customer_name: cleanName,
       },
       order_meta: {
         return_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://wearupindia.com'}/checkout?order_id={order_id}`,
@@ -41,7 +64,8 @@ export async function POST(req: Request) {
     const data = await response.json();
 
     if (!response.ok) {
-      return NextResponse.json({ error: data.message || 'Failed to create order' }, { status: response.status });
+      console.error('[Cashfree API Error]', data);
+      return NextResponse.json({ error: data.message || 'Failed to create payment session' }, { status: response.status });
     }
 
     return NextResponse.json(data);
